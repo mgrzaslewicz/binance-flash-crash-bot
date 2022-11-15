@@ -38,6 +38,16 @@
             <artifactId>binance-api-client</artifactId>
             <version>1.0.1</version>
         </dependency>
+        <dependency>
+            <groupId>automate.profit</groupId>
+            <artifactId>autocoin-exchange-api-xchange</artifactId>
+            <version>2.0.39-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>31.1-jre</version>
+        </dependency>
         <!-- Kotlin -->
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
@@ -103,9 +113,15 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.nhaarman.mockitokotlin2</groupId>
+            <groupId>org.mockito.kotlin</groupId>
             <artifactId>mockito-kotlin</artifactId>
-            <version>2.2.0</version>
+            <version>4.0.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <version>4.8.0</version>
             <scope>test</scope>
         </dependency>
 
@@ -120,12 +136,6 @@
             <groupId>me.alexpanov</groupId>
             <artifactId>free-port-finder</artifactId>
             <version>1.1.1</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>30.1-jre</version>
             <scope>test</scope>
         </dependency>
         <dependency>

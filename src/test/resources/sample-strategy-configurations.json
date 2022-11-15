@@ -1,9 +1,0 @@
-[
-  {
-    "id": "sample-configuration-id-1",
-    "userId": "sample-user-id-1",
-    "exchangeName": "BINANCE",
-    "apiKey": "sample binance api key",
-    "secretKey": "sample binance secret key"
-  }
-]

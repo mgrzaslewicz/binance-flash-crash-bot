@@ -18,6 +18,18 @@ data class AppConfig(
         getProperty("fileRepositoryDirectory")?.let { Path.of(it) },
         botHomeFolder.resolve("file-repository"),
     ),
+
+    val binanceApiKey: String = firstNotNull(
+        getProperty("binanceApiKey"),
+        getenv("BINANCE_API_KEY"),
+        "none",
+    ),
+    val binanceApiSecret: String = firstNotNull(
+        getProperty("binanceApiSecret"),
+        getenv("BINANCE_API_SECRET"),
+        "none",
+    ),
+    val shouldPutRealOrders: Boolean = binanceApiKey != "none" && binanceApiSecret != "none"
 ) {
     fun createConfigFolders() {
         Files.createDirectories(botHomeFolder)
@@ -28,4 +40,4 @@ fun loadConfig(): AppConfig {
     return AppConfig()
 }
 
-private fun <T>firstNotNull(vararg arg: T?) = arg.first { it != null }!!
+private fun <T> firstNotNull(vararg arg: T?) = arg.first { it != null }!!

@@ -1,0 +1,47 @@
+[
+  {
+    "id": "sample-execution-id-1",
+    "userId": "sample-user-id-1",
+    "exchangeName": "BINANCE",
+    "baseCurrencyCode": "BTC",
+    "counterCurrencyCode": "USDT",
+    "counterCurrencyAmountLimitForBuying": 1500.0,
+    "createTimeMillis": 3,
+    "exchangeApiKey": {
+      "apiKey": "sample binance api key",
+      "secretKey": "sample binance secret key",
+      "exchangeId": "does not matter",
+      "exchangeName": "BINANCE",
+      "exchangeSpecificKeyParameters": {},
+      "exchangeUserId": "does not matter",
+      "exchangeUserName": "does not matter",
+      "userName": null
+    },
+    "orders": [
+      {
+        "id": "sample-order-id-1",
+        "exchangeOrderId": "exchange-order-id-1",
+        "status": "NEW",
+        "price": 10000,
+        "amount": 0.1,
+        "amountFilled": 0,
+        "baseCurrencyCode": "BTC",
+        "counterCurrencyCode": "USDT",
+        "createTimeMillis": 13,
+        "closeTimeMillis": null
+      },
+      {
+        "id": "sample-order-id-2",
+        "exchangeOrderId": "exchange-order-id-2",
+        "status": "FILLED",
+        "price": 11000,
+        "amount": 0.2,
+        "amountFilled": 0.2,
+        "baseCurrencyCode": "BTC",
+        "counterCurrencyCode": "USDT",
+        "createTimeMillis": 12,
+        "closeTimeMillis": 15
+      }
+    ]
+  }
+]
