@@ -139,7 +139,7 @@ class AppContext(private val appConfig: AppConfig) {
         }
     }
 
-    val exchangeWalletService: ExchangeWalletService = if (appConfig.shouldPutRealOrders) {
+    val exchangeWalletService: ExchangeWalletService = if (appConfig.shouldMakeRealOrders) {
         XchangeExchangeWalletService(
             exchangeService = exchangeService,
             exchangeKeyService = exchangeKeyService,
@@ -159,7 +159,8 @@ class AppContext(private val appConfig: AppConfig) {
         }
     }
 
-    val exchangeOrderService = if (appConfig.shouldPutRealOrders) {
+    val exchangeOrderService = if (appConfig.shouldMakeRealOrders) {
+        logger.info { "Will make real orders" }
         XchangeOrderService(
             exchangeService = exchangeService,
             exchangeKeyService = exchangeKeyService,
@@ -168,6 +169,7 @@ class AppContext(private val appConfig: AppConfig) {
             demoOrderCreator = DemoOrderCreator(clock),
         ).rateLimiting()
     } else {
+        logger.warn { "Will NOT make real orders, just log them instead" }
         LoggingOnlyOrderService(clock = clock).rateLimiting()
     }
 

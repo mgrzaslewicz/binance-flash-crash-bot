@@ -19,7 +19,7 @@ data class AppConfig(
         botHomeFolder.resolve("file-repository"),
     ),
 
-    val shouldPutRealOrders: Boolean = firstNotNull(
+    val shouldMakeRealOrders: Boolean = firstNotNull(
         getProperty("makeRealOrders"),
         getenv("MAKE_REAL_ORDERS"),
         "false",
