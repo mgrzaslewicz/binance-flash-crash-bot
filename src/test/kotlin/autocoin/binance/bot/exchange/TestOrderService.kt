@@ -8,13 +8,16 @@ import java.time.Clock
 import java.util.*
 
 class TestOrderService(private val clock: Clock = Clock.systemDefaultZone()) : ExchangeOrderService {
-    val actionHistory: MutableList<Any> = mutableListOf()
-    val placedLimitBuyOrders: MutableList<ExchangeOrder> = mutableListOf()
+    val successfulActionHistory: MutableList<Any> = mutableListOf()
+    private var placeBuyLimitOrderInvocationIndex = 0
+
 
     override fun cancelOrder(exchangeName: String, exchangeKey: ExchangeKeyDto, cancelOrderParams: ExchangeCancelOrderParams): Boolean {
-        actionHistory += cancelOrderParams
+        successfulActionHistory += cancelOrderParams
         return true
     }
+
+    var placeLimitBuyOrderInvocationFailureIndexes: List<Int> = emptyList()
 
 
     override fun cancelOrder(exchangeName: String, exchangeUserId: String, cancelOrderParams: ExchangeCancelOrderParams): Boolean {
@@ -46,20 +49,23 @@ class TestOrderService(private val clock: Clock = Clock.systemDefaultZone()) : E
         amount: BigDecimal,
         isDemoOrder: Boolean
     ): ExchangeOrder {
-        return ExchangeOrder(
-            exchangeName = "BINANCE",
-            orderId = UUID.randomUUID().toString(),
-            type = ExchangeOrderType.BID_BUY,
-            orderedAmount = amount,
-            filledAmount = BigDecimal.ZERO,
-            price = buyPrice,
-            currencyPair = CurrencyPair.of(baseCurrencyCode, counterCurrencyCode),
-            status = ExchangeOrderStatus.NEW,
-            receivedAtMillis = clock.millis(),
-            exchangeTimestampMillis = null,
-        ).apply {
-            placedLimitBuyOrders += this
-            actionHistory += this
+        if (placeBuyLimitOrderInvocationIndex++ in placeLimitBuyOrderInvocationFailureIndexes) {
+            throw Exception("Failed on purpose during placing buy limit order")
+        } else {
+            return ExchangeOrder(
+                exchangeName = "BINANCE",
+                orderId = UUID.randomUUID().toString(),
+                type = ExchangeOrderType.BID_BUY,
+                orderedAmount = amount,
+                filledAmount = BigDecimal.ZERO,
+                price = buyPrice,
+                currencyPair = CurrencyPair.of(baseCurrencyCode, counterCurrencyCode),
+                status = ExchangeOrderStatus.NEW,
+                receivedAtMillis = clock.millis(),
+                exchangeTimestampMillis = null,
+            ).apply {
+                successfulActionHistory += this
+            }
         }
     }
 

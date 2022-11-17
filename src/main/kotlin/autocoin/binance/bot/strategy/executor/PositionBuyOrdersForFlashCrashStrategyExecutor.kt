@@ -43,7 +43,7 @@ class PositionBuyOrdersForFlashCrashStrategyExecutor(
         currentStrategyExecution.counterCurrencyAmountLimitForBuying.divide(currentStrategyExecution.numberOfBuyLimitOrdersToKeep.toBigDecimal(), mathContext)
 
     override fun onPriceUpdated(currencyPairWithPrice: CurrencyPairWithPrice) {
-        if (!isLowestPriceUpdatedAfterDropBiggerThanThreshold(currencyPairWithPrice.price)) {
+        if (!shouldTryPlaceSomeOrders(currencyPairWithPrice.price)) {
             return
         }
 
@@ -55,7 +55,7 @@ class PositionBuyOrdersForFlashCrashStrategyExecutor(
         if (lowPrice < currentLowestOrderPrice) {
             val counterCurrencyAmountForOrder = counterCurrencyAmountPerOrder.multiply(minPriceMultiplier, mathContext)
             val baseCurrencyAmount = counterCurrencyAmountForOrder.divide(lowPrice, mathContext)
-            if (currentStrategyExecution.numberOfOrders < currentStrategyExecution.numberOfBuyLimitOrdersToKeep) {
+            if (currentStrategyExecution.hasNoMaximumNumberOfOrdersYet) {
                 fillUpToNBuyOrders(buyPrice = lowPrice, baseCurrencyAmount = baseCurrencyAmount)
             } else {
                 cancelOrderWithHighestPrice()
@@ -103,17 +103,17 @@ class PositionBuyOrdersForFlashCrashStrategyExecutor(
         }
     }
 
-    private fun isLowestPriceUpdatedAfterDropBiggerThanThreshold(newPrice: BigDecimal): Boolean {
+    private fun shouldTryPlaceSomeOrders(newPrice: BigDecimal): Boolean {
         return if (newPrice < lowestPriceSoFar) {
             val priceUpdateThreshold = lowestPriceSoFar - lowestPriceSoFar.multiply(lowestPriceUpdateRelativeThreshold, mathContext)
             if (newPrice < priceUpdateThreshold) {
                 lowestPriceSoFar = newPrice
                 true
             } else {
-                false
+                currentStrategyExecution.hasNoMaximumNumberOfOrdersYet
             }
         } else {
-            false
+            currentStrategyExecution.hasNoMaximumNumberOfOrdersYet
         }
     }
 

@@ -32,6 +32,9 @@ data class StrategyExecution(
     val numberOfOrders = orders.size
 
     @JsonIgnore
+    val hasNoMaximumNumberOfOrdersYet = orders.size < numberOfBuyLimitOrdersToKeep
+
+    @JsonIgnore
     val ordersByPriceDesc: List<StrategyOrder> = orders.sortedByDescending { it.price }
 
     @JsonIgnore

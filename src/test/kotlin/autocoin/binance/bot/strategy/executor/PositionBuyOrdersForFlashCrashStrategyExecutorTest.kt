@@ -18,7 +18,6 @@ class PositionBuyOrdersForFlashCrashStrategyExecutorTest {
     private lateinit var tested: PositionBuyOrdersForFlashCrashStrategyExecutor
 
     private val lowestPriceUpdateRelativeThreshold = 0.01.toBigDecimal()
-    private val numberOfOrdersToKeep: Int = 4
 
     @BeforeEach
     fun setup() {
@@ -41,11 +40,27 @@ class PositionBuyOrdersForFlashCrashStrategyExecutorTest {
         tested.onPriceUpdated(currencyPairWithPrice(16000.toBigDecimal()))
         // then
         val orderPrice = BigDecimal("3232.00000000")
-        assertThat(orderService.actionHistory).hasSize(4)
-        assertThat((orderService.actionHistory[0] as ExchangeOrder).price).isEqualTo(orderPrice)
-        assertThat((orderService.actionHistory[1] as ExchangeOrder).price).isEqualTo(orderPrice)
-        assertThat((orderService.actionHistory[2] as ExchangeOrder).price).isEqualTo(orderPrice)
-        assertThat((orderService.actionHistory[3] as ExchangeOrder).price).isEqualTo(orderPrice)
+        assertThat(orderService.successfulActionHistory).hasSize(4)
+        assertThat((orderService.successfulActionHistory[0] as ExchangeOrder).price).isEqualTo(orderPrice)
+        assertThat((orderService.successfulActionHistory[1] as ExchangeOrder).price).isEqualTo(orderPrice)
+        assertThat((orderService.successfulActionHistory[2] as ExchangeOrder).price).isEqualTo(orderPrice)
+        assertThat((orderService.successfulActionHistory[3] as ExchangeOrder).price).isEqualTo(orderPrice)
+    }
+
+    @Test
+    fun shouldRetryCreating4BuyLimitOrdersWhenNoneBefore() {
+        // given
+        orderService.placeLimitBuyOrderInvocationFailureIndexes = listOf(0, 1, 2, 3)
+        // when
+        tested.onPriceUpdated(currencyPairWithPrice(16000.toBigDecimal()))
+        tested.onPriceUpdated(currencyPairWithPrice(16000.toBigDecimal()))
+        // then
+        val orderPrice = BigDecimal("3232.00000000")
+        assertThat(orderService.successfulActionHistory).hasSize(4)
+        assertThat((orderService.successfulActionHistory[0] as ExchangeOrder).price).isEqualTo(orderPrice)
+        assertThat((orderService.successfulActionHistory[1] as ExchangeOrder).price).isEqualTo(orderPrice)
+        assertThat((orderService.successfulActionHistory[2] as ExchangeOrder).price).isEqualTo(orderPrice)
+        assertThat((orderService.successfulActionHistory[3] as ExchangeOrder).price).isEqualTo(orderPrice)
     }
 
     @Test
@@ -56,11 +71,11 @@ class PositionBuyOrdersForFlashCrashStrategyExecutorTest {
         tested.onPriceUpdated(currencyPairWithPrice(price = nextPriceNotBelowThreshold.toBigDecimal()))
         // then
         val orderPrice = BigDecimal("3232.00000000")
-        assertThat(orderService.actionHistory).hasSize(4)
-        assertThat((orderService.actionHistory[0] as ExchangeOrder).price).isEqualTo(orderPrice)
-        assertThat((orderService.actionHistory[1] as ExchangeOrder).price).isEqualTo(orderPrice)
-        assertThat((orderService.actionHistory[2] as ExchangeOrder).price).isEqualTo(orderPrice)
-        assertThat((orderService.actionHistory[3] as ExchangeOrder).price).isEqualTo(orderPrice)
+        assertThat(orderService.successfulActionHistory).hasSize(4)
+        assertThat((orderService.successfulActionHistory[0] as ExchangeOrder).price).isEqualTo(orderPrice)
+        assertThat((orderService.successfulActionHistory[1] as ExchangeOrder).price).isEqualTo(orderPrice)
+        assertThat((orderService.successfulActionHistory[2] as ExchangeOrder).price).isEqualTo(orderPrice)
+        assertThat((orderService.successfulActionHistory[3] as ExchangeOrder).price).isEqualTo(orderPrice)
     }
     @Test
     fun shouldCreateBuyLimitOrderWithSecondPriceWhenDropBelowThreshold() {
@@ -72,9 +87,9 @@ class PositionBuyOrdersForFlashCrashStrategyExecutorTest {
         val numbersOfInitialOrdersCreated = 4
         val numberOfOrdersCanceled = 1
         val numberOfOrdersCreated = 1
-        assertThat(orderService.actionHistory).hasSize(numbersOfInitialOrdersCreated + numberOfOrdersCanceled + numberOfOrdersCreated)
-        assertThat((orderService.actionHistory[4] as ExchangeCancelOrderParams).orderId)
-            .isEqualTo((orderService.actionHistory[0] as ExchangeOrder).orderId)
-        assertThat((orderService.actionHistory[5] as ExchangeOrder).price).isEqualTo(BigDecimal("3199.47800000"))
+        assertThat(orderService.successfulActionHistory).hasSize(numbersOfInitialOrdersCreated + numberOfOrdersCanceled + numberOfOrdersCreated)
+        assertThat((orderService.successfulActionHistory[4] as ExchangeCancelOrderParams).orderId)
+            .isEqualTo((orderService.successfulActionHistory[0] as ExchangeOrder).orderId)
+        assertThat((orderService.successfulActionHistory[5] as ExchangeOrder).price).isEqualTo(BigDecimal("3199.47800000"))
     }
 }
