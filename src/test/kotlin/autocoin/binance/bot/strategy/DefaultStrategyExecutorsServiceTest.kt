@@ -7,6 +7,7 @@ import autocoin.binance.bot.exchange.TestWalletService
 import autocoin.binance.bot.strategy.execution.repository.StrategyExecutionRepository
 import autocoin.binance.bot.strategy.execution.repository.TestStrategyExecutionRepository
 import autocoin.binance.bot.strategy.executor.*
+import autocoin.binance.bot.strategy.parameters.StrategyParameters
 import automate.profit.autocoin.exchange.currency.CurrencyPair
 import mu.KLogging
 import org.assertj.core.api.Assertions.assertThat

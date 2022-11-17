@@ -30,7 +30,6 @@ class PositionBuyOrdersForFlashCrashStrategyExecutorTest {
             exchangeOrderService = orderService,
             strategyExecutionRepository = TestStrategyExecutionRepository(),
             lowestPriceUpdateRelativeThreshold = lowestPriceUpdateRelativeThreshold,
-            numberOfOrdersToKeep = numberOfOrdersToKeep,
         )
     }
 

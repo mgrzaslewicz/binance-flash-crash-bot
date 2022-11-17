@@ -24,9 +24,12 @@ data class StrategyOrder(
 }
 
 interface StrategyExecutionRepository {
-    fun getExecutions(userId: String): List<StrategyExecution>
+    fun getExecutionsByUserId(userId: String): List<StrategyExecution>
     fun getExecutions(): List<StrategyExecution>
-    fun save(strategyExecution: StrategyExecution)
+    fun save(strategyExecution: StrategyExecution) = save(listOf(strategyExecution))
+    fun save(strategyExecutions: List<StrategyExecution>)
+    fun delete(strategyExecution: StrategyExecution) = delete(listOf(strategyExecution))
+    fun delete(strategyExecutions: List<StrategyExecution>)
 }
 
 

@@ -7,6 +7,7 @@ import autocoin.binance.bot.strategy.DefaultStrategyExecutorService
 import autocoin.binance.bot.strategy.execution.repository.FileStrategyExecutionRepository
 import autocoin.binance.bot.strategy.execution.repository.logging
 import autocoin.binance.bot.strategy.executor.DefaultStrategyExecutorProvider
+import autocoin.binance.bot.strategy.parameters.repository.FileStrategyParametersRepository
 import autocoin.binance.bot.user.repository.FileUserRepository
 import autocoin.binance.bot.user.repository.logging
 import automate.profit.autocoin.exchange.CachingXchangeProvider
@@ -79,6 +80,12 @@ class AppContext(private val appConfig: AppConfig) {
     val nonCriticalJobsScheduledExecutorService = newSingleThreadScheduledExecutor()
 
     val fileKeyValueRepository = FileKeyValueRepository()
+
+    val strategyParametersRepository = FileStrategyParametersRepository(
+        fileRepositoryDirectory = appConfig.fileRepositoryDirectory,
+        objectMapper = objectMapper,
+        fileKeyValueRepository = fileKeyValueRepository,
+    )
 
     val strategyExecutionRepository = FileStrategyExecutionRepository(
         fileRepositoryDirectory = appConfig.fileRepositoryDirectory,

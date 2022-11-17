@@ -19,17 +19,11 @@ data class AppConfig(
         botHomeFolder.resolve("file-repository"),
     ),
 
-    val binanceApiKey: String = firstNotNull(
-        getProperty("binanceApiKey"),
-        getenv("BINANCE_API_KEY"),
-        "none",
-    ),
-    val binanceApiSecret: String = firstNotNull(
-        getProperty("binanceApiSecret"),
-        getenv("BINANCE_API_SECRET"),
-        "none",
-    ),
-    val shouldPutRealOrders: Boolean = binanceApiKey != "none" && binanceApiSecret != "none"
+    val shouldPutRealOrders: Boolean = firstNotNull(
+        getProperty("makeRealOrders"),
+        getenv("MAKE_REAL_ORDERS"),
+        "false",
+    ).toBoolean()
 ) {
     fun createConfigFolders() {
         Files.createDirectories(botHomeFolder)

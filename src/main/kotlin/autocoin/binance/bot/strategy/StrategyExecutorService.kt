@@ -1,20 +1,16 @@
 package autocoin.binance.bot.strategy
 
-import autocoin.binance.bot.app.config.ExchangeName
 import autocoin.binance.bot.exchange.CurrencyPairWithPrice
 import autocoin.binance.bot.exchange.PriceListener
-import autocoin.binance.bot.strategy.execution.StrategyExecution
 import autocoin.binance.bot.strategy.execution.repository.StrategyExecutionRepository
 import autocoin.binance.bot.strategy.executor.StrategyExecutor
 import autocoin.binance.bot.strategy.executor.StrategyExecutorProvider
-import automate.profit.autocoin.exchange.apikey.ExchangeKeyDto
+import autocoin.binance.bot.strategy.parameters.StrategyParameters
 import automate.profit.autocoin.exchange.currency.CurrencyPair
 import mu.KLogging
-import java.math.BigDecimal
 import java.time.Clock
 import java.time.Duration
 import java.time.Instant
-import java.time.ZonedDateTime
 
 data class ExchangeApiKey(
     val apiKey: String,
@@ -25,29 +21,10 @@ data class ExchangeApiKey(
     }
 }
 
-data class StrategyParameters(
-    val currencyPair: CurrencyPair,
-    val userId: String,
-    val counterCurrencyAmountLimitForBuying: BigDecimal,
-    val numberOfBuyLimitOrdersToKeep: Int = 4,
-    val exchangeApiKey: ExchangeKeyDto,
-) {
-    fun toStrategyExecution(): StrategyExecution {
-        return StrategyExecution(
-            exchangeName = ExchangeName.BINANCE,
-            userId = userId,
-            baseCurrencyCode = currencyPair.base,
-            counterCurrencyCode = currencyPair.counter,
-            counterCurrencyAmountLimitForBuying = counterCurrencyAmountLimitForBuying,
-            createTimeMillis = ZonedDateTime.now().toInstant().toEpochMilli(),
-            exchangeApiKey = exchangeApiKey,
-            numberOfBuyLimitOrdersToKeep = numberOfBuyLimitOrdersToKeep,
-        )
-    }
-}
-
 interface StrategyExecutorService : PriceListener {
     fun addStrategyExecutor(strategyParameters: StrategyParameters)
+    fun currencyPairsCurrentlyNeeded(): List<CurrencyPair>
+    fun addOrResumeStrategyExecutors(strategyParametersList: List<StrategyParameters>)
 }
 
 class DefaultStrategyExecutorService(
@@ -58,7 +35,7 @@ class DefaultStrategyExecutorService(
     private val runningStrategies = mutableMapOf<CurrencyPair, MutableList<StrategyExecutor>>()
     override fun addStrategyExecutor(strategyParameters: StrategyParameters) {
         val strategiesRunningWithCurrencyPair = runningStrategies.getOrPut(strategyParameters.currencyPair) { ArrayList() }
-        if (strategiesRunningWithCurrencyPair.any { it.strategyExecution.userId == strategyParameters.userId }) {
+        if (strategiesRunningWithCurrencyPair.any { strategyParameters.matchesStrategyExecution(it.strategyExecution) }) {
             throw RuntimeException("User ${strategyParameters.userId} already has strategy running on currency pair ${strategyParameters.currencyPair}")
         }
         val strategyExecutor = strategyExecutorProvider.createStrategyExecutor(strategyParameters)
@@ -70,17 +47,51 @@ class DefaultStrategyExecutorService(
             ?.forEach { it.onPriceUpdated(currencyPairWithPrice) }
     }
 
+    override fun currencyPairsCurrentlyNeeded(): List<CurrencyPair> {
+        return runningStrategies.keys.toList()
+    }
+
+    override fun addOrResumeStrategyExecutors(strategyParametersList: List<StrategyParameters>) {
+        val allExecutions = strategyExecutionRepository.getExecutions()
+        val strategiesToResume = allExecutions.filter { execution ->
+            strategyParametersList.any { parameters ->
+                parameters.matchesStrategyExecution(execution)
+            }
+        }
+        val strategiesToDelete = allExecutions.filter { execution ->
+            strategyParametersList.any { parameters ->
+                !parameters.matchesStrategyExecution(execution)
+            }
+        }
+        strategyExecutionRepository.delete(strategiesToDelete)
+        strategyExecutionRepository.save(strategiesToResume)
+
+        val strategyExecutionsToResume =
+            strategiesToResume.map { execution ->
+                val matchingParameters = strategyParametersList.find { parameters -> parameters.matchesStrategyExecution(execution) }!!
+                matchingParameters.toResumedStrategyExecution(strategyExecution = execution)
+            }
+        strategyExecutionsToResume.forEach {
+            val strategiesRunningWithCurrencyPair = runningStrategies.getOrPut(it.currencyPair) { ArrayList() }
+            val strategyExecutor = strategyExecutorProvider.createStrategyExecutor(it)
+            strategiesRunningWithCurrencyPair.add(strategyExecutor)
+        }
+    }
 }
 
 class LoggingStrategyExecutorService(
     private val decorated: StrategyExecutorService,
     private val minDelayBetweenLogs: Duration = Duration.ofMillis(1),
     private val clock: Clock
-) :
-    StrategyExecutorService by decorated {
+) : StrategyExecutorService by decorated {
     companion object : KLogging()
 
     private var lastLogInstant: Instant? = null
+
+    override fun addOrResumeStrategyExecutors(strategyParametersList: List<StrategyParameters>) {
+        logger.info { "Adding or resuming following strategies: $strategyParametersList" }
+        decorated.addOrResumeStrategyExecutors(strategyParametersList)
+    }
 
     override fun onPriceUpdated(currencyPairWithPrice: CurrencyPairWithPrice) {
         val now = clock.instant()
