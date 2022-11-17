@@ -16,15 +16,11 @@ import java.math.MathContext
 import java.math.RoundingMode
 import java.time.Clock
 
-class LimitBuyOrderRepositionTrigger {
-
-}
-
 class PositionBuyOrdersForFlashCrashStrategyExecutor(
     override val strategyExecution: StrategyExecution,
     private val exchangeWalletService: ExchangeWalletService,
     private val exchangeOrderService: ExchangeOrderService,
-    private val minPriceMultiplier: BigDecimal = 0.2.toBigDecimal(),
+    private val minPriceDownMultiplier: BigDecimal = 0.2.toBigDecimal(),
     private val lowestPriceUpdateRelativeThreshold: BigDecimal = 0.01.toBigDecimal(),
     private val strategyExecutionRepository: StrategyExecutionRepository,
     private val clock: Clock = Clock.systemDefaultZone(),
@@ -37,8 +33,10 @@ class PositionBuyOrdersForFlashCrashStrategyExecutor(
     private var lowestPriceSoFar: BigDecimal = maxBigDecimal
     private var currentStrategyExecution: StrategyExecution = strategyExecution.copy()
 
-    private val mathContext = MathContext(8, RoundingMode.HALF_UP)
+    private val mathContext = MathContext(8, RoundingMode.HALF_EVEN)
 
+    private val baseCurrencyAmountScale = 6
+    private val counterCurrencyPriceScale = 2
     private val counterCurrencyAmountPerOrder =
         currentStrategyExecution.counterCurrencyAmountLimitForBuying.divide(currentStrategyExecution.numberOfBuyLimitOrdersToKeep.toBigDecimal(), mathContext)
 
@@ -46,15 +44,13 @@ class PositionBuyOrdersForFlashCrashStrategyExecutor(
         if (!shouldTryPlaceSomeOrders(currencyPairWithPrice.price)) {
             return
         }
-
-        val lowPrice = lowestPriceSoFar
-            .multiply(minPriceMultiplier, mathContext)
+        val lowPrice = currencyPairWithPrice.price
+            .multiply(minPriceDownMultiplier, mathContext)
             .multiply(makePriceBitBiggerThanLowestLimit, mathContext)
-            .setScale(8, RoundingMode.HALF_EVEN)
+            .setScale(counterCurrencyPriceScale, RoundingMode.HALF_EVEN)
         val currentLowestOrderPrice = currentStrategyExecution.orderWithMinPrice?.price ?: maxBigDecimal
         if (lowPrice < currentLowestOrderPrice) {
-            val counterCurrencyAmountForOrder = counterCurrencyAmountPerOrder.multiply(minPriceMultiplier, mathContext)
-            val baseCurrencyAmount = counterCurrencyAmountForOrder.divide(lowPrice, mathContext)
+            val baseCurrencyAmount = counterCurrencyAmountPerOrder.divide(lowPrice, mathContext).setScale(baseCurrencyAmountScale, RoundingMode.HALF_EVEN)
             if (currentStrategyExecution.hasNoMaximumNumberOfOrdersYet) {
                 fillUpToNBuyOrders(buyPrice = lowPrice, baseCurrencyAmount = baseCurrencyAmount)
             } else {
@@ -90,7 +86,7 @@ class PositionBuyOrdersForFlashCrashStrategyExecutor(
         try {
             val buyOrder =
                 exchangeOrderService.placeLimitBuyOrder(
-                    exchangeName = SupportedExchange.BINANCE.name.lowercase(),
+                    exchangeName = SupportedExchange.BINANCE.exchangeName,
                     exchangeKey = currentStrategyExecution.exchangeApiKey,
                     baseCurrencyCode = currentStrategyExecution.baseCurrencyCode,
                     counterCurrencyCode = currentStrategyExecution.counterCurrencyCode,
@@ -105,8 +101,8 @@ class PositionBuyOrdersForFlashCrashStrategyExecutor(
 
     private fun shouldTryPlaceSomeOrders(newPrice: BigDecimal): Boolean {
         return if (newPrice < lowestPriceSoFar) {
-            val priceUpdateThreshold = lowestPriceSoFar - lowestPriceSoFar.multiply(lowestPriceUpdateRelativeThreshold, mathContext)
-            if (newPrice < priceUpdateThreshold) {
+            val lowestPriceUpdateThreshold = lowestPriceSoFar - lowestPriceSoFar.multiply(lowestPriceUpdateRelativeThreshold, mathContext)
+            if (newPrice < lowestPriceUpdateThreshold) {
                 lowestPriceSoFar = newPrice
                 true
             } else {

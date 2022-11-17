@@ -37,9 +37,9 @@ class PositionBuyOrdersForFlashCrashStrategyExecutorTest {
     @Test
     fun shouldCreate4BuyLimitOrdersWhenNoneBefore() {
         // when
-        tested.onPriceUpdated(currencyPairWithPrice(16000.toBigDecimal()))
+        tested.onPriceUpdated(currencyPairWithPrice(16150.7.toBigDecimal()))
         // then
-        val orderPrice = BigDecimal("3232.00000000")
+        val orderPrice = BigDecimal("3262.44")
         assertThat(orderService.successfulActionHistory).hasSize(4)
         assertThat((orderService.successfulActionHistory[0] as ExchangeOrder).price).isEqualTo(orderPrice)
         assertThat((orderService.successfulActionHistory[1] as ExchangeOrder).price).isEqualTo(orderPrice)
@@ -55,7 +55,7 @@ class PositionBuyOrdersForFlashCrashStrategyExecutorTest {
         tested.onPriceUpdated(currencyPairWithPrice(16000.toBigDecimal()))
         tested.onPriceUpdated(currencyPairWithPrice(16000.toBigDecimal()))
         // then
-        val orderPrice = BigDecimal("3232.00000000")
+        val orderPrice = BigDecimal("3232.00")
         assertThat(orderService.successfulActionHistory).hasSize(4)
         assertThat((orderService.successfulActionHistory[0] as ExchangeOrder).price).isEqualTo(orderPrice)
         assertThat((orderService.successfulActionHistory[1] as ExchangeOrder).price).isEqualTo(orderPrice)
@@ -70,7 +70,7 @@ class PositionBuyOrdersForFlashCrashStrategyExecutorTest {
         val nextPriceNotBelowThreshold = 16000 - 160
         tested.onPriceUpdated(currencyPairWithPrice(price = nextPriceNotBelowThreshold.toBigDecimal()))
         // then
-        val orderPrice = BigDecimal("3232.00000000")
+        val orderPrice = BigDecimal("3232.00")
         assertThat(orderService.successfulActionHistory).hasSize(4)
         assertThat((orderService.successfulActionHistory[0] as ExchangeOrder).price).isEqualTo(orderPrice)
         assertThat((orderService.successfulActionHistory[1] as ExchangeOrder).price).isEqualTo(orderPrice)
@@ -90,6 +90,6 @@ class PositionBuyOrdersForFlashCrashStrategyExecutorTest {
         assertThat(orderService.successfulActionHistory).hasSize(numbersOfInitialOrdersCreated + numberOfOrdersCanceled + numberOfOrdersCreated)
         assertThat((orderService.successfulActionHistory[4] as ExchangeCancelOrderParams).orderId)
             .isEqualTo((orderService.successfulActionHistory[0] as ExchangeOrder).orderId)
-        assertThat((orderService.successfulActionHistory[5] as ExchangeOrder).price).isEqualTo(BigDecimal("3199.47800000"))
+        assertThat((orderService.successfulActionHistory[5] as ExchangeOrder).price).isEqualTo(BigDecimal("3199.48"))
     }
 }
