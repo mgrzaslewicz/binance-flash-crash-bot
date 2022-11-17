@@ -1,10 +1,7 @@
 package autocoin.binance.bot.app.config
 
 import autocoin.binance.bot.eventbus.DefaultEventBus
-import autocoin.binance.bot.exchange.BinanceTickerStream
-import autocoin.binance.bot.exchange.LoggingOnlyOrderService
-import autocoin.binance.bot.exchange.LoggingOnlyWalletService
-import autocoin.binance.bot.exchange.logging
+import autocoin.binance.bot.exchange.*
 import autocoin.binance.bot.httpclient.RequestLogInterceptor
 import autocoin.binance.bot.strategy.DefaultStrategyExecutorService
 import autocoin.binance.bot.strategy.execution.repository.FileStrategyExecutionRepository
@@ -162,9 +159,9 @@ class AppContext(private val appConfig: AppConfig) {
             userExchangeServicesFactory = userExchangeServicesFactory,
             exchangeCurrencyPairsInWallet = exchangeCurrencyPairsInWalletService,
             demoOrderCreator = DemoOrderCreator(clock),
-        )
+        ).rateLimiting()
     } else {
-        LoggingOnlyOrderService(clock = clock)
+        LoggingOnlyOrderService(clock = clock).rateLimiting()
     }
 
 
@@ -177,7 +174,7 @@ class AppContext(private val appConfig: AppConfig) {
     val strategyExecutionsService =
         DefaultStrategyExecutorService(
             strategyExecutionRepository = strategyExecutionRepository,
-            strategyExecutorProvider = strategyExecutorProvider
+            strategyExecutorProvider = strategyExecutorProvider,
         ).logging(minDelayBetweenLogs = Duration.ofSeconds(1), clock = clock)
 
     val userRepository = FileUserRepository(

@@ -41,6 +41,7 @@ data class StrategyParameters(
             counterCurrencyAmountLimitForBuying = counterCurrencyAmountLimitForBuying,
             createTimeMillis = ZonedDateTime.now().toInstant().toEpochMilli(),
             exchangeApiKey = exchangeApiKey,
+            numberOfBuyLimitOrdersToKeep = numberOfBuyLimitOrdersToKeep,
         )
     }
 }

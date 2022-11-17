@@ -27,7 +27,6 @@ class PositionBuyOrdersForFlashCrashStrategyExecutor(
     private val minPriceMultiplier: BigDecimal = 0.2.toBigDecimal(),
     private val lowestPriceUpdateRelativeThreshold: BigDecimal = 0.01.toBigDecimal(),
     private val strategyExecutionRepository: StrategyExecutionRepository,
-    private val numberOfOrdersToKeep: Int = 4,
     private val clock: Clock = Clock.systemDefaultZone(),
 ) : StrategyExecutor {
     private companion object : KLogging()
@@ -40,7 +39,8 @@ class PositionBuyOrdersForFlashCrashStrategyExecutor(
 
     private val mathContext = MathContext(8, RoundingMode.HALF_UP)
 
-    private val counterCurrencyAmountPerOrder = currentStrategyExecution.counterCurrencyAmountLimitForBuying.divide(numberOfOrdersToKeep.toBigDecimal(), mathContext)
+    private val counterCurrencyAmountPerOrder =
+        currentStrategyExecution.counterCurrencyAmountLimitForBuying.divide(currentStrategyExecution.numberOfBuyLimitOrdersToKeep.toBigDecimal(), mathContext)
 
     override fun onPriceUpdated(currencyPairWithPrice: CurrencyPairWithPrice) {
         if (!isLowestPriceUpdatedAfterDropBiggerThanThreshold(currencyPairWithPrice.price)) {
@@ -55,7 +55,7 @@ class PositionBuyOrdersForFlashCrashStrategyExecutor(
         if (lowPrice < currentLowestOrderPrice) {
             val counterCurrencyAmountForOrder = counterCurrencyAmountPerOrder.multiply(minPriceMultiplier, mathContext)
             val baseCurrencyAmount = counterCurrencyAmountForOrder.divide(lowPrice, mathContext)
-            if (currentStrategyExecution.numberOfOrders < numberOfOrdersToKeep) {
+            if (currentStrategyExecution.numberOfOrders < currentStrategyExecution.numberOfBuyLimitOrdersToKeep) {
                 fillUpToNBuyOrders(buyPrice = lowPrice, baseCurrencyAmount = baseCurrencyAmount)
             } else {
                 cancelOrderWithHighestPrice()
@@ -81,7 +81,7 @@ class PositionBuyOrdersForFlashCrashStrategyExecutor(
     }
 
     private fun fillUpToNBuyOrders(buyPrice: BigDecimal, baseCurrencyAmount: BigDecimal) {
-        repeat(numberOfOrdersToKeep - currentStrategyExecution.numberOfOrders) {
+        repeat(currentStrategyExecution.numberOfBuyLimitOrdersToKeep - currentStrategyExecution.numberOfOrders) {
             tryToPlaceBuyLimitOrder(buyPrice = buyPrice, baseCurrencyAmount = baseCurrencyAmount)
         }
     }
