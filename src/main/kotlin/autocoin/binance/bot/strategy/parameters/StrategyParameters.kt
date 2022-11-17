@@ -1,7 +1,7 @@
 package autocoin.binance.bot.strategy.parameters
 
-import autocoin.binance.bot.app.config.ExchangeName
 import autocoin.binance.bot.strategy.execution.StrategyExecution
+import automate.profit.autocoin.exchange.SupportedExchange
 import automate.profit.autocoin.exchange.apikey.ExchangeKeyDto
 import automate.profit.autocoin.exchange.currency.CurrencyPair
 import com.fasterxml.jackson.annotation.JsonIgnore
@@ -21,7 +21,7 @@ data class StrategyParameters(
     val currencyPair: CurrencyPair = CurrencyPair.Companion.of(baseCurrencyCode, counterCurrencyCode)
     fun toStrategyExecution(): StrategyExecution {
         return StrategyExecution(
-            exchangeName = ExchangeName.BINANCE,
+            exchangeName = SupportedExchange.BINANCE.exchangeName,
             userId = userId,
             baseCurrencyCode = currencyPair.base,
             counterCurrencyCode = currencyPair.counter,

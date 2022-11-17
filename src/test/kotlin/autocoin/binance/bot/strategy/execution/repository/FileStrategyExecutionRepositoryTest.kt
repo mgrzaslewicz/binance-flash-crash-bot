@@ -1,6 +1,5 @@
 package autocoin.binance.bot.strategy.execution.repository
 
-import autocoin.binance.bot.app.config.ExchangeName
 import autocoin.binance.bot.app.config.objectMapper
 import autocoin.binance.bot.strategy.execution.StrategyExecution
 import automate.profit.autocoin.exchange.SupportedExchange
@@ -21,7 +20,7 @@ class FileStrategyExecutionRepositoryTest {
     private val expectedStrategyExecution = StrategyExecution(
         id = "sample-execution-id-1",
         userId = "sample-user-id-1",
-        exchangeName = ExchangeName.BINANCE,
+        exchangeName = SupportedExchange.BINANCE.exchangeName,
 
         baseCurrencyCode = "BTC",
         counterCurrencyCode = "USDT",

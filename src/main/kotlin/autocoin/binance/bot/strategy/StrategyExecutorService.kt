@@ -76,6 +76,13 @@ class DefaultStrategyExecutorService(
             val strategyExecutor = strategyExecutorProvider.createStrategyExecutor(it)
             strategiesRunningWithCurrencyPair.add(strategyExecutor)
         }
+
+        val strategiesToAdd = strategyParametersList.filter {
+            allExecutions.none { execution -> it.matchesStrategyExecution(execution) }
+        }
+        strategiesToAdd.forEach {
+            addStrategyExecutor(it)
+        }
     }
 }
 

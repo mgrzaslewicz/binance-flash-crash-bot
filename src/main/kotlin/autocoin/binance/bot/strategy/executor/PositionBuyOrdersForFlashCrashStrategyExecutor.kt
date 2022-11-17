@@ -1,10 +1,10 @@
 package autocoin.binance.bot.strategy.executor
 
-import autocoin.binance.bot.app.config.ExchangeName
 import autocoin.binance.bot.exchange.CurrencyPairWithPrice
 import autocoin.binance.bot.strategy.execution.StrategyExecution
 import autocoin.binance.bot.strategy.execution.repository.StrategyExecutionRepository
 import autocoin.binance.bot.strategy.execution.repository.StrategyOrder
+import automate.profit.autocoin.exchange.SupportedExchange
 import automate.profit.autocoin.exchange.order.ExchangeCancelOrderParams
 import automate.profit.autocoin.exchange.order.ExchangeOrder
 import automate.profit.autocoin.exchange.order.ExchangeOrderService
@@ -72,7 +72,7 @@ class PositionBuyOrdersForFlashCrashStrategyExecutor(
 
     private fun cancelOrder(order: StrategyOrder): Boolean {
         return exchangeOrderService.cancelOrder(
-            exchangeName = ExchangeName.BINANCE.name, exchangeKey = currentStrategyExecution.exchangeApiKey, ExchangeCancelOrderParams(
+            exchangeName = SupportedExchange.BINANCE.name, exchangeKey = currentStrategyExecution.exchangeApiKey, ExchangeCancelOrderParams(
                 orderId = order.exchangeOrderId,
                 orderType = ExchangeOrderType.BID_BUY,
                 currencyPair = currentStrategyExecution.currencyPair,
@@ -90,7 +90,7 @@ class PositionBuyOrdersForFlashCrashStrategyExecutor(
         try {
             val buyOrder =
                 exchangeOrderService.placeLimitBuyOrder(
-                    exchangeName = ExchangeName.BINANCE.name,
+                    exchangeName = SupportedExchange.BINANCE.name.lowercase(),
                     exchangeKey = currentStrategyExecution.exchangeApiKey,
                     baseCurrencyCode = currentStrategyExecution.baseCurrencyCode,
                     counterCurrencyCode = currentStrategyExecution.counterCurrencyCode,

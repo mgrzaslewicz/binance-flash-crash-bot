@@ -1,6 +1,5 @@
 package autocoin.binance.bot.strategy.execution
 
-import autocoin.binance.bot.app.config.ExchangeName
 import autocoin.binance.bot.strategy.execution.repository.StrategyOrder
 import automate.profit.autocoin.exchange.apikey.ExchangeKeyDto
 import automate.profit.autocoin.exchange.currency.CurrencyPair
@@ -11,7 +10,7 @@ import java.util.*
 data class StrategyExecution(
     val id: String = UUID.randomUUID().toString(),
     val userId: String,
-    val exchangeName: ExchangeName,
+    val exchangeName: String,
 
     val baseCurrencyCode: String,
     val counterCurrencyCode: String,
