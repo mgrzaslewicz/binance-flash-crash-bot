@@ -64,6 +64,22 @@ class PositionBuyOrdersForFlashCrashStrategyExecutorTest {
     }
 
     @Test
+    fun shouldRetryCreatingBuyLimitOrdersWhenOneFailed() {
+        // given
+        orderService.placeLimitBuyOrderInvocationFailureIndexes = listOf(3)
+        // when
+        tested.onPriceUpdated(currencyPairWithPrice(16000.toBigDecimal()))
+        tested.onPriceUpdated(currencyPairWithPrice(16500.toBigDecimal()))
+        // then
+        val orderPrice = BigDecimal("3232.00")
+        assertThat(orderService.successfulActionHistory).hasSize(4)
+        assertThat((orderService.successfulActionHistory[0] as ExchangeOrder).price).isEqualTo(orderPrice)
+        assertThat((orderService.successfulActionHistory[1] as ExchangeOrder).price).isEqualTo(orderPrice)
+        assertThat((orderService.successfulActionHistory[2] as ExchangeOrder).price).isEqualTo(orderPrice)
+        assertThat((orderService.successfulActionHistory[3] as ExchangeOrder).price).isEqualTo(BigDecimal("3333.00"))
+    }
+
+    @Test
     fun shouldNotCreateNewBuyLimitOrdersWhenDidNotDropBelowThreshold() {
         // when
         tested.onPriceUpdated(currencyPairWithPrice(price = 16000.toBigDecimal()))
@@ -77,6 +93,7 @@ class PositionBuyOrdersForFlashCrashStrategyExecutorTest {
         assertThat((orderService.successfulActionHistory[2] as ExchangeOrder).price).isEqualTo(orderPrice)
         assertThat((orderService.successfulActionHistory[3] as ExchangeOrder).price).isEqualTo(orderPrice)
     }
+
     @Test
     fun shouldCreateBuyLimitOrderWithSecondPriceWhenDropBelowThreshold() {
         // when

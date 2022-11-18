@@ -49,14 +49,12 @@ class PositionBuyOrdersForFlashCrashStrategyExecutor(
             .multiply(makePriceBitBiggerThanLowestLimit, mathContext)
             .setScale(counterCurrencyPriceScale, RoundingMode.HALF_EVEN)
         val currentLowestOrderPrice = currentStrategyExecution.orderWithMinPrice?.price ?: maxBigDecimal
-        if (lowPrice < currentLowestOrderPrice) {
-            val baseCurrencyAmount = counterCurrencyAmountPerOrder.divide(lowPrice, mathContext).setScale(baseCurrencyAmountScale, RoundingMode.DOWN)
-            if (currentStrategyExecution.hasNoMaximumNumberOfOrdersYet) {
-                fillUpToNBuyOrders(buyPrice = lowPrice, baseCurrencyAmount = baseCurrencyAmount)
-            } else {
-                cancelOrderWithHighestPrice()
-                fillUpToNBuyOrders(buyPrice = lowPrice, baseCurrencyAmount = baseCurrencyAmount)
-            }
+        val baseCurrencyAmount = counterCurrencyAmountPerOrder.divide(lowPrice, mathContext).setScale(baseCurrencyAmountScale, RoundingMode.DOWN)
+        if (currentStrategyExecution.hasNoMaximumNumberOfOrdersYet) {
+            fillUpToNBuyOrders(buyPrice = lowPrice, baseCurrencyAmount = baseCurrencyAmount)
+        } else if (lowPrice < currentLowestOrderPrice) {
+            cancelOrderWithHighestPrice()
+            fillUpToNBuyOrders(buyPrice = lowPrice, baseCurrencyAmount = baseCurrencyAmount)
         }
     }
 
