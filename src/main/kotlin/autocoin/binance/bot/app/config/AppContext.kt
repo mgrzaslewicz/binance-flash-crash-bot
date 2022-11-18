@@ -176,7 +176,10 @@ class AppContext(private val appConfig: AppConfig) {
             userExchangeServicesFactory = userExchangeServicesFactory,
             exchangeCurrencyPairsInWallet = exchangeCurrencyPairsInWalletService,
             demoOrderCreator = DemoOrderCreator(clock),
-        ).rateLimiting()
+        )
+            .measuringTime()
+            .rateLimiting()
+
     } else {
         logger.warn { "Will NOT make real orders, just log them instead" }
         LoggingOnlyOrderService(clock = clock).rateLimiting()
