@@ -26,6 +26,7 @@ import automate.profit.autocoin.exchange.wallet.ExchangeCurrencyPairsInWalletSer
 import automate.profit.autocoin.exchange.wallet.ExchangeWalletService
 import automate.profit.autocoin.exchange.wallet.XchangeExchangeWalletService
 import automate.profit.autocoin.keyvalue.FileKeyValueRepository
+import com.binance.api.client.BinanceApiClientFactory
 import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.KeyDeserializer
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -74,10 +75,18 @@ class AppContext(private val appConfig: AppConfig) {
 
     val eventBus = DefaultEventBus()
 
-    val binanceTickerStream = BinanceTickerStream(eventBus = eventBus)
+    val binancePriceStream = BinancePriceStream(
+        eventBus = eventBus,
+        binanceApiWebSocketClient = BinanceApiClientFactory.newInstance().newWebSocketClient(),
+        clock = clock,
+    )
 
+    val priceWebSocketConnectionKeeper = PriceWebSocketConnectionKeeper(
+        clock = clock,
+        binancePriceStream = binancePriceStream,
+        scheduledExecutor = newSingleThreadScheduledExecutor(),
+    )
 
-    val nonCriticalJobsScheduledExecutorService = newSingleThreadScheduledExecutor()
 
     val fileKeyValueRepository = FileKeyValueRepository()
 

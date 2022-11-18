@@ -14,11 +14,14 @@ class AppStarter(private val config: AppConfig, private val context: AppContext)
             val strategyParametersList = strategyParametersRepository.getAll()
             check(strategyParametersList.isNotEmpty()) { "strategy parameters need to be provided" }
             strategyExecutionsService.addOrResumeStrategyExecutors(strategyParametersList)
+
             eventBus.register(priceUpdatedEventType, strategyExecutionsService::onPriceUpdated)
-            logger.info { "Starting listening for price changes" }
-            strategyExecutionsService.currencyPairsCurrentlyNeeded().forEach {
-                binanceTickerStream.listenForTicker(it)
-            }
+            eventBus.register(priceUpdatedEventType, priceWebSocketConnectionKeeper::onPriceUpdated)
+
+            logger.info { "Starting listening for price changes: ${strategyExecutionsService.currencyPairsCurrentlyNeeded()}" }
+            binancePriceStream.listenForPriceUpdates(strategyExecutionsService.currencyPairsCurrentlyNeeded())
+
+            priceWebSocketConnectionKeeper.scheduleCheckingConnection()
         }
     }
 }
