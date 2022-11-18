@@ -66,7 +66,7 @@ class PositionBuyOrdersForFlashCrashStrategyExecutor(
 
     private fun cancelOrder(order: StrategyOrder): Boolean {
         return exchangeOrderService.cancelOrder(
-            exchangeName = SupportedExchange.BINANCE.name, exchangeKey = currentStrategyExecution.exchangeApiKey, ExchangeCancelOrderParams(
+            exchangeName = SupportedExchange.BINANCE.exchangeName, exchangeKey = currentStrategyExecution.exchangeApiKey, ExchangeCancelOrderParams(
                 orderId = order.exchangeOrderId,
                 orderType = ExchangeOrderType.BID_BUY,
                 currencyPair = currentStrategyExecution.currencyPair,
