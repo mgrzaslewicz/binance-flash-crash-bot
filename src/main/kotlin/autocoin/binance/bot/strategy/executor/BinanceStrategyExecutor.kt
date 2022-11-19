@@ -14,12 +14,17 @@ import mu.KLogging
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.Clock
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.locks.Lock
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.system.measureTimeMillis
 
 class BinanceStrategyExecutor(
     strategyExecution: StrategyExecution,
     private val exchangeOrderService: ExchangeOrderService,
     private val strategyExecutionRepository: StrategyExecutionRepository,
     private val clock: Clock = Clock.systemDefaultZone(),
+    private val javaExecutorService: ExecutorService,
     private val strategy: Strategy,
     private val baseCurrencyAmountScale: Int = 5,
     private val counterCurrencyPriceScale: Int = 2,
@@ -27,15 +32,41 @@ class BinanceStrategyExecutor(
     private companion object : KLogging()
 
     private var currentStrategyExecution: StrategyExecution = strategyExecution.copy()
+    private val preventFromStackingUpActionsLock: Lock = ReentrantLock()
 
     override val strategyExecution: StrategyExecution
         get() = currentStrategyExecution
 
+    private fun previousActionsHaveFinished(): Boolean {
+        return preventFromStackingUpActionsLock.tryLock()
+    }
+
+    private fun markActionsAsFinished() {
+        preventFromStackingUpActionsLock.unlock()
+    }
 
     override fun onPriceUpdated(currencyPairWithPrice: CurrencyPairWithPrice) {
-        strategy.getActions(currencyPairWithPrice.price, currentStrategyExecution).forEach { action ->
-            if (!action.apply(this) && action.shouldBreakActionChainOnFail) {
-                return
+        javaExecutorService.submit {
+            val logTag = "user=${strategyExecution.userId}, currencyPair=${strategyExecution.currencyPair}"
+            if (previousActionsHaveFinished()) {
+                try {
+                    val actions = strategy.getActions(currencyPairWithPrice.price, currentStrategyExecution)
+                    val millis = measureTimeMillis {
+                        actions.forEach { action ->
+                            if (!action.apply(this) && action.shouldBreakActionChainOnFail) {
+                                logger.info { "[$logTag] Skipping next action" }
+                                return@forEach
+                            }
+                        }
+                    }
+                    if (actions.isNotEmpty()) {
+                        logger.info { "[$logTag] Actions executed in ${millis}ms. Number of actions=${actions.size}" }
+                    }
+                } finally {
+                    markActionsAsFinished()
+                }
+            } else {
+                logger.info { "[$logTag] Previous actions have not finished yet. Skipping this price update: $currencyPairWithPrice" }
             }
         }
     }

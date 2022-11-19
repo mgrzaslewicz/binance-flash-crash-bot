@@ -9,6 +9,7 @@ import autocoin.binance.bot.strategy.execution.repository.TestStrategyExecutionR
 import autocoin.binance.bot.strategy.executor.*
 import autocoin.binance.bot.strategy.parameters.StrategyParameters
 import automate.profit.autocoin.exchange.currency.CurrencyPair
+import com.google.common.util.concurrent.MoreExecutors
 import mu.KLogging
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -19,7 +20,7 @@ import org.mockito.junit.jupiter.MockitoExtension
 import java.math.BigDecimal
 
 @ExtendWith(MockitoExtension::class)
-class DefaultStrategyExecutorsServiceTest {
+class ExchangeStrategyExecutorsServiceTest {
     companion object : KLogging()
 
 
@@ -28,13 +29,13 @@ class DefaultStrategyExecutorsServiceTest {
 
     private val currencyPair = CurrencyPair.of("A", "B")
 
-    val strategy1Parameters = TestConfig.sampleStrategyParameters
-    val strategy2Parameters = strategy1Parameters.copy(
+    private val strategy1Parameters = TestConfig.sampleStrategyParameters
+    private val strategy2Parameters = strategy1Parameters.copy(
         userId = "user-2"
     )
 
     @Test
-    fun shouldNotAllowToAddSecondStrategyWIthTHeSameUserAndCurrencyPair() {
+    fun shouldNotAllowToAddSecondStrategyWithTheSameUserAndCurrencyPair() {
         // given
         val tested = ExchangeStrategyExecutorService(
             strategyExecutionRepository = strategyExecutionRepository,
@@ -42,6 +43,7 @@ class DefaultStrategyExecutorsServiceTest {
                 exchangeWalletService = TestWalletService(),
                 exchangeOrderService = TestOrderService(),
                 strategyExecutionRepository = TestStrategyExecutionRepository(),
+                javaExecutorService = MoreExecutors.newDirectExecutorService(),
             )
         )
         // when
@@ -58,6 +60,7 @@ class DefaultStrategyExecutorsServiceTest {
             exchangeWalletService = TestWalletService(),
             exchangeOrderService = TestOrderService(),
             strategyExecutionRepository = TestStrategyExecutionRepository(),
+            javaExecutorService = MoreExecutors.newDirectExecutorService(),
         )
         val createdExecutors: MutableList<RememberingPriceStrategyExecutor> = mutableListOf()
         val strategyExecutorProvider = object : StrategyExecutorProvider by binanceStrategyExecutorProvider {

@@ -38,6 +38,7 @@ import org.knowm.xchange.ExchangeFactory
 import java.time.Clock
 import java.time.Duration
 import java.time.temporal.ChronoUnit
+import java.util.concurrent.Executors
 import java.util.concurrent.Executors.newSingleThreadScheduledExecutor
 import java.util.concurrent.TimeUnit
 
@@ -182,7 +183,10 @@ class AppContext(private val appConfig: AppConfig) {
 
     } else {
         logger.warn { "Will NOT make real orders, just log them instead" }
-        LoggingOnlyOrderService(clock = clock).rateLimiting()
+        LoggingOnlyOrderService(clock = clock)
+            .rateLimiting()
+            .addingDelay(Duration.ofSeconds(1))
+            .measuringTime()
     }
 
 
@@ -190,6 +194,7 @@ class AppContext(private val appConfig: AppConfig) {
         exchangeWalletService = exchangeWalletService,
         exchangeOrderService = exchangeOrderService,
         strategyExecutionRepository = strategyExecutionRepository,
+        javaExecutorService = Executors.newCachedThreadPool(),
     )
 
     val strategyExecutionsService =

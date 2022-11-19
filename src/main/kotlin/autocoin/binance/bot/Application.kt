@@ -23,5 +23,5 @@ fun main(args: Array<String>) {
         val appStarter = AppStarter(config = config, context = appContext)
         appStarter.start()
     }
-    logger.info { "Started in $bootTimeMillis ms" }
+    logger.info { "Started in ${bootTimeMillis}ms" }
 }

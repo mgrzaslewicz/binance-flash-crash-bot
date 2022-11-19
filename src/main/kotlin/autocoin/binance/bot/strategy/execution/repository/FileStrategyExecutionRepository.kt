@@ -48,7 +48,8 @@ open class FileStrategyExecutionRepository(
             }
             newList += strategyExecution
         }
-        fileKeyValueRepository.saveNewVersion(directory = repositoryDirectory, key = valueKey, value = objectMapper.writeValueAsString(newList))
+        val value = objectMapper.writeValueAsString(newList)
+        fileKeyValueRepository.saveNewVersion(directory = repositoryDirectory, key = valueKey, value = value)
     }
 
     override fun delete(strategyExecutions: List<StrategyExecution>) {
@@ -60,5 +61,6 @@ open class FileStrategyExecutionRepository(
                 newList.removeAt(existingIndex)
             }
         }
-        fileKeyValueRepository.saveNewVersion(directory = repositoryDirectory, key = valueKey, value = objectMapper.writeValueAsString(newList))    }
+        fileKeyValueRepository.saveNewVersion(directory = repositoryDirectory, key = valueKey, value = objectMapper.writeValueAsString(newList))
+    }
 }

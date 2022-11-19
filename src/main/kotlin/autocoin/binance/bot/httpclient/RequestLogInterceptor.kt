@@ -15,7 +15,7 @@ class RequestLogInterceptor : Interceptor {
         logger.debug { "Sending request ${request.url} ${chain.connection()} on ${request.headers}" }
         val response = chain.proceed(request)
         val t2 = System.nanoTime()
-        logger.debug { "Received response for ${response.request.url} in ${t2 - t1 / 1e6} ms, ${response.headers}" }
+        logger.debug { "Received response for ${response.request.url} in ${t2 - t1 / 1e6}ms, ${response.headers}" }
         return response
     }
 }

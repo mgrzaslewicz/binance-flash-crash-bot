@@ -6,6 +6,7 @@ import autocoin.binance.bot.strategy.execution.repository.StrategyExecutionRepos
 import autocoin.binance.bot.strategy.parameters.StrategyParameters
 import automate.profit.autocoin.exchange.order.ExchangeOrderService
 import automate.profit.autocoin.exchange.wallet.ExchangeWalletService
+import java.util.concurrent.ExecutorService
 
 interface StrategyExecutorProvider {
     fun createStrategyExecutor(strategyParameters: StrategyParameters): StrategyExecutor
@@ -16,6 +17,7 @@ class BinanceStrategyExecutorProvider(
     private val exchangeWalletService: ExchangeWalletService,
     private val exchangeOrderService: ExchangeOrderService,
     private val strategyExecutionRepository: StrategyExecutionRepository,
+    private val javaExecutorService: ExecutorService,
 ) : StrategyExecutorProvider {
     override fun createStrategyExecutor(strategyParameters: StrategyParameters): StrategyExecutor {
         return BinanceStrategyExecutor(
@@ -23,6 +25,7 @@ class BinanceStrategyExecutorProvider(
             exchangeOrderService = exchangeOrderService,
             strategyExecutionRepository = strategyExecutionRepository,
             strategy = PositionBuyOrdersForFlashCrashStrategy(),
+            javaExecutorService = javaExecutorService,
         )
     }
 
@@ -32,6 +35,7 @@ class BinanceStrategyExecutorProvider(
             exchangeOrderService = exchangeOrderService,
             strategyExecutionRepository = strategyExecutionRepository,
             strategy = PositionBuyOrdersForFlashCrashStrategy(),
+            javaExecutorService = javaExecutorService,
         )
     }
 }

@@ -9,12 +9,20 @@ import autocoin.binance.bot.strategy.action.StrategyAction
 import autocoin.binance.bot.strategy.execution.StrategyExecution
 import autocoin.binance.bot.strategy.execution.repository.TestStrategyExecutionRepository
 import automate.profit.autocoin.exchange.order.ExchangeOrder
+import com.google.common.util.concurrent.MoreExecutors
+import mu.KLogging
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.locks.ReentrantLock
 
 class BinanceStrategyExecutorTest {
+    private companion object : KLogging()
+
     private lateinit var orderService: TestOrderService
     private lateinit var tested: BinanceStrategyExecutor
 
@@ -34,6 +42,7 @@ class BinanceStrategyExecutorTest {
             strategyExecutionRepository = TestStrategyExecutionRepository(),
             baseCurrencyAmountScale = 5,
             counterCurrencyPriceScale = 2,
+            javaExecutorService = MoreExecutors.newDirectExecutorService(),
             strategy = object : Strategy {
                 override fun getActions(price: BigDecimal, strategyExecution: StrategyExecution): List<StrategyAction> {
                     return listOf(
@@ -51,6 +60,55 @@ class BinanceStrategyExecutorTest {
         tested.onPriceUpdated(currencyPairWithPrice(16000.123456789.toBigDecimal()))
         // then
         assertThat(orderService.successfulActionHistory).hasSize(1)
+        assertThat((orderService.successfulActionHistory[0] as ExchangeOrder).price).isEqualTo(16000.12.toBigDecimal())
+        assertThat((orderService.successfulActionHistory[0] as ExchangeOrder).orderedAmount).isEqualTo(456.98765.toBigDecimal())
+    }
+
+    @Test
+    fun shouldTakeNoActionsWhenPreviousActionsStillInProgress() {
+        // given
+        val blockForeverLock = ReentrantLock().apply { lock() }
+        val handledPriceUpdateCounter = AtomicInteger(0)
+        tested = BinanceStrategyExecutor(
+            strategyExecution = TestConfig.sampleStrategyParameters.toStrategyExecution(),
+            exchangeOrderService = orderService,
+            strategyExecutionRepository = TestStrategyExecutionRepository(),
+            baseCurrencyAmountScale = 5,
+            counterCurrencyPriceScale = 2,
+            javaExecutorService = Executors.newFixedThreadPool(2), // 2 threads as 1st one is going to be block for scheduling. With only 1 thread, second price update would not be handled
+            strategy = object : Strategy {
+                override fun getActions(price: BigDecimal, strategyExecution: StrategyExecution): List<StrategyAction> {
+                    return listOf(
+                        PlaceBuyLimitOrderAction(
+                            price = price,
+                            amount = 456.987654321.toBigDecimal(),
+                            shouldBreakActionChainOnFail = false,
+                        ),
+                        object : StrategyAction {
+                            override fun apply(strategyExecutor: StrategyExecutor): Boolean {
+                                handledPriceUpdateCounter.incrementAndGet()
+                                logger.info { "Blocking forever" }
+                                blockForeverLock.lock()
+                                return true
+                            }
+
+                            override val shouldBreakActionChainOnFail = true
+                        },
+                    )
+                }
+
+            }
+        )
+        // when
+        val otherThreadExecutor = Executors.newSingleThreadExecutor()
+        otherThreadExecutor.submit {
+            tested.onPriceUpdated(currencyPairWithPrice(16000.123456789.toBigDecimal()))
+            tested.onPriceUpdated(currencyPairWithPrice(16000.123456789.toBigDecimal()))
+        }
+        otherThreadExecutor.awaitTermination(1, TimeUnit.SECONDS)
+        // then
+        assertThat(orderService.successfulActionHistory).hasSize(1)
+        assertThat(handledPriceUpdateCounter.get()).isEqualTo(1)
         assertThat((orderService.successfulActionHistory[0] as ExchangeOrder).price).isEqualTo(16000.12.toBigDecimal())
         assertThat((orderService.successfulActionHistory[0] as ExchangeOrder).orderedAmount).isEqualTo(456.98765.toBigDecimal())
     }
