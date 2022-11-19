@@ -125,4 +125,51 @@ class PositionBuyOrdersForFlashCrashStrategyTest {
         }
     }
 
+    @Test
+    fun shouldNotRepositionOrderWithHighestPriceWhenPriceChangeBelowThreshold() {
+        // given
+        strategyExecutor = TestStrategyExecutor(
+            TestConfig.sampleStrategyExecution.copy(
+                orders = listOf(
+                    StrategyOrder(
+                        baseCurrencyCode = "BTC",
+                        counterCurrencyCode = "USDT",
+                        exchangeOrderId = "1",
+                        amount = 30.toBigDecimal(),
+                        price = 25.toBigDecimal(),
+                        createTimeMillis = 1L,
+                    ),
+                    StrategyOrder(
+                        baseCurrencyCode = "BTC",
+                        counterCurrencyCode = "USDT",
+                        exchangeOrderId = "1",
+                        amount = 30.toBigDecimal(),
+                        price = 25.toBigDecimal(),
+                        createTimeMillis = 1L,
+                    ),
+                    StrategyOrder(
+                        baseCurrencyCode = "BTC",
+                        counterCurrencyCode = "USDT",
+                        exchangeOrderId = "1",
+                        amount = 30.toBigDecimal(),
+                        price = 25.5.toBigDecimal(),
+                        createTimeMillis = 1L,
+                    ),
+                    StrategyOrder(
+                        baseCurrencyCode = "BTC",
+                        counterCurrencyCode = "USDT",
+                        exchangeOrderId = "1",
+                        amount = 30.toBigDecimal(),
+                        price = 26.toBigDecimal(),
+                        createTimeMillis = 1L,
+                    ),
+                )
+            )
+        )
+        // when
+        val actions = tested.getActions(price = 128.0.toBigDecimal(), strategyExecution = strategyExecutor.strategyExecution)
+        // then
+        assertThat(actions).isEmpty()
+    }
+
 }

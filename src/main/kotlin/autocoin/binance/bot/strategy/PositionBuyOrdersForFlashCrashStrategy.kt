@@ -11,7 +11,8 @@ import java.math.RoundingMode
 
 class PositionBuyOrdersForFlashCrashStrategy(
     private val minPriceDownMultiplier: BigDecimal = 0.2.toBigDecimal(),
-    private val makePriceBitBiggerThanLowestLimit: BigDecimal = BigDecimal(1.01)
+    private val makePriceBitBiggerThanLowestLimit: BigDecimal = BigDecimal(1.01),
+    private val orderRepositionRelativeDropThreshold: BigDecimal = BigDecimal(0.01),
 ) : Strategy {
 
     private val mathContext = MathContext(8, RoundingMode.HALF_EVEN)
@@ -45,7 +46,9 @@ class PositionBuyOrdersForFlashCrashStrategy(
                 baseCurrencyAmount = baseCurrencyAmount
             )
         } else {
-            if (lowBuyPrice < strategyExecution.orderWithMaxPrice!!.price) {
+            val repositionPriceThreshold =
+                strategyExecution.orderWithMaxPrice!!.price - strategyExecution.orderWithMaxPrice.price.multiply(orderRepositionRelativeDropThreshold, mathContext)
+            if (lowBuyPrice < repositionPriceThreshold) {
                 return cancelOrderWithHighestPriceAndPlaceNewOne(
                     buyPrice = lowBuyPrice,
                     baseCurrencyAmount = baseCurrencyAmount,
