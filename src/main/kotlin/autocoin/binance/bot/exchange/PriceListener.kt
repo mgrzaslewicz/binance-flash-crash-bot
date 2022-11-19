@@ -31,7 +31,9 @@ class LoggingPriceListener(
     }
 }
 
-fun PriceListener.logging(minDelayBetweenLogs: Duration = Duration.ofMillis(1), clock: Clock): PriceListener = LoggingPriceListener(this, clock = clock)
+fun PriceListener.logging(minDelayBetweenLogs: Duration = Duration.ofMillis(1), clock: Clock): PriceListener =
+    LoggingPriceListener(this, clock = clock, minDelayBetweenLogs = minDelayBetweenLogs)
+
 fun StrategyExecutorService.logging(minDelayBetweenLogs: Duration = Duration.ofMillis(1), clock: Clock): StrategyExecutorService =
     LoggingStrategyExecutorService(this, minDelayBetweenLogs = minDelayBetweenLogs, clock = clock)
 

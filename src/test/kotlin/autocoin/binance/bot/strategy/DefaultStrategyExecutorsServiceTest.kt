@@ -36,9 +36,9 @@ class DefaultStrategyExecutorsServiceTest {
     @Test
     fun shouldNotAllowToAddSecondStrategyWIthTHeSameUserAndCurrencyPair() {
         // given
-        val tested = DefaultStrategyExecutorService(
+        val tested = ExchangeStrategyExecutorService(
             strategyExecutionRepository = strategyExecutionRepository,
-            strategyExecutorProvider = DefaultStrategyExecutorProvider(
+            strategyExecutorProvider = BinanceStrategyExecutorProvider(
                 exchangeWalletService = TestWalletService(),
                 exchangeOrderService = TestOrderService(),
                 strategyExecutionRepository = TestStrategyExecutionRepository(),
@@ -54,20 +54,20 @@ class DefaultStrategyExecutorsServiceTest {
     @Test
     fun shouldUpdatePrices() {
         // given
-        val defaultStrategyExecutorProvider = DefaultStrategyExecutorProvider(
+        val binanceStrategyExecutorProvider = BinanceStrategyExecutorProvider(
             exchangeWalletService = TestWalletService(),
             exchangeOrderService = TestOrderService(),
             strategyExecutionRepository = TestStrategyExecutionRepository(),
         )
         val createdExecutors: MutableList<RememberingPriceStrategyExecutor> = mutableListOf()
-        val strategyExecutorProvider = object : StrategyExecutorProvider by defaultStrategyExecutorProvider {
+        val strategyExecutorProvider = object : StrategyExecutorProvider by binanceStrategyExecutorProvider {
             override fun createStrategyExecutor(strategyParameters: StrategyParameters): StrategyExecutor {
-                return defaultStrategyExecutorProvider.createStrategyExecutor(strategyParameters)
+                return binanceStrategyExecutorProvider.createStrategyExecutor(strategyParameters)
                     .rememberingPrice()
                     .also { createdExecutors += it }
             }
         }
-        val tested = DefaultStrategyExecutorService(
+        val tested = ExchangeStrategyExecutorService(
             strategyExecutionRepository = strategyExecutionRepository,
             strategyExecutorProvider = strategyExecutorProvider
         )

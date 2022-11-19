@@ -3,11 +3,14 @@ package autocoin.binance.bot.exchange
 import automate.profit.autocoin.exchange.apikey.ExchangeKeyDto
 import automate.profit.autocoin.exchange.currency.CurrencyPair
 import automate.profit.autocoin.exchange.order.*
+import mu.KLogging
 import java.math.BigDecimal
 import java.time.Clock
 import java.util.*
 
 class TestOrderService(private val clock: Clock = Clock.systemDefaultZone()) : ExchangeOrderService {
+    private companion object : KLogging()
+
     val successfulActionHistory: MutableList<Any> = mutableListOf()
     private var placeBuyLimitOrderInvocationIndex = 0
 
@@ -52,6 +55,7 @@ class TestOrderService(private val clock: Clock = Clock.systemDefaultZone()) : E
         if (placeBuyLimitOrderInvocationIndex++ in placeLimitBuyOrderInvocationFailureIndexes) {
             throw Exception("Failed on purpose during placing buy limit order")
         } else {
+            logger.info { "Placing buy limit order with amount=$amount $baseCurrencyCode and buyPrice=$buyPrice $counterCurrencyCode" }
             return ExchangeOrder(
                 exchangeName = "BINANCE",
                 orderId = UUID.randomUUID().toString(),

@@ -13,7 +13,7 @@ data class StrategyOrder(
     val status: ExchangeOrderStatus = ExchangeOrderStatus.NEW,
     val price: BigDecimal,
     val amount: BigDecimal,
-    val amountFilled: BigDecimal,
+    val amountFilled: BigDecimal = BigDecimal.ZERO,
     val baseCurrencyCode: String,
     val counterCurrencyCode: String,
     val createTimeMillis: Long,

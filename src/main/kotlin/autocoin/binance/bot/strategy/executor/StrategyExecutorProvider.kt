@@ -1,8 +1,9 @@
 package autocoin.binance.bot.strategy.executor
 
+import autocoin.binance.bot.strategy.PositionBuyOrdersForFlashCrashStrategy
 import autocoin.binance.bot.strategy.execution.StrategyExecution
-import autocoin.binance.bot.strategy.parameters.StrategyParameters
 import autocoin.binance.bot.strategy.execution.repository.StrategyExecutionRepository
+import autocoin.binance.bot.strategy.parameters.StrategyParameters
 import automate.profit.autocoin.exchange.order.ExchangeOrderService
 import automate.profit.autocoin.exchange.wallet.ExchangeWalletService
 
@@ -11,26 +12,26 @@ interface StrategyExecutorProvider {
     fun createStrategyExecutor(strategyExecution: StrategyExecution): StrategyExecutor
 }
 
-class DefaultStrategyExecutorProvider(
+class BinanceStrategyExecutorProvider(
     private val exchangeWalletService: ExchangeWalletService,
     private val exchangeOrderService: ExchangeOrderService,
     private val strategyExecutionRepository: StrategyExecutionRepository,
 ) : StrategyExecutorProvider {
     override fun createStrategyExecutor(strategyParameters: StrategyParameters): StrategyExecutor {
-        return PositionBuyOrdersForFlashCrashStrategyExecutor(
+        return BinanceStrategyExecutor(
             strategyExecution = strategyParameters.toStrategyExecution(),
-            exchangeWalletService = exchangeWalletService,
             exchangeOrderService = exchangeOrderService,
             strategyExecutionRepository = strategyExecutionRepository,
+            strategy = PositionBuyOrdersForFlashCrashStrategy(),
         )
     }
 
     override fun createStrategyExecutor(strategyExecution: StrategyExecution): StrategyExecutor {
-        return PositionBuyOrdersForFlashCrashStrategyExecutor(
+        return BinanceStrategyExecutor(
             strategyExecution = strategyExecution,
-            exchangeWalletService = exchangeWalletService,
             exchangeOrderService = exchangeOrderService,
             strategyExecutionRepository = strategyExecutionRepository,
+            strategy = PositionBuyOrdersForFlashCrashStrategy(),
         )
     }
 }
