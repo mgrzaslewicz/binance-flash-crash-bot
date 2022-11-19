@@ -74,7 +74,7 @@ class PositionBuyOrdersForFlashCrashStrategyTest {
     }
 
     @Test
-    fun shouldRepositionOrderWithHighestPriceWhenPriceLowerThanHighestOrderPrice() {
+    fun shouldRepositionOrderWithHighestPriceWhenLowPriceLowerThanHighestOrderPrice() {
         // given
         strategyExecutor = TestStrategyExecutor(
             TestConfig.sampleStrategyExecution.copy(
@@ -83,45 +83,45 @@ class PositionBuyOrdersForFlashCrashStrategyTest {
                         baseCurrencyCode = "BTC",
                         counterCurrencyCode = "USDT",
                         exchangeOrderId = "1",
-                        amount = 25.toBigDecimal(),
-                        price = 100.toBigDecimal(),
+                        amount = 30.toBigDecimal(),
+                        price = 25.toBigDecimal(),
                         createTimeMillis = 1L,
                     ),
                     StrategyOrder(
                         baseCurrencyCode = "BTC",
                         counterCurrencyCode = "USDT",
                         exchangeOrderId = "1",
-                        amount = 25.toBigDecimal(),
-                        price = 110.toBigDecimal(),
+                        amount = 30.toBigDecimal(),
+                        price = 25.toBigDecimal(),
                         createTimeMillis = 1L,
                     ),
                     StrategyOrder(
                         baseCurrencyCode = "BTC",
                         counterCurrencyCode = "USDT",
                         exchangeOrderId = "1",
-                        amount = 25.toBigDecimal(),
-                        price = 120.toBigDecimal(),
+                        amount = 30.toBigDecimal(),
+                        price = 25.5.toBigDecimal(),
                         createTimeMillis = 1L,
                     ),
                     StrategyOrder(
                         baseCurrencyCode = "BTC",
                         counterCurrencyCode = "USDT",
                         exchangeOrderId = "1",
-                        amount = 25.toBigDecimal(),
-                        price = 130.toBigDecimal(),
+                        amount = 30.toBigDecimal(),
+                        price = 26.toBigDecimal(),
                         createTimeMillis = 1L,
                     ),
                 )
             )
         )
         // when
-        val actions = tested.getActions(price = 126.0.toBigDecimal(), strategyExecution = strategyExecutor.strategyExecution)
+        val actions = tested.getActions(price = 120.0.toBigDecimal(), strategyExecution = strategyExecutor.strategyExecution)
         // then
         assertThat(actions).hasSize(2)
         assertThat((actions[0] as CancelOrderAction).strategyOrder.id).isEqualTo(strategyExecutor.strategyExecution.orders[3].id)
         with((actions[1] as PlaceBuyLimitOrderAction)) {
-            assertThat(this.price).isEqualTo(BigDecimal("25.452000"))
-            assertThat(this.amount).isEqualTo(BigDecimal("0.19841270"))
+            assertThat(this.price).isEqualTo(BigDecimal("24.240000"))
+            assertThat(this.amount).isEqualTo(BigDecimal("0.20833333"))
         }
     }
 

@@ -45,7 +45,7 @@ class PositionBuyOrdersForFlashCrashStrategy(
                 baseCurrencyAmount = baseCurrencyAmount
             )
         } else {
-            if (price < strategyExecution.orderWithMaxPrice!!.price) {
+            if (lowBuyPrice < strategyExecution.orderWithMaxPrice!!.price) {
                 return cancelOrderWithHighestPriceAndPlaceNewOne(
                     buyPrice = lowBuyPrice,
                     baseCurrencyAmount = baseCurrencyAmount,
