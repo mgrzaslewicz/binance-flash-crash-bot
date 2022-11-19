@@ -69,7 +69,7 @@ class PositionBuyOrdersForFlashCrashStrategyTest {
         assertThat(actions).hasSize(1)
         with(actions[0] as PlaceBuyLimitOrderAction) {
             assertThat(this.price).isEqualTo(BigDecimal("3262.4414"))
-            assertThat(this.amount).isEqualTo(0.0015479205.toBigDecimal())
+            assertThat(this.amount).isEqualTo(0.0076629729.toBigDecimal())
         }
     }
 
@@ -121,7 +121,7 @@ class PositionBuyOrdersForFlashCrashStrategyTest {
         assertThat((actions[0] as CancelOrderAction).strategyOrder.id).isEqualTo(strategyExecutor.strategyExecution.orders[3].id)
         with((actions[1] as PlaceBuyLimitOrderAction)) {
             assertThat(this.price).isEqualTo(BigDecimal("24.240000"))
-            assertThat(this.amount).isEqualTo(BigDecimal("0.20833333"))
+            assertThat(this.amount).isEqualTo(BigDecimal("1.0313531"))
         }
     }
 

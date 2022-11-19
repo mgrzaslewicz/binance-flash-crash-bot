@@ -36,7 +36,7 @@ class PositionBuyOrdersForFlashCrashStrategy(
             .multiply(makePriceBitBiggerThanLowestLimit, mathContext)
         val counterCurrencyAmountPerOrder = strategyExecution.counterCurrencyAmountLimitForBuying
             .divide(strategyExecution.numberOfBuyLimitOrdersToKeep.toBigDecimal(), mathContext)
-        val baseCurrencyAmount = counterCurrencyAmountPerOrder.divide(price, mathContext)
+        val baseCurrencyAmount = counterCurrencyAmountPerOrder.divide(lowBuyPrice, mathContext)
 
         if (strategyExecution.hasNoMaximumNumberOfOrdersYet) {
             return fillUpToNBuyOrdersActions(
