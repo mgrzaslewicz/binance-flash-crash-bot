@@ -107,14 +107,16 @@ class BinanceStrategyExecutor(
     }
 
     override fun placeBuyMarketOrder(currentPrice: BigDecimal, counterCurrencyAmount: BigDecimal): ExchangeOrder? {
+        val currentPriceAdjusted = currentPrice.setScale(counterCurrencyPriceScale, RoundingMode.HALF_EVEN)
+        val counterCurrencyAmountAdjusted = counterCurrencyAmount.setScale(counterCurrencyPriceScale, RoundingMode.DOWN)
         return try {
             val buyOrder = exchangeOrderService.placeMarketBuyOrderWithCounterCurrencyAmount(
                 exchangeName = SupportedExchange.BINANCE.exchangeName,
                 exchangeKey = currentStrategyExecution.exchangeApiKey,
                 baseCurrencyCode = currentStrategyExecution.baseCurrencyCode,
                 counterCurrencyCode = currentStrategyExecution.counterCurrencyCode,
-                currentPrice = currentPrice,
-                counterCurrencyAmount = counterCurrencyAmount,
+                currentPrice = currentPriceAdjusted,
+                counterCurrencyAmount = counterCurrencyAmountAdjusted,
             )
             onBuyOrderPlaced(buyOrder)
             return buyOrder
