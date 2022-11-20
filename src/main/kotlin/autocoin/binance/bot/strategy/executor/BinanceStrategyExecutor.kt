@@ -47,7 +47,7 @@ class BinanceStrategyExecutor(
 
     override fun onPriceUpdated(currencyPairWithPrice: CurrencyPairWithPrice) {
         javaExecutorService.submit {
-            val logTag = "user=${strategyExecution.userId}, currencyPair=${strategyExecution.currencyPair}"
+            val logTag = "user=${strategyExecution.userId}, currencyPair=${strategyExecution.currencyPair}, strategyType=${strategyExecution.strategyType}"
             if (previousActionsHaveFinished()) {
                 try {
                     val actions = strategy.getActions(currencyPairWithPrice.price, currentStrategyExecution)

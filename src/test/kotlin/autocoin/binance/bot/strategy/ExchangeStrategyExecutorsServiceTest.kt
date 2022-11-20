@@ -3,7 +3,6 @@ package autocoin.binance.bot.strategy
 import autocoin.binance.bot.TestConfig
 import autocoin.binance.bot.exchange.CurrencyPairWithPrice
 import autocoin.binance.bot.exchange.TestOrderService
-import autocoin.binance.bot.exchange.TestWalletService
 import autocoin.binance.bot.strategy.execution.repository.StrategyExecutionRepository
 import autocoin.binance.bot.strategy.execution.repository.TestStrategyExecutionRepository
 import autocoin.binance.bot.strategy.executor.*
@@ -29,7 +28,8 @@ class ExchangeStrategyExecutorsServiceTest {
 
     private val currencyPair = CurrencyPair.of("A", "B")
 
-    private val strategy1Parameters = TestConfig.sampleStrategyParameters
+
+    private val strategy1Parameters = TestConfig.samplePositionBuyLimitOrdersSampleStrategyParameters()
     private val strategy2Parameters = strategy1Parameters.copy(
         userId = "user-2"
     )
@@ -40,7 +40,6 @@ class ExchangeStrategyExecutorsServiceTest {
         val tested = ExchangeStrategyExecutorService(
             strategyExecutionRepository = strategyExecutionRepository,
             strategyExecutorProvider = BinanceStrategyExecutorProvider(
-                exchangeWalletService = TestWalletService(),
                 exchangeOrderService = TestOrderService(),
                 strategyExecutionRepository = TestStrategyExecutionRepository(),
                 javaExecutorService = MoreExecutors.newDirectExecutorService(),
@@ -57,7 +56,6 @@ class ExchangeStrategyExecutorsServiceTest {
     fun shouldUpdatePrices() {
         // given
         val binanceStrategyExecutorProvider = BinanceStrategyExecutorProvider(
-            exchangeWalletService = TestWalletService(),
             exchangeOrderService = TestOrderService(),
             strategyExecutionRepository = TestStrategyExecutionRepository(),
             javaExecutorService = MoreExecutors.newDirectExecutorService(),

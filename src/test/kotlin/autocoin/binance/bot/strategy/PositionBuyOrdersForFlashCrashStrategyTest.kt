@@ -37,17 +37,20 @@ class PositionBuyOrdersForFlashCrashStrategyTest {
 
     @BeforeEach
     fun setup() {
-        tested = PositionBuyOrdersForFlashCrashStrategy(minPriceDownMultiplier = minPriceDownMultiplier)
+        tested = PositionBuyOrdersForFlashCrashStrategy.Builder()
+            .withStrategySpecificParameters(TestConfig.samplePositionBuyLimitOrdersSampleStrategyParameters().strategySpecificParameters)
+            .withMinPriceDownMultiplier(minPriceDownMultiplier).build()
     }
 
     @Test
     fun shouldCreate4BuyLimitOrdersWhenNoneBefore() {
         // given
-        strategyExecutor = TestStrategyExecutor(TestConfig.sampleStrategyExecution)
+        val numberOfBuyLimitOrdersToKeep = 4
+        strategyExecutor = TestStrategyExecutor(TestConfig.samplePositionBuyLimitOrdersStrategyExecution(numberOfBuyLimitOrdersToKeep = numberOfBuyLimitOrdersToKeep))
         // when
         val actions = tested.getActions(price = 16150.7.toBigDecimal(), strategyExecution = strategyExecutor.strategyExecution)
         // then
-        assertThat(actions).hasSize(strategyExecutor.strategyExecution.numberOfBuyLimitOrdersToKeep)
+        assertThat(actions).hasSize(numberOfBuyLimitOrdersToKeep)
         assertThat((actions[0] as PlaceBuyLimitOrderAction).price).isEqualTo(BigDecimal("3262.4414"))
     }
 
@@ -55,7 +58,7 @@ class PositionBuyOrdersForFlashCrashStrategyTest {
     fun shouldCreate1BuyLimitOrdersWhen3Before() {
         // given
         strategyExecutor = TestStrategyExecutor(
-            TestConfig.sampleStrategyExecution.copy(
+            TestConfig.samplePositionBuyLimitOrdersStrategyExecution().copy(
                 orders = listOf(
                     mock(),
                     mock(),
@@ -77,7 +80,7 @@ class PositionBuyOrdersForFlashCrashStrategyTest {
     fun shouldRepositionOrderWithHighestPriceWhenLowPriceLowerThanHighestOrderPrice() {
         // given
         strategyExecutor = TestStrategyExecutor(
-            TestConfig.sampleStrategyExecution.copy(
+            TestConfig.samplePositionBuyLimitOrdersStrategyExecution().copy(
                 orders = listOf(
                     StrategyOrder(
                         baseCurrencyCode = "BTC",
@@ -129,7 +132,7 @@ class PositionBuyOrdersForFlashCrashStrategyTest {
     fun shouldNotRepositionOrderWithHighestPriceWhenPriceChangeBelowThreshold() {
         // given
         strategyExecutor = TestStrategyExecutor(
-            TestConfig.sampleStrategyExecution.copy(
+            TestConfig.samplePositionBuyLimitOrdersStrategyExecution().copy(
                 orders = listOf(
                     StrategyOrder(
                         baseCurrencyCode = "BTC",

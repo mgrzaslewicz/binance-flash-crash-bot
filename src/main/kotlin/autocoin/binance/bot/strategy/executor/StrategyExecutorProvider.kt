@@ -5,7 +5,6 @@ import autocoin.binance.bot.strategy.execution.StrategyExecution
 import autocoin.binance.bot.strategy.execution.repository.StrategyExecutionRepository
 import autocoin.binance.bot.strategy.parameters.StrategyParameters
 import automate.profit.autocoin.exchange.order.ExchangeOrderService
-import automate.profit.autocoin.exchange.wallet.ExchangeWalletService
 import java.util.concurrent.ExecutorService
 
 interface StrategyExecutorProvider {
@@ -13,20 +12,35 @@ interface StrategyExecutorProvider {
     fun createStrategyExecutor(strategyExecution: StrategyExecution): StrategyExecutor
 }
 
+
+enum class StrategyType {
+    POSITION_BUY_ORDERS_FOR_FLASH_CRASH,
+    BUY_WITH_MARKET_ORDER_BELOW_PRICE,
+}
+
 class BinanceStrategyExecutorProvider(
-    private val exchangeWalletService: ExchangeWalletService,
     private val exchangeOrderService: ExchangeOrderService,
     private val strategyExecutionRepository: StrategyExecutionRepository,
     private val javaExecutorService: ExecutorService,
 ) : StrategyExecutorProvider {
+    private fun StrategyParameters.toStrategy() = when (this.strategyType) {
+        StrategyType.POSITION_BUY_ORDERS_FOR_FLASH_CRASH -> PositionBuyOrdersForFlashCrashStrategy.Builder().withStrategySpecificParameters(this.strategySpecificParameters).build()
+        StrategyType.BUY_WITH_MARKET_ORDER_BELOW_PRICE -> throw NotImplementedError()
+    }
+
     override fun createStrategyExecutor(strategyParameters: StrategyParameters): StrategyExecutor {
         return BinanceStrategyExecutor(
             strategyExecution = strategyParameters.toStrategyExecution(),
             exchangeOrderService = exchangeOrderService,
             strategyExecutionRepository = strategyExecutionRepository,
-            strategy = PositionBuyOrdersForFlashCrashStrategy(),
+            strategy = strategyParameters.toStrategy(),
             javaExecutorService = javaExecutorService,
         )
+    }
+
+    private fun StrategyExecution.toStrategy() = when (this.strategyType) {
+        StrategyType.POSITION_BUY_ORDERS_FOR_FLASH_CRASH -> PositionBuyOrdersForFlashCrashStrategy.Builder().withStrategySpecificParameters(this.strategySpecificParameters).build()
+        StrategyType.BUY_WITH_MARKET_ORDER_BELOW_PRICE -> throw NotImplementedError()
     }
 
     override fun createStrategyExecutor(strategyExecution: StrategyExecution): StrategyExecutor {
@@ -34,7 +48,7 @@ class BinanceStrategyExecutorProvider(
             strategyExecution = strategyExecution,
             exchangeOrderService = exchangeOrderService,
             strategyExecutionRepository = strategyExecutionRepository,
-            strategy = PositionBuyOrdersForFlashCrashStrategy(),
+            strategy = strategyExecution.toStrategy(),
             javaExecutorService = javaExecutorService,
         )
     }

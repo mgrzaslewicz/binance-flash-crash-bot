@@ -1,7 +1,9 @@
 package autocoin.binance.bot.strategy.execution.repository
 
 import autocoin.binance.bot.app.config.objectMapper
+import autocoin.binance.bot.strategy.counterCurrencyAmountLimitForBuyingParameter
 import autocoin.binance.bot.strategy.execution.StrategyExecution
+import autocoin.binance.bot.strategy.executor.StrategyType
 import automate.profit.autocoin.exchange.SupportedExchange
 import automate.profit.autocoin.exchange.apikey.ExchangeKeyDto
 import automate.profit.autocoin.exchange.order.ExchangeOrderStatus
@@ -25,7 +27,10 @@ class FileStrategyExecutionRepositoryTest {
         baseCurrencyCode = "BTC",
         counterCurrencyCode = "USDT",
 
-        counterCurrencyAmountLimitForBuying = 1500.0.toBigDecimal(),
+        strategyType = StrategyType.POSITION_BUY_ORDERS_FOR_FLASH_CRASH,
+        strategySpecificParameters = mapOf(
+            counterCurrencyAmountLimitForBuyingParameter to 1500.0.toBigDecimal().toPlainString(),
+        ),
         createTimeMillis = 3,
         exchangeApiKey = ExchangeKeyDto(
             apiKey = "sample binance api key",

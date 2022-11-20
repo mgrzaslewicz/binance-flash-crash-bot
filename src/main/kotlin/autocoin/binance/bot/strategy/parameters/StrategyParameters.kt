@@ -1,19 +1,19 @@
 package autocoin.binance.bot.strategy.parameters
 
 import autocoin.binance.bot.strategy.execution.StrategyExecution
+import autocoin.binance.bot.strategy.executor.StrategyType
 import automate.profit.autocoin.exchange.SupportedExchange
 import automate.profit.autocoin.exchange.apikey.ExchangeKeyDto
 import automate.profit.autocoin.exchange.currency.CurrencyPair
 import com.fasterxml.jackson.annotation.JsonIgnore
-import java.math.BigDecimal
 import java.time.ZonedDateTime
 
 data class StrategyParameters(
     val userId: String,
+    val strategyType: StrategyType,
     val baseCurrencyCode: String,
     val counterCurrencyCode: String,
-    val counterCurrencyAmountLimitForBuying: BigDecimal,
-    val numberOfBuyLimitOrdersToKeep: Int = 4,
+    val strategySpecificParameters: Map<String, String>,
     val exchangeApiKey: ExchangeKeyDto,
 ) {
 
@@ -25,22 +25,22 @@ data class StrategyParameters(
             userId = userId,
             baseCurrencyCode = currencyPair.base,
             counterCurrencyCode = currencyPair.counter,
-            counterCurrencyAmountLimitForBuying = counterCurrencyAmountLimitForBuying,
             createTimeMillis = ZonedDateTime.now().toInstant().toEpochMilli(),
             exchangeApiKey = exchangeApiKey,
-            numberOfBuyLimitOrdersToKeep = numberOfBuyLimitOrdersToKeep,
+            strategyType = strategyType,
+            strategySpecificParameters = strategySpecificParameters,
         )
     }
 
     fun matchesStrategyExecution(strategyExecution: StrategyExecution): Boolean {
-        return userId == strategyExecution.userId && currencyPair == strategyExecution.currencyPair
+        return userId == strategyExecution.userId
+                && currencyPair == strategyExecution.currencyPair
+                && strategyType == strategyExecution.strategyType
     }
 
     fun toResumedStrategyExecution(strategyExecution: StrategyExecution): StrategyExecution {
         check(matchesStrategyExecution(strategyExecution)) { "Cannot resume non matching strategy execution" }
         return strategyExecution.copy(
-            counterCurrencyAmountLimitForBuying = strategyExecution.counterCurrencyAmountLimitForBuying,
-            numberOfBuyLimitOrdersToKeep = strategyExecution.numberOfBuyLimitOrdersToKeep,
             exchangeApiKey = strategyExecution.exchangeApiKey,
         )
     }

@@ -2,10 +2,14 @@
   {
     "id": "sample-execution-id-1",
     "userId": "sample-user-id-1",
+    "strategyType": "POSITION_BUY_ORDERS_FOR_FLASH_CRASH",
     "exchangeName": "BINANCE",
     "baseCurrencyCode": "BTC",
     "counterCurrencyCode": "USDT",
-    "counterCurrencyAmountLimitForBuying": 1500.0,
+    "strategySpecificParameters": {
+      "counterCurrencyAmountLimitForBuying": "1500.0",
+      "numberOfBuyLimitOrdersToKeep": 3
+    },
     "createTimeMillis": 3,
     "exchangeApiKey": {
       "apiKey": "sample binance api key",

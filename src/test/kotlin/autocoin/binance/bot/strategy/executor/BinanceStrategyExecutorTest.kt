@@ -37,7 +37,7 @@ class BinanceStrategyExecutorTest {
     fun shouldAdjustAmountAndScale() {
         // given
         tested = BinanceStrategyExecutor(
-            strategyExecution = TestConfig.sampleStrategyParameters.toStrategyExecution(),
+            strategyExecution = TestConfig.samplePositionBuyLimitOrdersStrategyExecution(),
             exchangeOrderService = orderService,
             strategyExecutionRepository = TestStrategyExecutionRepository(),
             baseCurrencyAmountScale = 5,
@@ -70,7 +70,7 @@ class BinanceStrategyExecutorTest {
         val blockForeverLock = ReentrantLock().apply { lock() }
         val handledPriceUpdateCounter = AtomicInteger(0)
         tested = BinanceStrategyExecutor(
-            strategyExecution = TestConfig.sampleStrategyParameters.toStrategyExecution(),
+            strategyExecution = TestConfig.samplePositionBuyLimitOrdersStrategyExecution(),
             exchangeOrderService = orderService,
             strategyExecutionRepository = TestStrategyExecutionRepository(),
             baseCurrencyAmountScale = 5,

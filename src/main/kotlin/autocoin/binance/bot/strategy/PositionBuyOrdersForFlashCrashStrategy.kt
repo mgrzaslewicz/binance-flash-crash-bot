@@ -9,10 +9,15 @@ import java.math.BigDecimal
 import java.math.MathContext
 import java.math.RoundingMode
 
+val numberOfBuyLimitOrdersToKeepParameter = "numberOfBuyLimitOrdersToKeep"
+val counterCurrencyAmountLimitForBuyingParameter = "counterCurrencyAmountLimitForBuying"
+
 class PositionBuyOrdersForFlashCrashStrategy(
-    private val minPriceDownMultiplier: BigDecimal = 0.2.toBigDecimal(),
-    private val makePriceBitBiggerThanLowestLimit: BigDecimal = BigDecimal(1.01),
-    private val orderRepositionRelativeDropThreshold: BigDecimal = BigDecimal(0.01),
+    private val minPriceDownMultiplier: BigDecimal,
+    private val makePriceBitBiggerThanLowestLimit: BigDecimal,
+    private val orderRepositionRelativeDropThreshold: BigDecimal,
+    private val numberOfBuyLimitOrdersToKeep: Int,
+    private val counterCurrencyAmountLimitForBuying: BigDecimal,
 ) : Strategy {
 
     private val mathContext = MathContext(8, RoundingMode.HALF_EVEN)
@@ -29,19 +34,21 @@ class PositionBuyOrdersForFlashCrashStrategy(
         }
     }
 
+    private fun StrategyExecution.hasNoMaximumNumberOfOrdersYet() = orders.size < numberOfBuyLimitOrdersToKeep
+
     override fun getActions(price: BigDecimal, strategyExecution: StrategyExecution): List<StrategyAction> {
         lowestPriceSoFar = lowestPriceSoFar.min(price)
 
         val lowBuyPrice = price
             .multiply(minPriceDownMultiplier, mathContext)
             .multiply(makePriceBitBiggerThanLowestLimit, mathContext)
-        val counterCurrencyAmountPerOrder = strategyExecution.counterCurrencyAmountLimitForBuying
-            .divide(strategyExecution.numberOfBuyLimitOrdersToKeep.toBigDecimal(), mathContext)
+        val counterCurrencyAmountPerOrder = counterCurrencyAmountLimitForBuying
+            .divide(numberOfBuyLimitOrdersToKeep.toBigDecimal(), mathContext)
         val baseCurrencyAmount = counterCurrencyAmountPerOrder.divide(lowBuyPrice, mathContext)
 
-        if (strategyExecution.hasNoMaximumNumberOfOrdersYet) {
+        if (strategyExecution.hasNoMaximumNumberOfOrdersYet()) {
             return fillUpToNBuyOrdersActions(
-                lackingOrders = strategyExecution.numberOfBuyLimitOrdersToKeep - strategyExecution.numberOfOrders,
+                lackingOrders = numberOfBuyLimitOrdersToKeep - strategyExecution.numberOfOrders,
                 buyPrice = lowBuyPrice,
                 baseCurrencyAmount = baseCurrencyAmount
             )
@@ -68,6 +75,55 @@ class PositionBuyOrdersForFlashCrashStrategy(
                 shouldBreakActionChainOnFail = true,
             )
         )
+    }
+
+    class Builder {
+
+        private var minPriceDownMultiplier: BigDecimal = 0.2.toBigDecimal()
+        private var makePriceBitBiggerThanLowestLimit: BigDecimal = BigDecimal(1.01)
+        private var orderRepositionRelativeDropThreshold: BigDecimal = BigDecimal(0.01)
+        private var numberOfBuyLimitOrdersToKeep: Int = 4
+        private lateinit var counterCurrencyAmountLimitForBuying: BigDecimal
+
+        fun withMinPriceDownMultiplier(minPriceDownMultiplier: BigDecimal): Builder {
+            this.minPriceDownMultiplier = minPriceDownMultiplier
+            return this
+        }
+
+        fun withMakePriceBitBiggerThanLowestLimit(makePriceBitBiggerThanLowestLimit: BigDecimal): Builder {
+            this.makePriceBitBiggerThanLowestLimit = makePriceBitBiggerThanLowestLimit
+            return this
+        }
+
+        fun withOrderRepositionRelativeDropThreshold(orderRepositionRelativeDropThreshold: BigDecimal): Builder {
+            this.orderRepositionRelativeDropThreshold = orderRepositionRelativeDropThreshold
+            return this
+        }
+
+        fun withNumberOfBuyLimitOrdersToKeep(numberOfBuyLimitOrdersToKeep: Int): Builder {
+            this.numberOfBuyLimitOrdersToKeep = numberOfBuyLimitOrdersToKeep
+            return this
+        }
+
+        fun withStrategySpecificParameters(parameters: Map<String, String>): Builder {
+            parameters.getValue(numberOfBuyLimitOrdersToKeepParameter).let {
+                numberOfBuyLimitOrdersToKeep = it.toInt()
+            }
+            parameters.getValue(counterCurrencyAmountLimitForBuyingParameter).let {
+                counterCurrencyAmountLimitForBuying = it.toBigDecimal()
+            }
+            return this
+        }
+
+        fun build(): PositionBuyOrdersForFlashCrashStrategy {
+            return PositionBuyOrdersForFlashCrashStrategy(
+                minPriceDownMultiplier = minPriceDownMultiplier,
+                makePriceBitBiggerThanLowestLimit = makePriceBitBiggerThanLowestLimit,
+                orderRepositionRelativeDropThreshold = orderRepositionRelativeDropThreshold,
+                numberOfBuyLimitOrdersToKeep = numberOfBuyLimitOrdersToKeep,
+                counterCurrencyAmountLimitForBuying = counterCurrencyAmountLimitForBuying,
+            )
+        }
     }
 
 }
