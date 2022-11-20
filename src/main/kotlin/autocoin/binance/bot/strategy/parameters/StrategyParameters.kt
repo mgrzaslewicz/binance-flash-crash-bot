@@ -6,16 +6,21 @@ import automate.profit.autocoin.exchange.SupportedExchange
 import automate.profit.autocoin.exchange.apikey.ExchangeKeyDto
 import automate.profit.autocoin.exchange.currency.CurrencyPair
 import com.fasterxml.jackson.annotation.JsonIgnore
+import lombok.With
 import java.time.ZonedDateTime
+
+interface WithStrategySpecificParameters {
+    val strategySpecificParameters: Map<String, String>
+}
 
 data class StrategyParameters(
     val userId: String,
     val strategyType: StrategyType,
     val baseCurrencyCode: String,
     val counterCurrencyCode: String,
-    val strategySpecificParameters: Map<String, String>,
+    override val strategySpecificParameters: Map<String, String>,
     val exchangeApiKey: ExchangeKeyDto,
-) {
+): WithStrategySpecificParameters {
 
     @JsonIgnore
     val currencyPair: CurrencyPair = CurrencyPair.Companion.of(baseCurrencyCode, counterCurrencyCode)

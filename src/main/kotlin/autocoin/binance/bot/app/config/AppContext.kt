@@ -57,7 +57,7 @@ val objectMapper = ObjectMapper()
     )
 
 class AppContext(private val appConfig: AppConfig) {
-    companion object : KLogging()
+    private companion object : KLogging()
 
     val clock = Clock.systemDefaultZone()
 
@@ -178,15 +178,26 @@ class AppContext(private val appConfig: AppConfig) {
             exchangeCurrencyPairsInWallet = exchangeCurrencyPairsInWalletService,
             demoOrderCreator = DemoOrderCreator(clock),
         )
+            .addingBinanceMarketOrderWithCounterCurrencyAmountBehavior(clock = clock)
             .measuringTime()
             .rateLimiting()
 
     } else {
-        logger.warn { "Will NOT make real orders, just log them instead" }
-        LoggingOnlyOrderService(clock = clock)
+        logger.warn { "Will NOT make real orders, just test market order at binance and return mock limit orders instead" }
+        XchangeOrderService(
+            exchangeService = exchangeService,
+            exchangeKeyService = exchangeKeyService,
+            userExchangeServicesFactory = userExchangeServicesFactory,
+            exchangeCurrencyPairsInWallet = exchangeCurrencyPairsInWalletService,
+            demoOrderCreator = DemoOrderCreator(clock),
+        )
+            .addingTestBinanceMarketOrderWithCounterCurrencyAmountBehavior(clock = clock)
+            .mockingLimitBuyOrder(clock = clock)
             .rateLimiting()
             .addingDelay(Duration.ofSeconds(1))
+            .logging()
             .measuringTime()
+
     }
 
 

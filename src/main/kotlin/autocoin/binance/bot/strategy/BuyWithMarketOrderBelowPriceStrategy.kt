@@ -27,7 +27,11 @@ class BuyWithMarketOrderBelowPriceStrategy(
         return if (strategyExecution.hasNoMaximumNumberOfOrdersYet()) {
             val currentPricePoint = pricesTriggeringBuyMarketOrder[strategyExecution.orders.size]
             if (price < currentPricePoint) {
-                listOf(PlaceBuyMarketOrderAction(counterCurrencyAmount = counterCurrencyAmountPerOrder, shouldBreakActionChainOnFail = true))
+                listOf(PlaceBuyMarketOrderAction(
+                    currentPrice = price,
+                    counterCurrencyAmount = counterCurrencyAmountPerOrder,
+                    shouldBreakActionChainOnFail = true
+                ))
             } else {
                 emptyList()
             }

@@ -2,10 +2,10 @@ package autocoin.binance.bot.strategy.execution
 
 import autocoin.binance.bot.strategy.execution.repository.StrategyOrder
 import autocoin.binance.bot.strategy.executor.StrategyType
+import autocoin.binance.bot.strategy.parameters.WithStrategySpecificParameters
 import automate.profit.autocoin.exchange.apikey.ExchangeKeyDto
 import automate.profit.autocoin.exchange.currency.CurrencyPair
 import com.fasterxml.jackson.annotation.JsonIgnore
-import java.math.BigDecimal
 import java.util.*
 
 
@@ -19,13 +19,13 @@ data class StrategyExecution(
     val baseCurrencyCode: String,
     val counterCurrencyCode: String,
 
-    val strategySpecificParameters: Map<String, String>,
+    override val strategySpecificParameters: Map<String, String>,
 
     val orders: List<StrategyOrder> = emptyList(),
 
     val createTimeMillis: Long,
 
-    ) {
+    ) : WithStrategySpecificParameters {
     @JsonIgnore
     val currencyPair = CurrencyPair.of(baseCurrencyCode, counterCurrencyCode)
 

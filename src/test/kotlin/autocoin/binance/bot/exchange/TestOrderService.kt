@@ -108,4 +108,52 @@ class TestOrderService(private val clock: Clock = Clock.systemDefaultZone()) : E
     ): ExchangeOrder {
         TODO("Not yet implemented")
     }
+
+    override fun placeMarketBuyOrderWithBaseCurrencyAmount(
+        exchangeName: String,
+        exchangeKey: ExchangeKeyDto,
+        baseCurrencyCode: String,
+        counterCurrencyCode: String,
+        counterCurrencyAmount: BigDecimal,
+        currentPrice: BigDecimal,
+        isDemoOrder: Boolean
+    ): ExchangeOrder {
+        TODO("Not yet implemented")
+    }
+
+    override fun placeMarketBuyOrderWithCounterCurrencyAmount(
+        exchangeName: String,
+        exchangeKey: ExchangeKeyDto,
+        baseCurrencyCode: String,
+        counterCurrencyCode: String,
+        counterCurrencyAmount: BigDecimal,
+        currentPrice: BigDecimal,
+        isDemoOrder: Boolean
+    ): ExchangeOrder {
+        TODO("Not yet implemented")
+    }
+
+    override fun placeMarketSellOrderWithBaseCurrencyAmount(
+        exchangeName: String,
+        exchangeKey: ExchangeKeyDto,
+        baseCurrencyCode: String,
+        counterCurrencyCode: String,
+        baseCurrencyAmount: BigDecimal,
+        currentPrice: BigDecimal,
+        isDemoOrder: Boolean
+    ): ExchangeOrder {
+        TODO("Not yet implemented")
+    }
+
+    override fun placeMarketSellOrderWithCounterCurrencyAmount(
+        exchangeName: String,
+        exchangeKey: ExchangeKeyDto,
+        baseCurrencyCode: String,
+        counterCurrencyCode: String,
+        counterCurrencyAmount: BigDecimal,
+        currentPrice: BigDecimal,
+        isDemoOrder: Boolean
+    ): ExchangeOrder {
+        TODO("Not yet implemented")
+    }
 }

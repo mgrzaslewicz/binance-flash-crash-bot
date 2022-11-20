@@ -90,15 +90,14 @@ class BinanceStrategyExecutor(
         val buyPriceAdjusted = buyPrice.setScale(counterCurrencyPriceScale, RoundingMode.HALF_EVEN)
         val baseCurrencyAmountAdjusted = baseCurrencyAmount.setScale(baseCurrencyAmountScale, RoundingMode.DOWN)
         return try {
-            val buyOrder =
-                exchangeOrderService.placeLimitBuyOrder(
-                    exchangeName = SupportedExchange.BINANCE.exchangeName,
-                    exchangeKey = currentStrategyExecution.exchangeApiKey,
-                    baseCurrencyCode = currentStrategyExecution.baseCurrencyCode,
-                    counterCurrencyCode = currentStrategyExecution.counterCurrencyCode,
-                    buyPrice = buyPriceAdjusted,
-                    amount = baseCurrencyAmountAdjusted,
-                )
+            val buyOrder = exchangeOrderService.placeLimitBuyOrder(
+                exchangeName = SupportedExchange.BINANCE.exchangeName,
+                exchangeKey = currentStrategyExecution.exchangeApiKey,
+                baseCurrencyCode = currentStrategyExecution.baseCurrencyCode,
+                counterCurrencyCode = currentStrategyExecution.counterCurrencyCode,
+                buyPrice = buyPriceAdjusted,
+                amount = baseCurrencyAmountAdjusted,
+            )
             onBuyOrderPlaced(buyOrder)
             buyOrder
         } catch (e: Exception) {
@@ -107,8 +106,22 @@ class BinanceStrategyExecutor(
         }
     }
 
-    override fun placeBuyMarketOrder(baseCurrencyAmount: BigDecimal): ExchangeOrder? {
-        return null
+    override fun placeBuyMarketOrder(currentPrice: BigDecimal, counterCurrencyAmount: BigDecimal): ExchangeOrder? {
+        return try {
+            val buyOrder = exchangeOrderService.placeMarketBuyOrderWithCounterCurrencyAmount(
+                exchangeName = SupportedExchange.BINANCE.exchangeName,
+                exchangeKey = currentStrategyExecution.exchangeApiKey,
+                baseCurrencyCode = currentStrategyExecution.baseCurrencyCode,
+                counterCurrencyCode = currentStrategyExecution.counterCurrencyCode,
+                currentPrice = currentPrice,
+                counterCurrencyAmount = counterCurrencyAmount,
+            )
+            onBuyOrderPlaced(buyOrder)
+            return buyOrder
+        } catch (e: Exception) {
+            logger.error(e) { "Placing buy market order failed" }
+            null
+        }
     }
 
     private fun onBuyOrderCanceled(buyOrder: StrategyOrder) {

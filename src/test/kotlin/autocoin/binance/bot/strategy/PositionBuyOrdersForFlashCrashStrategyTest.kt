@@ -28,7 +28,7 @@ class PositionBuyOrdersForFlashCrashStrategyTest {
             return null
         }
 
-        override fun placeBuyMarketOrder(counterCurrencyAmount: BigDecimal): ExchangeOrder? {
+        override fun placeBuyMarketOrder(currentPrice: BigDecimal, counterCurrencyAmount: BigDecimal): ExchangeOrder? {
             return null
         }
 
