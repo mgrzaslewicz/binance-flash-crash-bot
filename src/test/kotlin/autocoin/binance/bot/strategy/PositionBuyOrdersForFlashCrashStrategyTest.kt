@@ -18,13 +18,17 @@ class PositionBuyOrdersForFlashCrashStrategyTest {
     private lateinit var tested: PositionBuyOrdersForFlashCrashStrategy
     private lateinit var strategyExecutor: StrategyExecutor
 
-    private class TestStrategyExecutor(override val strategyExecution: StrategyExecution) : StrategyExecutor {
+    class TestStrategyExecutor(override val strategyExecution: StrategyExecution) : StrategyExecutor {
 
         override fun cancelOrder(order: StrategyOrder): Boolean {
             return true
         }
 
         override fun placeBuyLimitOrder(buyPrice: BigDecimal, baseCurrencyAmount: BigDecimal): ExchangeOrder? {
+            return null
+        }
+
+        override fun placeBuyMarketOrder(counterCurrencyAmount: BigDecimal): ExchangeOrder? {
             return null
         }
 

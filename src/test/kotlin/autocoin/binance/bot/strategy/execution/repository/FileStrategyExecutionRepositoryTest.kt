@@ -1,7 +1,7 @@
 package autocoin.binance.bot.strategy.execution.repository
 
 import autocoin.binance.bot.app.config.objectMapper
-import autocoin.binance.bot.strategy.counterCurrencyAmountLimitForBuyingParameter
+import autocoin.binance.bot.strategy.PositionBuyOrdersForFlashCrashStrategy.Builder.Companion.counterCurrencyAmountLimitForBuyingParameter
 import autocoin.binance.bot.strategy.execution.StrategyExecution
 import autocoin.binance.bot.strategy.executor.StrategyType
 import automate.profit.autocoin.exchange.SupportedExchange

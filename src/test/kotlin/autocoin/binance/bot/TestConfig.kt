@@ -1,8 +1,8 @@
 package autocoin.binance.bot
 
-import autocoin.binance.bot.strategy.counterCurrencyAmountLimitForBuyingParameter
+import autocoin.binance.bot.strategy.BuyWithMarketOrderBelowPriceStrategy
+import autocoin.binance.bot.strategy.PositionBuyOrdersForFlashCrashStrategy
 import autocoin.binance.bot.strategy.executor.StrategyType
-import autocoin.binance.bot.strategy.numberOfBuyLimitOrdersToKeepParameter
 import autocoin.binance.bot.strategy.parameters.StrategyParameters
 import automate.profit.autocoin.exchange.SupportedExchange
 import automate.profit.autocoin.exchange.apikey.ExchangeKeyDto
@@ -31,8 +31,8 @@ object TestConfig {
                 userName = null,
             ),
             strategySpecificParameters = mapOf(
-                numberOfBuyLimitOrdersToKeepParameter to numberOfBuyLimitOrdersToKeep.toString(),
-                counterCurrencyAmountLimitForBuyingParameter to counterCurrencyAmountLimitForBuying.toPlainString(),
+                PositionBuyOrdersForFlashCrashStrategy.Builder.numberOfBuyLimitOrdersToKeepParameter to numberOfBuyLimitOrdersToKeep.toString(),
+                PositionBuyOrdersForFlashCrashStrategy.Builder.counterCurrencyAmountLimitForBuyingParameter to counterCurrencyAmountLimitForBuying.toPlainString(),
             ),
         )
     }
@@ -42,6 +42,40 @@ object TestConfig {
         counterCurrencyAmountLimitForBuying: BigDecimal = 100.0.toBigDecimal(),
     ) = samplePositionBuyLimitOrdersSampleStrategyParameters(
         numberOfBuyLimitOrdersToKeep = numberOfBuyLimitOrdersToKeep,
+        counterCurrencyAmountLimitForBuying = counterCurrencyAmountLimitForBuying,
+    ).toStrategyExecution()
+
+    fun samplePlaceBuyMarketOrdersBelowPriceStrategyParameters(
+        pricesTriggeringBuyMarketOrderParameter: List<BigDecimal>,
+        counterCurrencyAmountLimitForBuying: BigDecimal,
+    ): StrategyParameters {
+        return StrategyParameters(
+            baseCurrencyCode = currencyPair.base,
+            counterCurrencyCode = currencyPair.counter,
+            userId = "user-1",
+            strategyType = StrategyType.BUY_WITH_MARKET_ORDER_BELOW_PRICE,
+            exchangeApiKey = ExchangeKeyDto(
+                apiKey = "key-1",
+                secretKey = "secret-1",
+                exchangeId = "does not matter",
+                exchangeName = SupportedExchange.BINANCE.exchangeName,
+                exchangeSpecificKeyParameters = emptyMap(),
+                exchangeUserId = "does not matter",
+                exchangeUserName = "does not matter",
+                userName = null,
+            ),
+            strategySpecificParameters = mapOf(
+                BuyWithMarketOrderBelowPriceStrategy.Builder.pricesTriggeringBuyMarketOrderParameter to pricesTriggeringBuyMarketOrderParameter.joinToString { it.toPlainString() },
+                BuyWithMarketOrderBelowPriceStrategy.Builder.counterCurrencyAmountLimitForBuyingParameter to counterCurrencyAmountLimitForBuying.toPlainString(),
+            ),
+        )
+    }
+
+    fun samplePlaceBuyMarketOrdersBelowPriceStrategyExecution(
+        pricesTriggeringBuyMarketOrderParameter: List<BigDecimal>,
+        counterCurrencyAmountLimitForBuying: BigDecimal,
+    ) = samplePlaceBuyMarketOrdersBelowPriceStrategyParameters(
+        pricesTriggeringBuyMarketOrderParameter = pricesTriggeringBuyMarketOrderParameter,
         counterCurrencyAmountLimitForBuying = counterCurrencyAmountLimitForBuying,
     ).toStrategyExecution()
 }

@@ -10,4 +10,5 @@ interface StrategyExecutor : PriceListener {
     val strategyExecution: StrategyExecution
     fun cancelOrder(order: StrategyOrder): Boolean
     fun placeBuyLimitOrder(buyPrice: BigDecimal, baseCurrencyAmount: BigDecimal): ExchangeOrder?
+    fun placeBuyMarketOrder(counterCurrencyAmount: BigDecimal): ExchangeOrder?
 }

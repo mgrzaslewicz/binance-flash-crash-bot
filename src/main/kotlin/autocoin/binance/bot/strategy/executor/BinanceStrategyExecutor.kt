@@ -107,6 +107,10 @@ class BinanceStrategyExecutor(
         }
     }
 
+    override fun placeBuyMarketOrder(baseCurrencyAmount: BigDecimal): ExchangeOrder? {
+        return null
+    }
+
     private fun onBuyOrderCanceled(buyOrder: StrategyOrder) {
         currentStrategyExecution = currentStrategyExecution.copy(
             orders = currentStrategyExecution.orders - buyOrder

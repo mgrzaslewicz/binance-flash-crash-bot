@@ -9,9 +9,6 @@ import java.math.BigDecimal
 import java.math.MathContext
 import java.math.RoundingMode
 
-val numberOfBuyLimitOrdersToKeepParameter = "numberOfBuyLimitOrdersToKeep"
-val counterCurrencyAmountLimitForBuyingParameter = "counterCurrencyAmountLimitForBuying"
-
 class PositionBuyOrdersForFlashCrashStrategy(
     private val minPriceDownMultiplier: BigDecimal,
     private val makePriceBitBiggerThanLowestLimit: BigDecimal,
@@ -78,6 +75,10 @@ class PositionBuyOrdersForFlashCrashStrategy(
     }
 
     class Builder {
+        companion object {
+            val numberOfBuyLimitOrdersToKeepParameter = "numberOfBuyLimitOrdersToKeep"
+            val counterCurrencyAmountLimitForBuyingParameter = "counterCurrencyAmountLimitForBuying"
+        }
 
         private var minPriceDownMultiplier: BigDecimal = 0.2.toBigDecimal()
         private var makePriceBitBiggerThanLowestLimit: BigDecimal = BigDecimal(1.01)
