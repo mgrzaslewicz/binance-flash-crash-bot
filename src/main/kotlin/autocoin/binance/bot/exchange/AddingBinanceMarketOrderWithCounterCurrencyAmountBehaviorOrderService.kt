@@ -5,10 +5,13 @@ import automate.profit.autocoin.exchange.currency.CurrencyPair
 import automate.profit.autocoin.exchange.currency.toXchangeCurrencyPair
 import automate.profit.autocoin.exchange.order.*
 import automate.profit.autocoin.exchange.peruser.XchangeUserExchangeTradeService
+import mu.KLogging
 import org.knowm.xchange.binance.dto.trade.OrderSide
 import org.knowm.xchange.binance.dto.trade.OrderType
 import org.knowm.xchange.binance.service.BinanceTradeService
 import java.math.BigDecimal
+import java.math.MathContext
+import java.math.RoundingMode
 import java.time.Clock
 import java.util.*
 
@@ -50,6 +53,9 @@ class AddingBinanceMarketOrderWithCounterCurrencyAmountBehaviorOrderService(
     private val clock: Clock,
     private val decorated: ExchangeOrderService
 ) : ExchangeOrderService by decorated {
+    private companion object : KLogging()
+
+    private val mathContext = MathContext(8, RoundingMode.HALF_EVEN)
     override fun placeMarketBuyOrderWithCounterCurrencyAmount(
         exchangeName: String,
         exchangeKey: ExchangeKeyDto,
@@ -78,13 +84,20 @@ class AddingBinanceMarketOrderWithCounterCurrencyAmountBehaviorOrderService(
             /*icebergQty = */null,
             /*newOrderRespType =*/null,
         )
+        var orderPrice = BigDecimal.ZERO
+        try {
+            // order.price from exchange is null, so calculate the price. Be safe and don't divide by zero in case of unexpected data from exchange
+            orderPrice = counterCurrencyAmount.divide(order.origQty, mathContext)
+        } catch (e: ArithmeticException) {
+            logger.error(e) { "Failed to calculate order price for order $order. Nothing to worry about, default value=0 was used in created order" }
+        }
         return ExchangeOrder(
             exchangeName = exchangeName,
             orderId = order.orderId.toString(),
             type = ExchangeOrderType.BID_BUY,
             orderedAmount = order.origQty,
             filledAmount = order.executedQty,
-            price = order.price,
+            price = orderPrice,
             currencyPair = currencyPair,
             status = ExchangeOrderStatus.NEW,
             receivedAtMillis = clock.millis(),
@@ -99,6 +112,7 @@ class AddingTestBinanceMarketOrderWithCounterCurrencyAmountBehaviorOrderService(
     private val clock: Clock,
     private val decorated: ExchangeOrderService
 ) : ExchangeOrderService by decorated {
+    private val mathContext = MathContext(8, RoundingMode.HALF_EVEN)
     override fun placeMarketBuyOrderWithCounterCurrencyAmount(
         exchangeName: String,
         exchangeKey: ExchangeKeyDto,
@@ -130,7 +144,7 @@ class AddingTestBinanceMarketOrderWithCounterCurrencyAmountBehaviorOrderService(
             exchangeName = exchangeName,
             orderId = "test-" + UUID.randomUUID().toString(),
             type = ExchangeOrderType.BID_BUY,
-            orderedAmount = counterCurrencyAmount.div(currentPrice),
+            orderedAmount = counterCurrencyAmount.divide(currentPrice, mathContext),
             filledAmount = BigDecimal.ZERO,
             price = currentPrice,
             currencyPair = currencyPair,

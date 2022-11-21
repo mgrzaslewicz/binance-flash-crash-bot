@@ -181,6 +181,7 @@ class AppContext(private val appConfig: AppConfig) {
             .addingBinanceMarketOrderWithCounterCurrencyAmountBehavior(clock = clock)
             .measuringTime()
             .rateLimiting()
+            .logging()
 
     } else {
         logger.warn { "Will NOT make real orders, just test market order at binance and return mock limit orders instead" }
