@@ -22,15 +22,17 @@ open class FileStrategyExecutionRepository(
     private object StrategyExecutionsType : TypeReference<List<StrategyExecution>>()
 
     private fun getAllStrategyExecutions(): List<StrategyExecution> {
-        val content = fileKeyValueRepository.getLatestVersion(directory = repositoryDirectory, key = valueKey)
-        return if (content != null) {
-            try {
-                objectMapper.readValue(content.value, StrategyExecutionsType)
-            } catch (e: Exception) {
-                throw Exception("Could not deserialize strategies from ${content.file.absolutePathString()})", e)
+        synchronized(this) {
+            val content = fileKeyValueRepository.getLatestVersion(directory = repositoryDirectory, key = valueKey)
+            return if (content != null) {
+                try {
+                    objectMapper.readValue(content.value, StrategyExecutionsType)
+                } catch (e: Exception) {
+                    throw Exception("Could not deserialize strategies from ${content.file.absolutePathString()})", e)
+                }
+            } else {
+                emptyList()
             }
-        } else {
-            emptyList()
         }
     }
 
@@ -39,17 +41,19 @@ open class FileStrategyExecutionRepository(
     override fun getExecutions() = getAllStrategyExecutions()
 
     override fun save(strategyExecutions: List<StrategyExecution>) {
-        val allStrategyExecutions = getAllStrategyExecutions()
-        val newList = allStrategyExecutions.toMutableList()
-        strategyExecutions.forEach { strategyExecution ->
-            val existingIndex = newList.indexOfFirst { it.id == strategyExecution.id }
-            if (existingIndex != -1) {
-                newList.removeAt(existingIndex)
+        synchronized(this) {
+            val allStrategyExecutions = getAllStrategyExecutions()
+            val newList = allStrategyExecutions.toMutableList()
+            strategyExecutions.forEach { strategyExecution ->
+                val existingIndex = newList.indexOfFirst { it.id == strategyExecution.id }
+                if (existingIndex != -1) {
+                    newList.removeAt(existingIndex)
+                }
+                newList += strategyExecution
             }
-            newList += strategyExecution
+            val value = objectMapper.writeValueAsString(newList)
+            fileKeyValueRepository.saveNewVersion(directory = repositoryDirectory, key = valueKey, value = value)
         }
-        val value = objectMapper.writeValueAsString(newList)
-        fileKeyValueRepository.saveNewVersion(directory = repositoryDirectory, key = valueKey, value = value)
     }
 
     override fun delete(strategyExecutions: List<StrategyExecution>) {
