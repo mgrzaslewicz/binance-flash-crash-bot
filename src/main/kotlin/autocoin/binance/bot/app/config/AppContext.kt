@@ -7,6 +7,7 @@ import autocoin.binance.bot.strategy.ExchangeStrategyExecutorService
 import autocoin.binance.bot.strategy.execution.repository.FileStrategyExecutionRepository
 import autocoin.binance.bot.strategy.execution.repository.logging
 import autocoin.binance.bot.strategy.executor.BinanceStrategyExecutorProvider
+import autocoin.binance.bot.strategy.loggingStrategyExecutor
 import autocoin.binance.bot.strategy.parameters.repository.FileStrategyParametersRepository
 import autocoin.binance.bot.user.repository.FileUserRepository
 import autocoin.binance.bot.user.repository.logging
@@ -212,7 +213,7 @@ class AppContext(private val appConfig: AppConfig) {
         ExchangeStrategyExecutorService(
             strategyExecutionRepository = strategyExecutionRepository,
             strategyExecutorProvider = strategyExecutorProvider,
-        ).logging(minDelayBetweenLogs = Duration.ofSeconds(1), clock = clock)
+        ).loggingStrategyExecutor(minDelayBetweenLogs = Duration.ofSeconds(1))
 
     val userRepository = FileUserRepository(
         fileRepositoryDirectory = appConfig.fileRepositoryDirectory,
