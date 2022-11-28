@@ -1,14 +1,15 @@
 package autocoin.binance.bot.strategy
 
 import autocoin.binance.bot.exchange.CurrencyPairWithPrice
-import autocoin.binance.bot.strategy.execution.repository.StrategyExecutionRepository
+import autocoin.binance.bot.strategy.execution.StrategyExecution
+import autocoin.binance.bot.strategy.execution.repository.FileBackedMutableSet
 import autocoin.binance.bot.strategy.executor.StrategyExecutor
 import autocoin.binance.bot.strategy.executor.StrategyExecutorProvider
 import autocoin.binance.bot.strategy.parameters.StrategyParameters
 import automate.profit.autocoin.exchange.currency.CurrencyPair
 
 class ExchangeStrategyExecutorService(
-    private val strategyExecutionRepository: StrategyExecutionRepository,
+    private val strategyExecutions: FileBackedMutableSet<StrategyExecution>,
     private val strategyExecutorProvider: StrategyExecutorProvider
 ) : StrategyExecutorService {
 
@@ -31,20 +32,20 @@ class ExchangeStrategyExecutorService(
         return runningStrategies.keys.toList()
     }
 
-    override fun addOrResumeStrategyExecutors(strategyParametersList: List<StrategyParameters>) {
-        val allExecutions = strategyExecutionRepository.getExecutions()
-        val strategiesToResume = allExecutions.filter { execution ->
+    override fun addOrResumeStrategyExecutors(strategyParametersList: Collection<StrategyParameters>) {
+        val strategiesToResume = strategyExecutions.filter { execution ->
             strategyParametersList.any { parameters ->
                 parameters.matchesStrategyExecution(execution)
             }
         }
-        val strategiesToDelete = allExecutions.filter { execution ->
+        val strategiesToDelete = strategyExecutions.filter { execution ->
             strategyParametersList.any { parameters ->
                 !parameters.matchesStrategyExecution(execution)
             }
         }
-        strategyExecutionRepository.delete(strategiesToDelete)
-        strategyExecutionRepository.save(strategiesToResume)
+        strategyExecutions.removeAll(strategiesToDelete.toSet())
+        strategyExecutions.addAll(strategiesToResume)
+        strategyExecutions.save()
 
         val strategyExecutionsToResume =
             strategiesToResume.map { execution ->
@@ -58,7 +59,7 @@ class ExchangeStrategyExecutorService(
         }
 
         val strategiesToAdd = strategyParametersList.filter {
-            allExecutions.none { execution -> it.matchesStrategyExecution(execution) }
+            strategyExecutions.none { execution -> it.matchesStrategyExecution(execution) }
         }
         strategiesToAdd.forEach {
             addStrategyExecutor(it)

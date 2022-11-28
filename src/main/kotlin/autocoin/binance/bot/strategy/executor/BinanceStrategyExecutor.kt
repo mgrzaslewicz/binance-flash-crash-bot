@@ -3,7 +3,7 @@ package autocoin.binance.bot.strategy.executor
 import autocoin.binance.bot.exchange.CurrencyPairWithPrice
 import autocoin.binance.bot.strategy.Strategy
 import autocoin.binance.bot.strategy.execution.StrategyExecution
-import autocoin.binance.bot.strategy.execution.repository.StrategyExecutionRepository
+import autocoin.binance.bot.strategy.execution.repository.FileBackedMutableSet
 import autocoin.binance.bot.strategy.execution.repository.StrategyOrder
 import automate.profit.autocoin.exchange.SupportedExchange
 import automate.profit.autocoin.exchange.order.ExchangeCancelOrderParams
@@ -22,7 +22,7 @@ import kotlin.system.measureTimeMillis
 class BinanceStrategyExecutor(
     strategyExecution: StrategyExecution,
     private val exchangeOrderService: ExchangeOrderService,
-    private val strategyExecutionRepository: StrategyExecutionRepository,
+    private val strategyExecutions: FileBackedMutableSet<StrategyExecution>,
     private val clock: Clock = Clock.systemDefaultZone(),
     private val javaExecutorService: ExecutorService,
     private val strategy: Strategy,
@@ -151,7 +151,9 @@ class BinanceStrategyExecutor(
 
     private fun trySaveState() {
         try {
-            strategyExecutionRepository.save(currentStrategyExecution)
+            strategyExecutions.remove(currentStrategyExecution)
+            strategyExecutions.add(currentStrategyExecution)
+            strategyExecutions.save()
         } catch (e: Exception) {
             logger.error(e) { "Could not save state" }
         }

@@ -14,9 +14,9 @@ import java.io.File
 import java.nio.file.Files
 import java.util.*
 
-class FileStrategyExecutionRepositoryTest {
+class StrategyExecutionMutableSetTest {
     private val exchangeKeysPath =
-        File(FileStrategyExecutionRepositoryTest::class.java.getResource("/sample-strategy-executions.json").toURI()).absolutePath
+        File(StrategyExecutionMutableSetTest::class.java.getResource("/sample-strategy-executions.json").toURI()).absolutePath
 
 
     private val expectedStrategyExecution = StrategyExecution(
@@ -76,13 +76,14 @@ class FileStrategyExecutionRepositoryTest {
         val tempDir = Files.createTempDirectory(UUID.randomUUID().toString())
         File(exchangeKeysPath).copyTo(tempDir.resolve("strategy-executions-1.json").toFile())
 
-        val tested = FileStrategyExecutionRepository(
+        val tested = StrategyExecutionFileBackedMutableSet(
             fileRepositoryDirectory = tempDir,
             objectMapper = objectMapper,
             fileKeyValueRepository = FileKeyValueRepository(),
-        )
+        ).logging(logPrefix = "test")
         // when
-        val found = tested.getExecutionsByUserId("sample-user-id-1")
+        tested.load()
+        val found = tested.filter { it.userId == "sample-user-id-1" }
         // then
         assertThat(found).hasSize(1)
         assertThat(found[0].id).isEqualTo(expectedStrategyExecution.id)
@@ -92,32 +93,43 @@ class FileStrategyExecutionRepositoryTest {
     fun shouldAddStrategy() {
         val tempDir = Files.createTempDirectory(UUID.randomUUID().toString())
 
-        val tested = FileStrategyExecutionRepository(
+        val tested = StrategyExecutionFileBackedMutableSet(
             fileRepositoryDirectory = tempDir,
             objectMapper = objectMapper,
             fileKeyValueRepository = FileKeyValueRepository(),
         )
         // when
-        tested.save(expectedStrategyExecution)
+        tested.add(expectedStrategyExecution)
+        tested.save()
         // then
-        assertThat(tested.getExecutions()).containsOnly(expectedStrategyExecution)
+        assertThat(tested).containsOnly(expectedStrategyExecution)
     }
 
     @Test
     fun shouldDeleteStrategy() {
         val tempDir = Files.createTempDirectory(UUID.randomUUID().toString())
 
-        val tested = FileStrategyExecutionRepository(
+        val tested = StrategyExecutionFileBackedMutableSet(
             fileRepositoryDirectory = tempDir,
             objectMapper = objectMapper,
             fileKeyValueRepository = FileKeyValueRepository(),
         )
-        // when
-        tested.save(expectedStrategyExecution)
         val anotherStrategyExecution = expectedStrategyExecution.copy(id = "sample-execution-id-2")
-        tested.save(anotherStrategyExecution)
-        tested.delete(expectedStrategyExecution)
+        // when
+        StrategyExecutionFileBackedMutableSet(
+            fileRepositoryDirectory = tempDir,
+            objectMapper = objectMapper,
+            fileKeyValueRepository = FileKeyValueRepository(),
+        ).apply {
+            add(expectedStrategyExecution)
+            save()
+            add(anotherStrategyExecution)
+            save()
+            remove(expectedStrategyExecution)
+            save()
+        }
+        tested.load()
         // then
-        assertThat(tested.getExecutions()).containsOnly(anotherStrategyExecution)
+        assertThat(tested).containsOnly(anotherStrategyExecution)
     }
 }

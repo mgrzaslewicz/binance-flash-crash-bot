@@ -3,7 +3,7 @@ package autocoin.binance.bot.strategy.executor
 import autocoin.binance.bot.strategy.BuyWithMarketOrderBelowPriceStrategy
 import autocoin.binance.bot.strategy.PositionBuyOrdersForFlashCrashStrategy
 import autocoin.binance.bot.strategy.execution.StrategyExecution
-import autocoin.binance.bot.strategy.execution.repository.StrategyExecutionRepository
+import autocoin.binance.bot.strategy.execution.repository.FileBackedMutableSet
 import autocoin.binance.bot.strategy.parameters.StrategyParameters
 import autocoin.binance.bot.strategy.parameters.WithStrategySpecificParameters
 import automate.profit.autocoin.exchange.order.ExchangeOrderService
@@ -22,7 +22,7 @@ enum class StrategyType {
 
 class BinanceStrategyExecutorProvider(
     private val exchangeOrderService: ExchangeOrderService,
-    private val strategyExecutionRepository: StrategyExecutionRepository,
+    private val strategyExecutions: FileBackedMutableSet<StrategyExecution>,
     private val javaExecutorService: ExecutorService,
 ) : StrategyExecutorProvider {
 
@@ -35,7 +35,7 @@ class BinanceStrategyExecutorProvider(
         return BinanceStrategyExecutor(
             strategyExecution = strategyParameters.toStrategyExecution(),
             exchangeOrderService = exchangeOrderService,
-            strategyExecutionRepository = strategyExecutionRepository,
+            strategyExecutions = strategyExecutions,
             strategy = strategyParameters.toStrategy(strategyParameters.strategyType),
             javaExecutorService = javaExecutorService,
         )
@@ -45,7 +45,7 @@ class BinanceStrategyExecutorProvider(
         return BinanceStrategyExecutor(
             strategyExecution = strategyExecution,
             exchangeOrderService = exchangeOrderService,
-            strategyExecutionRepository = strategyExecutionRepository,
+            strategyExecutions = strategyExecutions,
             strategy = strategyExecution.toStrategy(strategyExecution.strategyType),
             javaExecutorService = javaExecutorService,
         )

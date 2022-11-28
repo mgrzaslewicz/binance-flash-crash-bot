@@ -7,7 +7,7 @@ import autocoin.binance.bot.strategy.Strategy
 import autocoin.binance.bot.strategy.action.PlaceBuyLimitOrderAction
 import autocoin.binance.bot.strategy.action.StrategyAction
 import autocoin.binance.bot.strategy.execution.StrategyExecution
-import autocoin.binance.bot.strategy.execution.repository.TestStrategyExecutionRepository
+import autocoin.binance.bot.strategy.execution.repository.TestStrategyExecutionMutableSet
 import automate.profit.autocoin.exchange.order.ExchangeOrder
 import com.google.common.util.concurrent.MoreExecutors
 import mu.KLogging
@@ -39,7 +39,7 @@ class BinanceStrategyExecutorTest {
         tested = BinanceStrategyExecutor(
             strategyExecution = TestConfig.samplePositionBuyLimitOrdersStrategyExecution(),
             exchangeOrderService = orderService,
-            strategyExecutionRepository = TestStrategyExecutionRepository(),
+            strategyExecutions = TestStrategyExecutionMutableSet(),
             baseCurrencyAmountScale = 5,
             counterCurrencyPriceScale = 2,
             javaExecutorService = MoreExecutors.newDirectExecutorService(),
@@ -72,7 +72,7 @@ class BinanceStrategyExecutorTest {
         tested = BinanceStrategyExecutor(
             strategyExecution = TestConfig.samplePositionBuyLimitOrdersStrategyExecution(),
             exchangeOrderService = orderService,
-            strategyExecutionRepository = TestStrategyExecutionRepository(),
+            strategyExecutions = TestStrategyExecutionMutableSet(),
             baseCurrencyAmountScale = 5,
             counterCurrencyPriceScale = 2,
             javaExecutorService = Executors.newFixedThreadPool(2), // 2 threads as 1st one is going to be block for scheduling. With only 1 thread, second price update would not be handled

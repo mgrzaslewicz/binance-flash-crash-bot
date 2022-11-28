@@ -3,8 +3,7 @@ package autocoin.binance.bot.strategy
 import autocoin.binance.bot.TestConfig
 import autocoin.binance.bot.exchange.CurrencyPairWithPrice
 import autocoin.binance.bot.exchange.TestOrderService
-import autocoin.binance.bot.strategy.execution.repository.StrategyExecutionRepository
-import autocoin.binance.bot.strategy.execution.repository.TestStrategyExecutionRepository
+import autocoin.binance.bot.strategy.execution.repository.TestStrategyExecutionMutableSet
 import autocoin.binance.bot.strategy.executor.*
 import autocoin.binance.bot.strategy.parameters.StrategyParameters
 import automate.profit.autocoin.exchange.currency.CurrencyPair
@@ -14,7 +13,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
 import java.math.BigDecimal
 
@@ -22,9 +20,6 @@ import java.math.BigDecimal
 class ExchangeStrategyExecutorsServiceTest {
     companion object : KLogging()
 
-
-    @Mock
-    private lateinit var strategyExecutionRepository: StrategyExecutionRepository
 
     private val currencyPair = CurrencyPair.of("A", "B")
 
@@ -37,11 +32,12 @@ class ExchangeStrategyExecutorsServiceTest {
     @Test
     fun shouldNotAllowToAddSecondStrategyWithTheSameUserAndCurrencyPair() {
         // given
+        val strategyExecutions = TestStrategyExecutionMutableSet()
         val tested = ExchangeStrategyExecutorService(
-            strategyExecutionRepository = strategyExecutionRepository,
+            strategyExecutions = strategyExecutions,
             strategyExecutorProvider = BinanceStrategyExecutorProvider(
                 exchangeOrderService = TestOrderService(),
-                strategyExecutionRepository = TestStrategyExecutionRepository(),
+                strategyExecutions = strategyExecutions,
                 javaExecutorService = MoreExecutors.newDirectExecutorService(),
             )
         )
@@ -55,9 +51,10 @@ class ExchangeStrategyExecutorsServiceTest {
     @Test
     fun shouldUpdatePrices() {
         // given
+        val strategyExecutions = TestStrategyExecutionMutableSet()
         val binanceStrategyExecutorProvider = BinanceStrategyExecutorProvider(
             exchangeOrderService = TestOrderService(),
-            strategyExecutionRepository = TestStrategyExecutionRepository(),
+            strategyExecutions = strategyExecutions,
             javaExecutorService = MoreExecutors.newDirectExecutorService(),
         )
         val createdExecutors: MutableList<RememberingPriceStrategyExecutor> = mutableListOf()
@@ -69,7 +66,7 @@ class ExchangeStrategyExecutorsServiceTest {
             }
         }
         val tested = ExchangeStrategyExecutorService(
-            strategyExecutionRepository = strategyExecutionRepository,
+            strategyExecutions = strategyExecutions,
             strategyExecutorProvider = strategyExecutorProvider
         )
         tested.addStrategyExecutor(strategy1Parameters)

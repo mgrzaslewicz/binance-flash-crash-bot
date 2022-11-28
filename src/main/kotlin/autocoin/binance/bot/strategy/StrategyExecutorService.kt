@@ -8,5 +8,5 @@ import automate.profit.autocoin.exchange.currency.CurrencyPair
 interface StrategyExecutorService : PriceListener {
     fun addStrategyExecutor(strategyParameters: StrategyParameters)
     fun currencyPairsCurrentlyNeeded(): List<CurrencyPair>
-    fun addOrResumeStrategyExecutors(strategyParametersList: List<StrategyParameters>)
+    fun addOrResumeStrategyExecutors(strategyParametersList: Collection<StrategyParameters>)
 }

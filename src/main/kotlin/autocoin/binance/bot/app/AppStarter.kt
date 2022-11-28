@@ -11,9 +11,10 @@ class AppStarter(private val config: AppConfig, private val context: AppContext)
     fun start() {
         config.createConfigFolders()
         with(context) {
-            val strategyParametersList = strategyParametersRepository.getAll()
-            check(strategyParametersList.isNotEmpty()) { "strategy parameters need to be provided" }
-            strategyExecutionsService.addOrResumeStrategyExecutors(strategyParametersList)
+            strategyExecutions.load()
+            strategyParameters.load()
+            check(strategyParameters.isNotEmpty()) { "strategy parameters need to be provided" }
+            strategyExecutionsService.addOrResumeStrategyExecutors(strategyParameters)
 
             eventBus.register(priceUpdatedEventType, strategyExecutionsService::onPriceUpdated)
             eventBus.register(priceUpdatedEventType, priceWebSocketConnectionKeeper::onPriceUpdated)

@@ -4,11 +4,11 @@ import autocoin.binance.bot.eventbus.DefaultEventBus
 import autocoin.binance.bot.exchange.*
 import autocoin.binance.bot.httpclient.RequestLogInterceptor
 import autocoin.binance.bot.strategy.ExchangeStrategyExecutorService
-import autocoin.binance.bot.strategy.execution.repository.FileStrategyExecutionRepository
+import autocoin.binance.bot.strategy.execution.repository.StrategyExecutionFileBackedMutableSet
 import autocoin.binance.bot.strategy.execution.repository.logging
 import autocoin.binance.bot.strategy.executor.BinanceStrategyExecutorProvider
 import autocoin.binance.bot.strategy.loggingStrategyExecutor
-import autocoin.binance.bot.strategy.parameters.repository.FileStrategyParametersRepository
+import autocoin.binance.bot.strategy.parameters.repository.StrategyParametersFileBackedMutableSet
 import autocoin.binance.bot.user.repository.FileUserRepository
 import autocoin.binance.bot.user.repository.logging
 import automate.profit.autocoin.exchange.CachingXchangeProvider
@@ -92,17 +92,17 @@ class AppContext(private val appConfig: AppConfig) {
 
     val fileKeyValueRepository = FileKeyValueRepository()
 
-    val strategyParametersRepository = FileStrategyParametersRepository(
+    val strategyParameters = StrategyParametersFileBackedMutableSet(
         fileRepositoryDirectory = appConfig.fileRepositoryDirectory,
         objectMapper = objectMapper,
         fileKeyValueRepository = fileKeyValueRepository,
-    )
+    ).logging(logPrefix = "StrategyParameters")
 
-    val strategyExecutionRepository = FileStrategyExecutionRepository(
+    val strategyExecutions = StrategyExecutionFileBackedMutableSet(
         fileRepositoryDirectory = appConfig.fileRepositoryDirectory,
         objectMapper = objectMapper,
         fileKeyValueRepository = fileKeyValueRepository,
-    ).logging()
+    ).logging(logPrefix = "StrategyExecutions")
 
     val exchangeRateLimiters = ExchangeRateLimiters(
         defaultPermitsPerDuration = 300L,
@@ -205,13 +205,13 @@ class AppContext(private val appConfig: AppConfig) {
 
     val strategyExecutorProvider = BinanceStrategyExecutorProvider(
         exchangeOrderService = exchangeOrderService,
-        strategyExecutionRepository = strategyExecutionRepository,
+        strategyExecutions = strategyExecutions,
         javaExecutorService = Executors.newCachedThreadPool(),
     )
 
     val strategyExecutionsService =
         ExchangeStrategyExecutorService(
-            strategyExecutionRepository = strategyExecutionRepository,
+            strategyExecutions = strategyExecutions,
             strategyExecutorProvider = strategyExecutorProvider,
         ).loggingStrategyExecutor(minDelayBetweenLogs = Duration.ofSeconds(1))
 

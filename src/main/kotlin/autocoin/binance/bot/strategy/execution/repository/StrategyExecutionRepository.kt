@@ -1,6 +1,5 @@
 package autocoin.binance.bot.strategy.execution.repository
 
-import autocoin.binance.bot.strategy.execution.StrategyExecution
 import automate.profit.autocoin.exchange.currency.CurrencyPair
 import automate.profit.autocoin.exchange.order.ExchangeOrderStatus
 import com.fasterxml.jackson.annotation.JsonIgnore
@@ -23,13 +22,5 @@ data class StrategyOrder(
     val currencyPair: CurrencyPair = CurrencyPair.of(baseCurrencyCode, counterCurrencyCode)
 }
 
-interface StrategyExecutionRepository {
-    fun getExecutionsByUserId(userId: String): List<StrategyExecution>
-    fun getExecutions(): List<StrategyExecution>
-    fun save(strategyExecution: StrategyExecution) = save(listOf(strategyExecution))
-    fun save(strategyExecutions: List<StrategyExecution>)
-    fun delete(strategyExecution: StrategyExecution) = delete(listOf(strategyExecution))
-    fun delete(strategyExecutions: List<StrategyExecution>)
-}
 
 
