@@ -11,7 +11,7 @@ private val logger = KotlinLogging.logger { }
 
 /**
  * Add limits when running process
--Xmx120M
+-Xmx128M
 -XX:+ExitOnOutOfMemoryError
 -XX:+HeapDumpOnOutOfMemoryError
  */

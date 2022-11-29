@@ -1,0 +1,22 @@
+# Not ready yet to run
+---
+- name: Deploy jar to production
+  hosts: all
+  tasks:
+    - name: Find jar to copy
+      find:
+        path: files
+        file_type: file
+        use_regex: false
+        patterns:
+          - '../target/autocoin-binance-bot-*.jar'
+      register: jar_file
+      delegate_to: localhost
+    - name: Log found jar file
+      debug:
+        msg: "{{ jar_file.files|map(attribute='path')|list }}"
+    - name: Copy jar file
+      ansible.builtin.copy:
+        src: ../target/autocoin-binance-bot-*.jar
+        dest: /opt/autocoin/autocoin-binance-bot/
+        mode: u+rw,g-wx,o-rwx
