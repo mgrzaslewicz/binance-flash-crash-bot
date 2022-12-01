@@ -25,6 +25,7 @@ class AppStarter(private val config: AppConfig, private val context: AppContext)
             priceWebSocketConnectionKeeper.scheduleCheckingConnection()
 
             server.start()
+            healthMetricsScheduler.scheduleSendingMetrics()
         }
     }
 }

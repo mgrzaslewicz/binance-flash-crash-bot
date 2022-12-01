@@ -11,8 +11,8 @@ import autocoin.binance.bot.exchange.logging
 import autocoin.binance.bot.exchange.measuringTime
 import autocoin.binance.bot.exchange.mockingLimitBuyOrder
 import autocoin.binance.bot.exchange.rateLimiting
+import autocoin.binance.bot.health.HealthMetricsScheduler
 import autocoin.binance.bot.health.HealthService
-import autocoin.binance.bot.httpclient.RequestLogInterceptor
 import autocoin.binance.bot.httpserver.HealthController
 import autocoin.binance.bot.httpserver.ServerBuilder
 import autocoin.binance.bot.strategy.ExchangeStrategyExecutorService
@@ -54,14 +54,12 @@ import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.timgroup.statsd.StatsDClient
 import mu.KLogging
-import okhttp3.OkHttpClient
 import org.knowm.xchange.ExchangeFactory
 import java.time.Clock
 import java.time.Duration
 import java.time.temporal.ChronoUnit
 import java.util.concurrent.Executors
 import java.util.concurrent.Executors.newSingleThreadScheduledExecutor
-import java.util.concurrent.TimeUnit
 
 class CurrencyPairDeserializer : KeyDeserializer() {
     override fun deserializeKey(key: String, ctxt: DeserializationContext): Any {
@@ -81,19 +79,6 @@ class AppContext(private val appConfig: AppConfig) {
     private companion object : KLogging()
 
     val clock = Clock.systemDefaultZone()
-
-    val httpClient = OkHttpClient().newBuilder()
-        .connectTimeout(5, TimeUnit.SECONDS)
-        .readTimeout(5, TimeUnit.SECONDS)
-        .addInterceptor(RequestLogInterceptor())
-        .build()
-
-    val webSocketClient = OkHttpClient().newBuilder()
-        .connectTimeout(5, TimeUnit.SECONDS)
-        .readTimeout(0, TimeUnit.SECONDS)
-        .addInterceptor(RequestLogInterceptor())
-        .build()
-
 
     val eventBus = DefaultEventBus()
 
@@ -257,4 +242,11 @@ class AppContext(private val appConfig: AppConfig) {
     val metricsService: MetricsService = MetricsService(statsdClient)
 
     val server = ServerBuilder(appConfig.serverPort, controllers, metricsService).build()
+
+    val healthMetricsScheduler = HealthMetricsScheduler(
+        healthService = healthService,
+        metricsService = metricsService,
+        scheduledExecutor = newSingleThreadScheduledExecutor(),
+        delayBetweenMetrics = Duration.ofSeconds(30),
+    )
 }
