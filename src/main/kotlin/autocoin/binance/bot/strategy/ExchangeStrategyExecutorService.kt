@@ -14,6 +14,8 @@ class ExchangeStrategyExecutorService(
 ) : StrategyExecutorService {
 
     private val runningStrategies = mutableMapOf<CurrencyPair, MutableList<StrategyExecutor>>()
+    override fun getRunningStrategies() = runningStrategies.flatMap { it.value }.map { it.strategyExecution }
+
     override fun addStrategyExecutor(strategyParameters: StrategyParameters) {
         val strategiesRunningWithCurrencyPair = runningStrategies.getOrPut(strategyParameters.currencyPair) { ArrayList() }
         if (strategiesRunningWithCurrencyPair.any { strategyParameters.matchesStrategyExecution(it.strategyExecution) }) {

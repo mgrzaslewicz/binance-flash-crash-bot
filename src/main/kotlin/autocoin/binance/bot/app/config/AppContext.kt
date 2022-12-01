@@ -1,8 +1,20 @@
 package autocoin.binance.bot.app.config
 
 import autocoin.binance.bot.eventbus.DefaultEventBus
-import autocoin.binance.bot.exchange.*
+import autocoin.binance.bot.exchange.BinancePriceStream
+import autocoin.binance.bot.exchange.LoggingOnlyWalletService
+import autocoin.binance.bot.exchange.PriceWebSocketConnectionKeeper
+import autocoin.binance.bot.exchange.addingBinanceMarketOrderWithCounterCurrencyAmountBehavior
+import autocoin.binance.bot.exchange.addingDelay
+import autocoin.binance.bot.exchange.addingTestBinanceMarketOrderWithCounterCurrencyAmountBehavior
+import autocoin.binance.bot.exchange.logging
+import autocoin.binance.bot.exchange.measuringTime
+import autocoin.binance.bot.exchange.mockingLimitBuyOrder
+import autocoin.binance.bot.exchange.rateLimiting
+import autocoin.binance.bot.health.HealthService
 import autocoin.binance.bot.httpclient.RequestLogInterceptor
+import autocoin.binance.bot.httpserver.HealthController
+import autocoin.binance.bot.httpserver.ServerBuilder
 import autocoin.binance.bot.strategy.ExchangeStrategyExecutorService
 import autocoin.binance.bot.strategy.execution.repository.StrategyExecutionFileBackedMutableSet
 import autocoin.binance.bot.strategy.execution.repository.logging
@@ -11,11 +23,18 @@ import autocoin.binance.bot.strategy.loggingStrategyExecutor
 import autocoin.binance.bot.strategy.parameters.repository.StrategyParametersFileBackedMutableSet
 import autocoin.binance.bot.user.repository.FileUserRepository
 import autocoin.binance.bot.user.repository.logging
+import autocoin.metrics.JsonlFileStatsDClient
+import autocoin.metrics.MetricsService
 import automate.profit.autocoin.exchange.CachingXchangeProvider
 import automate.profit.autocoin.exchange.SupportedExchange
 import automate.profit.autocoin.exchange.XchangeFactoryWrapper
 import automate.profit.autocoin.exchange.XchangeSpecificationApiKeyAssigner
-import automate.profit.autocoin.exchange.apikey.*
+import automate.profit.autocoin.exchange.apikey.ExchangeApiKey
+import automate.profit.autocoin.exchange.apikey.ExchangeDto
+import automate.profit.autocoin.exchange.apikey.ExchangeKeyDto
+import automate.profit.autocoin.exchange.apikey.ExchangeKeyService
+import automate.profit.autocoin.exchange.apikey.ExchangeService
+import automate.profit.autocoin.exchange.apikey.ServiceApiKeysProvider
 import automate.profit.autocoin.exchange.currency.CurrencyPair
 import automate.profit.autocoin.exchange.order.DemoOrderCreator
 import automate.profit.autocoin.exchange.order.XchangeOrderService
@@ -33,6 +52,7 @@ import com.fasterxml.jackson.databind.KeyDeserializer
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import com.timgroup.statsd.StatsDClient
 import mu.KLogging
 import okhttp3.OkHttpClient
 import org.knowm.xchange.ExchangeFactory
@@ -221,5 +241,20 @@ class AppContext(private val appConfig: AppConfig) {
         fileKeyValueRepository = fileKeyValueRepository,
     ).logging()
 
+    val healthService = HealthService(
+        binancePriceStream = binancePriceStream,
+        strategyExecutorService = strategyExecutionsService,
+    )
+    val healthController = HealthController(
+        healthService = healthService,
+        objectMapper = objectMapper,
+    )
 
+    val controllers = listOf(healthController)
+
+    val statsdClient: StatsDClient = JsonlFileStatsDClient(appConfig.botHomeFolder.resolve("metrics.jsonl").toFile())
+
+    val metricsService: MetricsService = MetricsService(statsdClient)
+
+    val server = ServerBuilder(appConfig.serverPort, controllers, metricsService).build()
 }

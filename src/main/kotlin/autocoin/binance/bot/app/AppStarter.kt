@@ -23,6 +23,8 @@ class AppStarter(private val config: AppConfig, private val context: AppContext)
             binancePriceStream.listenForPriceUpdates(strategyExecutionsService.currencyPairsCurrentlyNeeded())
 
             priceWebSocketConnectionKeeper.scheduleCheckingConnection()
+
+            server.start()
         }
     }
 }

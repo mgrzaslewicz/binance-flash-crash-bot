@@ -38,6 +38,7 @@ class BinancePriceStream(
 
     private val binanceApiWebSocket: AtomicReference<Closeable> = AtomicReference()
     private var connectionStartedAt: Instant? = null
+    private var websocketFailureCount: Int = 0
 
     private fun CurrencyPair.toBinanceSymbol() = BinanceAdapters.toSymbol(this.toXchangeCurrencyPair()).lowercase()
     private fun String.toCurrencyPair() = BinanceAdapters.adaptSymbol(this).toCurrencyPair()
@@ -55,6 +56,7 @@ class BinancePriceStream(
         override fun onFailure(cause: Throwable?) {
             val previousConnectionDuration = Duration.between(connectionStartedAt, clock.instant())
             logger.error(cause) { "Websocket connection failed. It lasted for $previousConnectionDuration" }
+            websocketFailureCount++
             reconnect()
         }
 
@@ -92,4 +94,8 @@ class BinancePriceStream(
 
         logger.info { "Websocket connection created within ${millisecondsToConnect}ms" }
     }
+
+    fun getWebsocketFailureCount() = websocketFailureCount
+
+    fun isConnected() = binanceApiWebSocket.get() != null
 }
