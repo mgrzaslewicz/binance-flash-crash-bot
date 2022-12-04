@@ -57,6 +57,7 @@ import mu.KLogging
 import org.knowm.xchange.ExchangeFactory
 import java.time.Clock
 import java.time.Duration
+import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.concurrent.Executors
 import java.util.concurrent.Executors.newSingleThreadScheduledExecutor
@@ -79,6 +80,7 @@ class AppContext(private val appConfig: AppConfig) {
     private companion object : KLogging()
 
     val clock = Clock.systemDefaultZone()
+    val startedAt: Instant = clock.instant()
 
     val eventBus = DefaultEventBus()
 
@@ -230,6 +232,7 @@ class AppContext(private val appConfig: AppConfig) {
         binancePriceStream = binancePriceStream,
         strategyExecutorService = strategyExecutionsService,
         clock = clock,
+        startedAt = startedAt,
     )
     val healthController = HealthController(
         healthService = healthService,

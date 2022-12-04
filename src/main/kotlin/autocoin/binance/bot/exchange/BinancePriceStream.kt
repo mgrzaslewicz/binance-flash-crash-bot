@@ -96,6 +96,7 @@ class BinancePriceStream(
     }
 
     fun getWebsocketFailureCount() = websocketFailureCount
+    fun getWebsocketConnectionStartedTimestamp() = connectionStartedAt
 
     fun isConnected() = binanceApiWebSocket.get() != null
 }
