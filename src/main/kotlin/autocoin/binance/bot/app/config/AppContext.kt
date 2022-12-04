@@ -229,6 +229,7 @@ class AppContext(private val appConfig: AppConfig) {
     val healthService = HealthService(
         binancePriceStream = binancePriceStream,
         strategyExecutorService = strategyExecutionsService,
+        clock = clock,
     )
     val healthController = HealthController(
         healthService = healthService,

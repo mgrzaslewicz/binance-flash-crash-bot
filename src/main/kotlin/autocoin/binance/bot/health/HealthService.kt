@@ -2,12 +2,14 @@ package autocoin.binance.bot.health
 
 import autocoin.binance.bot.exchange.BinancePriceStream
 import autocoin.binance.bot.strategy.StrategyExecutorService
+import java.time.Clock
+import java.time.Instant
 
 data class UserOrder(
     val exchangeOrderId: String,
     val price: String,
     val amount: String,
-    val timestamp: Long,
+    val timestamp: String,
 )
 
 data class RunningStrategy(
@@ -23,11 +25,13 @@ data class Health(
     val unhealthyReasons: List<String>,
     val howManyTimesPriceWebSocketReconnected: Int,
     val runningStrategies: List<RunningStrategy>,
+    val timestamp: String,
 )
 
 class HealthService(
     private val binancePriceStream: BinancePriceStream,
     private val strategyExecutorService: StrategyExecutorService,
+    private val clock: Clock,
 ) {
     fun getHealth(): Health {
         val isConnectedToPriceStream = binancePriceStream.isConnected()
@@ -41,7 +45,7 @@ class HealthService(
                         exchangeOrderId = order.exchangeOrderId,
                         price = order.price.toPlainString(),
                         amount = order.amount.toPlainString(),
-                        timestamp = order.createTimeMillis,
+                        timestamp = Instant.ofEpochMilli(order.createTimeMillis).toString(),
                     )
                 },
                 ordersAmountSum = it.orders.sumOf { order -> order.amount }.toPlainString(),
@@ -55,6 +59,7 @@ class HealthService(
             ),
             howManyTimesPriceWebSocketReconnected = binancePriceStream.getWebsocketFailureCount(),
             runningStrategies = runningStrategies,
+            timestamp = clock.instant().toString(),
         )
         return health
     }
