@@ -74,7 +74,10 @@ class BinanceStrategyExecutor(
 
     override fun cancelOrder(order: StrategyOrder): Boolean {
         val success = exchangeOrderService.cancelOrder(
-            exchangeName = SupportedExchange.BINANCE.exchangeName, exchangeKey = currentStrategyExecution.exchangeApiKey, ExchangeCancelOrderParams(
+            exchangeName = SupportedExchange.BINANCE.exchangeName,
+            exchangeKey = currentStrategyExecution.exchangeApiKey,
+            ExchangeCancelOrderParams(
+                exchangeName = SupportedExchange.BINANCE.exchangeName,
                 orderId = order.exchangeOrderId,
                 orderType = ExchangeOrderType.BID_BUY,
                 currencyPair = currentStrategyExecution.currencyPair,
@@ -136,7 +139,7 @@ class BinanceStrategyExecutor(
     private fun onBuyOrderPlaced(buyOrder: ExchangeOrder) {
         currentStrategyExecution = currentStrategyExecution.copy(
             orders = currentStrategyExecution.orders + StrategyOrder(
-                exchangeOrderId = buyOrder.orderId,
+                exchangeOrderId = buyOrder.exchangeOrderId,
                 status = buyOrder.status,
                 price = buyOrder.price,
                 amount = buyOrder.orderedAmount,

@@ -128,6 +128,7 @@ class AppContext(private val appConfig: AppConfig) {
             xchangeFactoryWrapper = XchangeFactoryWrapper(ExchangeFactory.INSTANCE),
         ),
         exchangeRateLimiters = exchangeRateLimiters,
+        getOpenOrdersToVerifyOrderIsCanceled = false,
         clock = clock,
     )
     val exchangeService = object : ExchangeService {

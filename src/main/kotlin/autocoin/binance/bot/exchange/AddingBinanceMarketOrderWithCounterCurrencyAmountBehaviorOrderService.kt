@@ -3,7 +3,11 @@ package autocoin.binance.bot.exchange
 import automate.profit.autocoin.exchange.apikey.ExchangeKeyDto
 import automate.profit.autocoin.exchange.currency.CurrencyPair
 import automate.profit.autocoin.exchange.currency.toXchangeCurrencyPair
-import automate.profit.autocoin.exchange.order.*
+import automate.profit.autocoin.exchange.order.ExchangeOrder
+import automate.profit.autocoin.exchange.order.ExchangeOrderService
+import automate.profit.autocoin.exchange.order.ExchangeOrderStatus
+import automate.profit.autocoin.exchange.order.ExchangeOrderType
+import automate.profit.autocoin.exchange.order.XchangeOrderService
 import automate.profit.autocoin.exchange.peruser.XchangeUserExchangeTradeService
 import mu.KLogging
 import org.knowm.xchange.binance.dto.trade.OrderSide
@@ -93,7 +97,7 @@ class AddingBinanceMarketOrderWithCounterCurrencyAmountBehaviorOrderService(
         }
         return ExchangeOrder(
             exchangeName = exchangeName,
-            orderId = order.orderId.toString(),
+            exchangeOrderId = order.orderId.toString(),
             type = ExchangeOrderType.BID_BUY,
             orderedAmount = order.origQty,
             filledAmount = order.executedQty,
@@ -142,7 +146,7 @@ class AddingTestBinanceMarketOrderWithCounterCurrencyAmountBehaviorOrderService(
         )
         return ExchangeOrder(
             exchangeName = exchangeName,
-            orderId = "test-" + UUID.randomUUID().toString(),
+            exchangeOrderId = "test-" + UUID.randomUUID().toString(),
             type = ExchangeOrderType.BID_BUY,
             orderedAmount = counterCurrencyAmount.divide(currentPrice, mathContext),
             filledAmount = BigDecimal.ZERO,

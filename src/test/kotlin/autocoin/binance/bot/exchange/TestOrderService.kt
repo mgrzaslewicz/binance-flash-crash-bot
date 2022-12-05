@@ -2,7 +2,12 @@ package autocoin.binance.bot.exchange
 
 import automate.profit.autocoin.exchange.apikey.ExchangeKeyDto
 import automate.profit.autocoin.exchange.currency.CurrencyPair
-import automate.profit.autocoin.exchange.order.*
+import automate.profit.autocoin.exchange.order.ExchangeCancelOrderParams
+import automate.profit.autocoin.exchange.order.ExchangeOpenOrders
+import automate.profit.autocoin.exchange.order.ExchangeOrder
+import automate.profit.autocoin.exchange.order.ExchangeOrderService
+import automate.profit.autocoin.exchange.order.ExchangeOrderStatus
+import automate.profit.autocoin.exchange.order.ExchangeOrderType
 import mu.KLogging
 import java.math.BigDecimal
 import java.time.Clock
@@ -58,7 +63,7 @@ class TestOrderService(private val clock: Clock = Clock.systemDefaultZone()) : E
             logger.info { "Placing buy limit order with amount=$amount $baseCurrencyCode and buyPrice=$buyPrice $counterCurrencyCode" }
             return ExchangeOrder(
                 exchangeName = "BINANCE",
-                orderId = UUID.randomUUID().toString(),
+                exchangeOrderId = UUID.randomUUID().toString(),
                 type = ExchangeOrderType.BID_BUY,
                 orderedAmount = amount,
                 filledAmount = BigDecimal.ZERO,

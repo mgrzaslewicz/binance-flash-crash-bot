@@ -26,7 +26,7 @@ class MockingLimitBuyOrderService(private val clock: Clock, private val decorate
         logger.info { "Creating mock placeLimitBuyOrder response" }
         return ExchangeOrder(
             exchangeName = exchangeName,
-            orderId = UUID.randomUUID().toString(),
+            exchangeOrderId = UUID.randomUUID().toString(),
             type = ExchangeOrderType.BID_BUY,
             orderedAmount = amount,
             filledAmount = BigDecimal.ZERO,
