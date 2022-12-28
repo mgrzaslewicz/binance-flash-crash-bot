@@ -2,7 +2,7 @@ package autocoin.binance.bot.app.config
 
 import autocoin.binance.bot.eventbus.DefaultEventBus
 import autocoin.binance.bot.exchange.BinancePriceStream
-import autocoin.binance.bot.exchange.LoggingOnlyWalletService
+import autocoin.binance.bot.exchange.LoggingOnlyWalletServiceGateway
 import autocoin.binance.bot.exchange.PriceWebSocketConnectionKeeper
 import autocoin.binance.bot.exchange.addingBinanceMarketOrderWithCounterCurrencyAmountBehavior
 import autocoin.binance.bot.exchange.addingDelay
@@ -25,27 +25,15 @@ import autocoin.binance.bot.user.repository.FileUserRepository
 import autocoin.binance.bot.user.repository.logging
 import autocoin.metrics.JsonlFileStatsDClient
 import autocoin.metrics.MetricsService
-import automate.profit.autocoin.exchange.CachingXchangeProvider
-import automate.profit.autocoin.exchange.SupportedExchange
-import automate.profit.autocoin.exchange.XchangeFactoryWrapper
-import automate.profit.autocoin.exchange.XchangeSpecificationApiKeyAssigner
-import automate.profit.autocoin.exchange.apikey.ExchangeApiKey
-import automate.profit.autocoin.exchange.apikey.ExchangeDto
-import automate.profit.autocoin.exchange.apikey.ExchangeKeyDto
-import automate.profit.autocoin.exchange.apikey.ExchangeKeyService
-import automate.profit.autocoin.exchange.apikey.ExchangeService
-import automate.profit.autocoin.exchange.apikey.ServiceApiKeysProvider
-import automate.profit.autocoin.exchange.currency.CurrencyPair
-import automate.profit.autocoin.exchange.order.DemoOrderCreator
-import automate.profit.autocoin.exchange.order.XchangeOrderService
-import automate.profit.autocoin.exchange.peruser.ExchangeSpecificationVerifier
-import automate.profit.autocoin.exchange.peruser.UserExchangeServicesFactory
-import automate.profit.autocoin.exchange.peruser.XchangeUserExchangeServicesFactory
-import automate.profit.autocoin.exchange.ratelimiter.ExchangeRateLimiters
-import automate.profit.autocoin.exchange.wallet.ExchangeCurrencyPairsInWalletService
-import automate.profit.autocoin.exchange.wallet.ExchangeWalletService
-import automate.profit.autocoin.exchange.wallet.XchangeExchangeWalletService
-import automate.profit.autocoin.keyvalue.FileKeyValueRepository
+import automate.profit.autocoin.api.exchange.currency.CurrencyPair
+import automate.profit.autocoin.exchange.wallet.service.authorized.XchangeAuthorizedWalletServiceFactory
+import automate.profit.autocoin.exchange.xchange.CachingXchangeProvider
+import automate.profit.autocoin.exchange.xchange.DefaultXchangeProvider
+import automate.profit.autocoin.exchange.xchange.XchangeApiKeyVerifierGateway
+import automate.profit.autocoin.exchange.xchange.XchangeInstanceWrapper
+import automate.profit.autocoin.exchange.xchange.XchangeSpecificationApiKeyAssigner
+import automate.profit.autocoin.spi.exchange.wallet.gateway.WalletServiceGateway
+import automate.profit.autocoin.spi.keyvalue.FileKeyValueRepository
 import com.binance.api.client.BinanceApiClientFactory
 import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.KeyDeserializer
@@ -158,14 +146,24 @@ class AppContext(private val appConfig: AppConfig) {
         }
     }
 
-    val exchangeWalletService: ExchangeWalletService = if (appConfig.shouldMakeRealOrders) {
+    val xchangeAuthorizedWalletServiceFactory = XchangeAuthorizedWalletServiceFactory(
+        xchangeProvider = CachingXchangeProvider(
+            decorated = DefaultXchangeProvider(
+                xchangeInstanceProvider = XchangeInstanceWrapper(),
+                xchangeSpecificationApiKeyAssigner = XchangeSpecificationApiKeyAssigner(apiKeyVerifierGateway = XchangeApiKeyVerifierGateway()),
+            )
+        ),
+    )
+
+    val walletServiceGateway: WalletServiceGateway = if (appConfig.shouldMakeRealOrders) {
+
         XchangeExchangeWalletService(
             exchangeService = exchangeService,
             exchangeKeyService = exchangeKeyService,
             userExchangeServicesFactory = userExchangeServicesFactory,
         )
     } else {
-        LoggingOnlyWalletService()
+        LoggingOnlyWalletServiceGateway()
     }
 
     val exchangeCurrencyPairsInWalletService = object : ExchangeCurrencyPairsInWalletService {
