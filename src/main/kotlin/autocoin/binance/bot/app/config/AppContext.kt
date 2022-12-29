@@ -4,12 +4,14 @@ import autocoin.binance.bot.eventbus.DefaultEventBus
 import autocoin.binance.bot.exchange.BinancePriceStream
 import autocoin.binance.bot.exchange.LoggingOnlyWalletServiceGateway
 import autocoin.binance.bot.exchange.PriceWebSocketConnectionKeeper
-import autocoin.binance.bot.exchange.addingBinanceMarketOrderWithCounterCurrencyAmountBehavior
 import autocoin.binance.bot.exchange.addingDelay
-import autocoin.binance.bot.exchange.addingTestBinanceMarketOrderWithCounterCurrencyAmountBehavior
-import autocoin.binance.bot.exchange.logging
-import autocoin.binance.bot.exchange.measuringTime
+import autocoin.binance.bot.exchange.apikey.ApiKeyId
+import autocoin.binance.bot.exchange.binance.AddingBinanceMarketOrderWithCounterCurrencyAmountAuthorizedOrderService
+import autocoin.binance.bot.exchange.binance.AddingTestBinanceMarketOrderWithCounterCurrencyAmountAuthorizedOrderService
+import autocoin.binance.bot.exchange.binance.BinanceAuthorizedOrderServiceFactory
+import autocoin.binance.bot.exchange.measuringDuration
 import autocoin.binance.bot.exchange.mockingLimitBuyOrder
+import autocoin.binance.bot.exchange.preLogging
 import autocoin.binance.bot.exchange.rateLimiting
 import autocoin.binance.bot.health.HealthMetricsScheduler
 import autocoin.binance.bot.health.HealthService
@@ -25,15 +27,19 @@ import autocoin.binance.bot.user.repository.FileUserRepository
 import autocoin.binance.bot.user.repository.logging
 import autocoin.metrics.JsonlFileStatsDClient
 import autocoin.metrics.MetricsService
-import automate.profit.autocoin.api.exchange.currency.CurrencyPair
-import automate.profit.autocoin.exchange.wallet.service.authorized.XchangeAuthorizedWalletServiceFactory
-import automate.profit.autocoin.exchange.xchange.CachingXchangeProvider
-import automate.profit.autocoin.exchange.xchange.DefaultXchangeProvider
-import automate.profit.autocoin.exchange.xchange.XchangeApiKeyVerifierGateway
-import automate.profit.autocoin.exchange.xchange.XchangeInstanceWrapper
-import automate.profit.autocoin.exchange.xchange.XchangeSpecificationApiKeyAssigner
-import automate.profit.autocoin.spi.exchange.wallet.gateway.WalletServiceGateway
-import automate.profit.autocoin.spi.keyvalue.FileKeyValueRepository
+import com.autocoin.exchangegateway.api.exchange.currency.CurrencyPair
+import com.autocoin.exchangegateway.api.exchange.order.DemoOrderServiceGateway
+import com.autocoin.exchangegateway.api.exchange.order.service.authorized.XchangeAuthorizedOrderServiceFactory
+import com.autocoin.exchangegateway.api.exchange.wallet.service.authorized.XchangeAuthorizedWalletServiceFactory
+import com.autocoin.exchangegateway.api.exchange.xchange.CachingXchangeProvider
+import com.autocoin.exchangegateway.api.exchange.xchange.DefaultXchangeProvider
+import com.autocoin.exchangegateway.api.exchange.xchange.XchangeApiKeyVerifierGateway
+import com.autocoin.exchangegateway.api.exchange.xchange.XchangeInstanceWrapper
+import com.autocoin.exchangegateway.api.exchange.xchange.XchangeSpecificationApiKeyAssigner
+import com.autocoin.exchangegateway.spi.exchange.order.gateway.OrderServiceGatewayUsingAuthorizedOrderService
+import com.autocoin.exchangegateway.spi.exchange.wallet.gateway.WalletServiceGateway
+import com.autocoin.exchangegateway.spi.exchange.wallet.gateway.WalletServiceGatewayUsingAuthorizedWalletService
+import com.autocoin.exchangegateway.spi.keyvalue.FileKeyValueRepository
 import com.binance.api.client.BinanceApiClientFactory
 import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.KeyDeserializer
@@ -42,16 +48,17 @@ import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.timgroup.statsd.StatsDClient
 import mu.KLogging
-import org.knowm.xchange.ExchangeFactory
 import java.time.Clock
 import java.time.Duration
 import java.time.Instant
-import java.time.temporal.ChronoUnit
 import java.util.concurrent.Executors
 import java.util.concurrent.Executors.newSingleThreadScheduledExecutor
 
 class CurrencyPairDeserializer : KeyDeserializer() {
-    override fun deserializeKey(key: String, ctxt: DeserializationContext): Any {
+    override fun deserializeKey(
+        key: String,
+        ctxt: DeserializationContext,
+    ): Any {
         return CurrencyPair.of(key)
     }
 }
@@ -99,118 +106,68 @@ class AppContext(private val appConfig: AppConfig) {
         fileKeyValueRepository = fileKeyValueRepository,
     ).logging(logPrefix = "StrategyExecutions")
 
-    val exchangeRateLimiters = ExchangeRateLimiters(
-        defaultPermitsPerDuration = 300L,
-        defaultDuration = Duration.of(1L, ChronoUnit.MINUTES),
-        permitAcquireTimeout = Duration.of(250L, ChronoUnit.MILLIS),
+
+    val xchangeProvider = CachingXchangeProvider<ApiKeyId>(
+        decorated = DefaultXchangeProvider(
+            xchangeInstanceProvider = XchangeInstanceWrapper(),
+            xchangeSpecificationApiKeyAssigner = XchangeSpecificationApiKeyAssigner(apiKeyVerifierGateway = XchangeApiKeyVerifierGateway()),
+        )
     )
 
-    val userExchangeServicesFactory: UserExchangeServicesFactory = XchangeUserExchangeServicesFactory(
-        serviceApiKeysProvider = object : ServiceApiKeysProvider {
-            override fun getApiKeys(supportedExchange: SupportedExchange): ExchangeApiKey? {
-                TODO("Not yet implemented")
-            }
-        },
-        cachingXchangeProvider = CachingXchangeProvider(
-            xchangeSpecificationApiKeyAssigner = XchangeSpecificationApiKeyAssigner(ExchangeSpecificationVerifier()),
-            xchangeFactoryWrapper = XchangeFactoryWrapper(ExchangeFactory.INSTANCE),
-        ),
-        exchangeRateLimiters = exchangeRateLimiters,
-        getOpenOrdersToVerifyOrderIsCanceled = false,
-        clock = clock,
-    )
-    val exchangeService = object : ExchangeService {
-        override fun getExchangeIdByName(exchangeName: String): String {
-            TODO("Not yet implemented")
-        }
-
-        override fun getExchangeNameById(exchangeId: String): String {
-            TODO("Not yet implemented")
-        }
-
-        override fun getExchanges(): List<ExchangeDto> {
-            TODO("Not yet implemented")
-        }
-    }
-    val exchangeKeyService = object : ExchangeKeyService {
-        override fun getExchangeKey(exchangeUserId: String, exchangeId: String): ExchangeKeyDto? {
-            TODO("Not yet implemented")
-        }
-
-        override fun getExchangeKeys(): List<ExchangeKeyDto> {
-            TODO("Not yet implemented")
-        }
-
-        override fun getExchangeKeys(exchangeUserId: String): List<ExchangeKeyDto> {
-            TODO("Not yet implemented")
-        }
-    }
-
-    val xchangeAuthorizedWalletServiceFactory = XchangeAuthorizedWalletServiceFactory(
-        xchangeProvider = CachingXchangeProvider(
-            decorated = DefaultXchangeProvider(
-                xchangeInstanceProvider = XchangeInstanceWrapper(),
-                xchangeSpecificationApiKeyAssigner = XchangeSpecificationApiKeyAssigner(apiKeyVerifierGateway = XchangeApiKeyVerifierGateway()),
-            )
-        ),
+    val authorizedWalletServiceFactory = XchangeAuthorizedWalletServiceFactory(
+        xchangeProvider = xchangeProvider,
     )
 
-    val walletServiceGateway: WalletServiceGateway = if (appConfig.shouldMakeRealOrders) {
-
-        XchangeExchangeWalletService(
-            exchangeService = exchangeService,
-            exchangeKeyService = exchangeKeyService,
-            userExchangeServicesFactory = userExchangeServicesFactory,
+    val walletServiceGateway: WalletServiceGateway<ApiKeyId> = if (appConfig.shouldMakeRealOrders) {
+        WalletServiceGatewayUsingAuthorizedWalletService(
+            authorizedWalletServiceFactory = authorizedWalletServiceFactory,
         )
     } else {
         LoggingOnlyWalletServiceGateway()
     }
 
-    val exchangeCurrencyPairsInWalletService = object : ExchangeCurrencyPairsInWalletService {
-        override fun generateFromWalletIfGivenEmpty(exchangeName: String, exchangeKey: ExchangeKeyDto, currencyPairs: List<CurrencyPair>): List<CurrencyPair> {
-            TODO("Not yet implemented")
-        }
-
-        override fun generateFromWalletIfGivenEmpty(exchangeName: String, exchangeUserId: String, currencyPairs: List<CurrencyPair>): List<CurrencyPair> {
-            TODO("Not yet implemented")
+    val authorizedOrderServiceFactory = XchangeAuthorizedOrderServiceFactory(
+        xchangeProvider = xchangeProvider,
+        clock = clock,
+    ).let {
+        if (appConfig.shouldMakeRealOrders) {
+            BinanceAuthorizedOrderServiceFactory(
+                decorated = it,
+                wrapper = { orderService -> AddingBinanceMarketOrderWithCounterCurrencyAmountAuthorizedOrderService(clock, orderService) },
+            )
+        } else {
+            BinanceAuthorizedOrderServiceFactory(
+                decorated = it,
+                wrapper = { orderService -> AddingTestBinanceMarketOrderWithCounterCurrencyAmountAuthorizedOrderService(clock, orderService) },
+            )
         }
     }
 
-    val exchangeOrderService = if (appConfig.shouldMakeRealOrders) {
+    val orderServiceGateway = if (appConfig.shouldMakeRealOrders) {
         logger.info { "Will make real orders" }
-        XchangeOrderService(
-            exchangeService = exchangeService,
-            exchangeKeyService = exchangeKeyService,
-            userExchangeServicesFactory = userExchangeServicesFactory,
-            exchangeCurrencyPairsInWallet = exchangeCurrencyPairsInWalletService,
-            demoOrderCreator = DemoOrderCreator(clock),
+        OrderServiceGatewayUsingAuthorizedOrderService(
+            authorizedOrderServiceFactory = authorizedOrderServiceFactory,
         )
-            .addingBinanceMarketOrderWithCounterCurrencyAmountBehavior(clock = clock)
-            .measuringTime()
+            .preLogging()
+            .measuringDuration()
             .rateLimiting()
-            .logging()
+            .measuringDuration("with rate limit, ")
 
     } else {
         logger.warn { "Will NOT make real orders, just test market order at binance and return mock limit orders instead" }
-        XchangeOrderService(
-            exchangeService = exchangeService,
-            exchangeKeyService = exchangeKeyService,
-            userExchangeServicesFactory = userExchangeServicesFactory,
-            exchangeCurrencyPairsInWallet = exchangeCurrencyPairsInWalletService,
-            demoOrderCreator = DemoOrderCreator(clock),
+        DemoOrderServiceGateway<ApiKeyId>(
+            clock = clock,
         )
-            .addingTestBinanceMarketOrderWithCounterCurrencyAmountBehavior(clock = clock)
             .mockingLimitBuyOrder(clock = clock)
-            .rateLimiting()
+            .preLogging()
             .addingDelay(Duration.ofSeconds(1))
-            .logging()
-            .measuringTime()
-
+            .rateLimiting(permitsPerSecond = 0.1)
+            .measuringDuration("including rate limit permit duration, ")
     }
 
 
     val strategyExecutorProvider = BinanceStrategyExecutorProvider(
-        exchangeOrderService = exchangeOrderService,
+        orderServiceGateway = orderServiceGateway,
         strategyExecutions = strategyExecutions,
         javaExecutorService = Executors.newCachedThreadPool(),
     )

@@ -1,22 +1,22 @@
 package autocoin.binance.bot.strategy
 
 import autocoin.binance.bot.exchange.CurrencyPairWithPrice
-import autocoin.binance.bot.strategy.execution.StrategyExecution
+import autocoin.binance.bot.strategy.execution.StrategyExecutionDto
 import autocoin.binance.bot.strategy.execution.repository.FileBackedMutableSet
 import autocoin.binance.bot.strategy.executor.StrategyExecutor
 import autocoin.binance.bot.strategy.executor.StrategyExecutorProvider
-import autocoin.binance.bot.strategy.parameters.StrategyParameters
-import automate.profit.autocoin.exchange.currency.CurrencyPair
+import autocoin.binance.bot.strategy.parameters.StrategyParametersDto
+import com.autocoin.exchangegateway.spi.exchange.currency.CurrencyPair
 
 class ExchangeStrategyExecutorService(
-    private val strategyExecutions: FileBackedMutableSet<StrategyExecution>,
-    private val strategyExecutorProvider: StrategyExecutorProvider
+    private val strategyExecutions: FileBackedMutableSet<StrategyExecutionDto>,
+    private val strategyExecutorProvider: StrategyExecutorProvider,
 ) : StrategyExecutorService {
 
     private val runningStrategies = mutableMapOf<CurrencyPair, MutableList<StrategyExecutor>>()
     override fun getRunningStrategies() = runningStrategies.flatMap { it.value }.map { it.strategyExecution }
 
-    override fun addStrategyExecutor(strategyParameters: StrategyParameters) {
+    override fun addStrategyExecutor(strategyParameters: StrategyParametersDto) {
         val strategiesRunningWithCurrencyPair = runningStrategies.getOrPut(strategyParameters.currencyPair) { ArrayList() }
         if (strategiesRunningWithCurrencyPair.any { strategyParameters.matchesStrategyExecution(it.strategyExecution) }) {
             throw RuntimeException("User ${strategyParameters.userId} already has strategy running on currency pair ${strategyParameters.currencyPair}")
@@ -34,7 +34,7 @@ class ExchangeStrategyExecutorService(
         return runningStrategies.keys.toList()
     }
 
-    override fun addOrResumeStrategyExecutors(strategyParametersList: Collection<StrategyParameters>) {
+    override fun addOrResumeStrategyExecutors(strategyParametersList: Collection<StrategyParametersDto>) {
         val strategiesToResume = strategyExecutions.filter { execution ->
             strategyParametersList.any { parameters ->
                 parameters.matchesStrategyExecution(execution)

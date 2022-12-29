@@ -4,14 +4,14 @@ import autocoin.binance.bot.TestConfig
 import autocoin.binance.bot.strategy.action.PlaceBuyMarketOrderAction
 import autocoin.binance.bot.strategy.execution.repository.StrategyOrder
 import autocoin.binance.bot.strategy.executor.StrategyExecutor
-import autocoin.binance.bot.strategy.parameters.StrategyParameters
+import autocoin.binance.bot.strategy.parameters.StrategyParametersDto
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 
 class BuyWithMarketOrderBelowPriceStrategyTest {
-    private lateinit var strategyParameters: StrategyParameters
+    private lateinit var strategyParameters: StrategyParametersDto
     private lateinit var strategyExecutor: StrategyExecutor
     private lateinit var tested: BuyWithMarketOrderBelowPriceStrategy
 

@@ -2,7 +2,7 @@ package autocoin.binance.bot.strategy
 
 import autocoin.binance.bot.exchange.CurrencyPairWithPrice
 import autocoin.binance.bot.logger.withMinDelayBetweenLogs
-import autocoin.binance.bot.strategy.parameters.StrategyParameters
+import autocoin.binance.bot.strategy.parameters.StrategyParametersDto
 import mu.KLogging
 import java.time.Duration
 
@@ -14,7 +14,7 @@ class LoggingStrategyExecutorService(
 
     private val loggerWithMinDelayBetweenLogs = logger.withMinDelayBetweenLogs(minDelayBetweenLogs)
 
-    override fun addOrResumeStrategyExecutors(strategyParametersList: Collection<StrategyParameters>) {
+    override fun addOrResumeStrategyExecutors(strategyParametersList: Collection<StrategyParametersDto>) {
         logger.info { "Adding or resuming following ${strategyParametersList.size} strategies: $strategyParametersList" }
         decorated.addOrResumeStrategyExecutors(strategyParametersList)
     }

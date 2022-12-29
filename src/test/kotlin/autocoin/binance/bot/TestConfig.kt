@@ -1,12 +1,11 @@
 package autocoin.binance.bot
 
+import autocoin.binance.bot.exchange.apikey.ApiKeyDto
 import autocoin.binance.bot.strategy.BuyWithMarketOrderBelowPriceStrategy
 import autocoin.binance.bot.strategy.PositionBuyOrdersForFlashCrashStrategy
 import autocoin.binance.bot.strategy.executor.StrategyType
-import autocoin.binance.bot.strategy.parameters.StrategyParameters
-import automate.profit.autocoin.exchange.SupportedExchange
-import automate.profit.autocoin.exchange.apikey.ExchangeKeyDto
-import automate.profit.autocoin.exchange.currency.CurrencyPair
+import autocoin.binance.bot.strategy.parameters.StrategyParametersDto
+import com.autocoin.exchangegateway.api.exchange.currency.CurrencyPair
 import java.math.BigDecimal
 
 object TestConfig {
@@ -14,21 +13,15 @@ object TestConfig {
     fun samplePositionBuyLimitOrdersSampleStrategyParameters(
         numberOfBuyLimitOrdersToKeep: Int = 4,
         counterCurrencyAmountLimitForBuying: BigDecimal = 100.0.toBigDecimal(),
-    ): StrategyParameters {
-        return StrategyParameters(
+    ): StrategyParametersDto {
+        return StrategyParametersDto(
             baseCurrencyCode = currencyPair.base,
             counterCurrencyCode = currencyPair.counter,
             userId = "user-1",
             strategyType = StrategyType.POSITION_BUY_ORDERS_FOR_FLASH_CRASH,
-            exchangeApiKey = ExchangeKeyDto(
-                apiKey = "key-1",
+            apiKey = ApiKeyDto(
+                publicKey = "key-1",
                 secretKey = "secret-1",
-                exchangeId = "does not matter",
-                exchangeName = SupportedExchange.BINANCE.exchangeName,
-                exchangeSpecificKeyParameters = emptyMap(),
-                exchangeUserId = "does not matter",
-                exchangeUserName = "does not matter",
-                userName = null,
             ),
             strategySpecificParameters = mapOf(
                 PositionBuyOrdersForFlashCrashStrategy.Builder.numberOfBuyLimitOrdersToKeepParameter to numberOfBuyLimitOrdersToKeep.toString(),
@@ -48,21 +41,15 @@ object TestConfig {
     fun samplePlaceBuyMarketOrdersBelowPriceStrategyParameters(
         pricesTriggeringBuyMarketOrderParameter: List<BigDecimal>,
         counterCurrencyAmountLimitForBuying: BigDecimal,
-    ): StrategyParameters {
-        return StrategyParameters(
+    ): StrategyParametersDto {
+        return StrategyParametersDto(
             baseCurrencyCode = currencyPair.base,
             counterCurrencyCode = currencyPair.counter,
             userId = "user-1",
             strategyType = StrategyType.BUY_WITH_MARKET_ORDER_BELOW_PRICE,
-            exchangeApiKey = ExchangeKeyDto(
-                apiKey = "key-1",
+            apiKey = ApiKeyDto(
+                publicKey = "key-1",
                 secretKey = "secret-1",
-                exchangeId = "does not matter",
-                exchangeName = SupportedExchange.BINANCE.exchangeName,
-                exchangeSpecificKeyParameters = emptyMap(),
-                exchangeUserId = "does not matter",
-                exchangeUserName = "does not matter",
-                userName = null,
             ),
             strategySpecificParameters = mapOf(
                 BuyWithMarketOrderBelowPriceStrategy.Builder.pricesTriggeringBuyMarketOrderParameter to pricesTriggeringBuyMarketOrderParameter.joinToString { it.toPlainString() },

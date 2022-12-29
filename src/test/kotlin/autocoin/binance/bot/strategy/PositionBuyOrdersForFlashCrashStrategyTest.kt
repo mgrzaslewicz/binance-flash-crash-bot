@@ -4,10 +4,10 @@ import autocoin.binance.bot.TestConfig
 import autocoin.binance.bot.exchange.CurrencyPairWithPrice
 import autocoin.binance.bot.strategy.action.CancelOrderAction
 import autocoin.binance.bot.strategy.action.PlaceBuyLimitOrderAction
-import autocoin.binance.bot.strategy.execution.StrategyExecution
+import autocoin.binance.bot.strategy.execution.StrategyExecutionDto
 import autocoin.binance.bot.strategy.execution.repository.StrategyOrder
 import autocoin.binance.bot.strategy.executor.StrategyExecutor
-import automate.profit.autocoin.exchange.order.ExchangeOrder
+import com.autocoin.exchangegateway.spi.exchange.order.Order
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -18,17 +18,23 @@ class PositionBuyOrdersForFlashCrashStrategyTest {
     private lateinit var tested: PositionBuyOrdersForFlashCrashStrategy
     private lateinit var strategyExecutor: StrategyExecutor
 
-    class TestStrategyExecutor(override val strategyExecution: StrategyExecution) : StrategyExecutor {
+    class TestStrategyExecutor(override val strategyExecution: StrategyExecutionDto) : StrategyExecutor {
 
         override fun cancelOrder(order: StrategyOrder): Boolean {
             return true
         }
 
-        override fun placeBuyLimitOrder(buyPrice: BigDecimal, baseCurrencyAmount: BigDecimal): ExchangeOrder? {
+        override fun placeBuyLimitOrder(
+            buyPrice: BigDecimal,
+            baseCurrencyAmount: BigDecimal,
+        ): Order? {
             return null
         }
 
-        override fun placeBuyMarketOrder(currentPrice: BigDecimal, counterCurrencyAmount: BigDecimal): ExchangeOrder? {
+        override fun placeBuyMarketOrder(
+            currentPrice: BigDecimal,
+            counterCurrencyAmount: BigDecimal,
+        ): Order? {
             return null
         }
 

@@ -51,8 +51,8 @@
             <version>1.0.1</version>
         </dependency>
         <dependency>
-            <groupId>automate.profit</groupId>
-            <artifactId>autocoin-exchange-api-xchange</artifactId>
+            <groupId>com.autocoin</groupId>
+            <artifactId>exchange-gateway-api-xchange</artifactId>
             <version>3.0.0-SNAPSHOT</version>
         </dependency>
         <dependency>

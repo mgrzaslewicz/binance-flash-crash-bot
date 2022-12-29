@@ -2,7 +2,7 @@ package autocoin.binance.bot.strategy
 
 import autocoin.binance.bot.strategy.action.PlaceBuyMarketOrderAction
 import autocoin.binance.bot.strategy.action.StrategyAction
-import autocoin.binance.bot.strategy.execution.StrategyExecution
+import autocoin.binance.bot.strategy.execution.StrategyExecutionDto
 import java.math.BigDecimal
 import java.math.MathContext
 import java.math.RoundingMode
@@ -21,17 +21,22 @@ class BuyWithMarketOrderBelowPriceStrategy(
     private val counterCurrencyAmountPerOrder = counterCurrencyAmountLimitForBuying
         .divide(numberOfBuyMarketOrdersToPlace.toBigDecimal(), mathContext)
 
-    private fun StrategyExecution.hasNoMaximumNumberOfOrdersYet() = orders.size < numberOfBuyMarketOrdersToPlace
+    private fun StrategyExecutionDto.hasNoMaximumNumberOfOrdersYet() = orders.size < numberOfBuyMarketOrdersToPlace
 
-    override fun getActions(price: BigDecimal, strategyExecution: StrategyExecution): List<StrategyAction> {
+    override fun getActions(
+        price: BigDecimal,
+        strategyExecution: StrategyExecutionDto,
+    ): List<StrategyAction> {
         return if (strategyExecution.hasNoMaximumNumberOfOrdersYet()) {
             val currentPricePoint = pricesTriggeringBuyMarketOrder[strategyExecution.orders.size]
             if (price < currentPricePoint) {
-                listOf(PlaceBuyMarketOrderAction(
-                    currentPrice = price,
-                    counterCurrencyAmount = counterCurrencyAmountPerOrder,
-                    shouldBreakActionChainOnFail = true
-                ))
+                listOf(
+                    PlaceBuyMarketOrderAction(
+                        currentPrice = price,
+                        counterCurrencyAmount = counterCurrencyAmountPerOrder,
+                        shouldBreakActionChainOnFail = true
+                    )
+                )
             } else {
                 emptyList()
             }

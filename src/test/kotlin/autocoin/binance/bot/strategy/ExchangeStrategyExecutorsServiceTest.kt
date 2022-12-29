@@ -3,10 +3,12 @@ package autocoin.binance.bot.strategy
 import autocoin.binance.bot.TestConfig
 import autocoin.binance.bot.exchange.CurrencyPairWithPrice
 import autocoin.binance.bot.exchange.TestOrderService
+import autocoin.binance.bot.exchange.measuringDuration
+import autocoin.binance.bot.exchange.preLogging
 import autocoin.binance.bot.strategy.execution.repository.TestStrategyExecutionMutableSet
 import autocoin.binance.bot.strategy.executor.*
-import autocoin.binance.bot.strategy.parameters.StrategyParameters
-import automate.profit.autocoin.exchange.currency.CurrencyPair
+import autocoin.binance.bot.strategy.parameters.StrategyParametersDto
+import com.autocoin.exchangegateway.api.exchange.currency.CurrencyPair
 import com.google.common.util.concurrent.MoreExecutors
 import mu.KLogging
 import org.assertj.core.api.Assertions.assertThat
@@ -36,7 +38,7 @@ class ExchangeStrategyExecutorsServiceTest {
         val tested = ExchangeStrategyExecutorService(
             strategyExecutions = strategyExecutions,
             strategyExecutorProvider = BinanceStrategyExecutorProvider(
-                exchangeOrderService = TestOrderService(),
+                orderServiceGateway = TestOrderService(),
                 strategyExecutions = strategyExecutions,
                 javaExecutorService = MoreExecutors.newDirectExecutorService(),
             )
@@ -53,13 +55,15 @@ class ExchangeStrategyExecutorsServiceTest {
         // given
         val strategyExecutions = TestStrategyExecutionMutableSet()
         val binanceStrategyExecutorProvider = BinanceStrategyExecutorProvider(
-            exchangeOrderService = TestOrderService(),
+            orderServiceGateway = TestOrderService()
+                .preLogging()
+                .measuringDuration(),
             strategyExecutions = strategyExecutions,
             javaExecutorService = MoreExecutors.newDirectExecutorService(),
         )
         val createdExecutors: MutableList<RememberingPriceStrategyExecutor> = mutableListOf()
         val strategyExecutorProvider = object : StrategyExecutorProvider by binanceStrategyExecutorProvider {
-            override fun createStrategyExecutor(strategyParameters: StrategyParameters): StrategyExecutor {
+            override fun createStrategyExecutor(strategyParameters: StrategyParametersDto): StrategyExecutor {
                 return binanceStrategyExecutorProvider.createStrategyExecutor(strategyParameters)
                     .rememberingPrice()
                     .also { createdExecutors += it }

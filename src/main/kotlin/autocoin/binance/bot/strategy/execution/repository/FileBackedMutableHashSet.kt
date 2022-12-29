@@ -1,6 +1,6 @@
 package autocoin.binance.bot.strategy.execution.repository
 
-import automate.profit.autocoin.keyvalue.FileKeyValueRepository
+import com.autocoin.exchangegateway.spi.keyvalue.FileKeyValueRepository
 import java.io.File
 import java.nio.file.Path
 import java.util.function.Function

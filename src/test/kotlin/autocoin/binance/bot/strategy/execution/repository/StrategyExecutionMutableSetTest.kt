@@ -1,13 +1,13 @@
 package autocoin.binance.bot.strategy.execution.repository
 
 import autocoin.binance.bot.app.config.objectMapper
+import autocoin.binance.bot.exchange.apikey.ApiKeyDto
 import autocoin.binance.bot.strategy.PositionBuyOrdersForFlashCrashStrategy.Builder.Companion.counterCurrencyAmountLimitForBuyingParameter
-import autocoin.binance.bot.strategy.execution.StrategyExecution
+import autocoin.binance.bot.strategy.execution.StrategyExecutionDto
 import autocoin.binance.bot.strategy.executor.StrategyType
-import automate.profit.autocoin.exchange.SupportedExchange
-import automate.profit.autocoin.exchange.apikey.ExchangeKeyDto
-import automate.profit.autocoin.exchange.order.ExchangeOrderStatus
-import automate.profit.autocoin.keyvalue.FileKeyValueRepository
+import com.autocoin.exchangegateway.api.exchange.xchange.ExchangeNames.Companion.binance
+import com.autocoin.exchangegateway.spi.exchange.order.OrderStatus
+import com.autocoin.exchangegateway.spi.keyvalue.FileKeyValueRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import java.io.File
@@ -19,10 +19,10 @@ class StrategyExecutionMutableSetTest {
         File(StrategyExecutionMutableSetTest::class.java.getResource("/sample-strategy-executions.json").toURI()).absolutePath
 
 
-    private val expectedStrategyExecution = StrategyExecution(
+    private val expectedStrategyExecution = StrategyExecutionDto(
         id = "sample-execution-id-1",
         userId = "sample-user-id-1",
-        exchangeName = SupportedExchange.BINANCE.exchangeName,
+        exchangeName = binance.value,
 
         baseCurrencyCode = "BTC",
         counterCurrencyCode = "USDT",
@@ -32,22 +32,16 @@ class StrategyExecutionMutableSetTest {
             counterCurrencyAmountLimitForBuyingParameter to 1500.0.toBigDecimal().toPlainString(),
         ),
         createTimeMillis = 3,
-        exchangeApiKey = ExchangeKeyDto(
-            apiKey = "sample binance api key",
+        apiKey = ApiKeyDto(
+            publicKey = "sample binance api key",
             secretKey = "sample binance secret key",
-            exchangeId = "does not matter",
-            exchangeName = SupportedExchange.BINANCE.exchangeName,
-            exchangeSpecificKeyParameters = emptyMap(),
-            exchangeUserId = "does not matter",
-            exchangeUserName = "does not matter",
-            userName = null,
         ),
 
         orders = listOf(
             StrategyOrder(
                 id = "sample-order-id-1",
                 exchangeOrderId = "exchange-order-id-1",
-                status = ExchangeOrderStatus.NEW,
+                status = OrderStatus.NEW,
                 price = 10000.toBigDecimal(),
                 amount = 0.1.toBigDecimal(),
                 amountFilled = 0.toBigDecimal(),
@@ -59,7 +53,7 @@ class StrategyExecutionMutableSetTest {
             StrategyOrder(
                 id = "sample-order-id-2",
                 exchangeOrderId = "exchange-order-id-2",
-                status = ExchangeOrderStatus.FILLED,
+                status = OrderStatus.FILLED,
                 price = 11000.toBigDecimal(),
                 amount = 0.2.toBigDecimal(),
                 amountFilled = 0.2.toBigDecimal(),

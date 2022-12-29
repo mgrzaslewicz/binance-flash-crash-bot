@@ -1,8 +1,8 @@
 package autocoin.binance.bot.strategy.parameters.repository
 
 import autocoin.binance.bot.strategy.execution.repository.FileBackedMutableHashSet
-import autocoin.binance.bot.strategy.parameters.StrategyParameters
-import automate.profit.autocoin.keyvalue.FileKeyValueRepository
+import autocoin.binance.bot.strategy.parameters.StrategyParametersDto
+import com.autocoin.exchangegateway.spi.keyvalue.FileKeyValueRepository
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import java.nio.file.Path
@@ -12,7 +12,7 @@ class StrategyParametersFileBackedMutableSet(
     private val objectMapper: ObjectMapper,
     fileKeyValueRepository: FileKeyValueRepository,
     fileRepositoryDirectory: Path,
-) : FileBackedMutableHashSet<StrategyParameters>(
+) : FileBackedMutableHashSet<StrategyParametersDto>(
     serializer = Function { strategyParameters ->
         objectMapper.writeValueAsString(strategyParameters)
     },
@@ -24,7 +24,7 @@ class StrategyParametersFileBackedMutableSet(
     fileRepositoryDirectory = fileRepositoryDirectory,
 ) {
     private companion object {
-        private object StrategyParametersType : TypeReference<Set<StrategyParameters>>()
+        private object StrategyParametersType : TypeReference<Set<StrategyParametersDto>>()
     }
 }
 

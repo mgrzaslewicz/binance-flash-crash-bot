@@ -1,6 +1,6 @@
 package autocoin.binance.bot.user.repository
 
-import automate.profit.autocoin.keyvalue.FileKeyValueRepository
+import com.autocoin.exchangegateway.spi.keyvalue.FileKeyValueRepository
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import java.nio.file.Path

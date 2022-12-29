@@ -1,17 +1,18 @@
 package autocoin.binance.bot.strategy.executor
 
+import autocoin.binance.bot.exchange.apikey.ApiKeyId
 import autocoin.binance.bot.strategy.BuyWithMarketOrderBelowPriceStrategy
 import autocoin.binance.bot.strategy.PositionBuyOrdersForFlashCrashStrategy
-import autocoin.binance.bot.strategy.execution.StrategyExecution
+import autocoin.binance.bot.strategy.execution.StrategyExecutionDto
 import autocoin.binance.bot.strategy.execution.repository.FileBackedMutableSet
-import autocoin.binance.bot.strategy.parameters.StrategyParameters
+import autocoin.binance.bot.strategy.parameters.StrategyParametersDto
 import autocoin.binance.bot.strategy.parameters.WithStrategySpecificParameters
-import automate.profit.autocoin.exchange.order.ExchangeOrderService
+import com.autocoin.exchangegateway.spi.exchange.order.gateway.OrderServiceGateway
 import java.util.concurrent.ExecutorService
 
 interface StrategyExecutorProvider {
-    fun createStrategyExecutor(strategyParameters: StrategyParameters): StrategyExecutor
-    fun createStrategyExecutor(strategyExecution: StrategyExecution): StrategyExecutor
+    fun createStrategyExecutor(strategyParameters: StrategyParametersDto): StrategyExecutor
+    fun createStrategyExecutor(strategyExecution: StrategyExecutionDto): StrategyExecutor
 }
 
 
@@ -21,8 +22,8 @@ enum class StrategyType {
 }
 
 class BinanceStrategyExecutorProvider(
-    private val exchangeOrderService: ExchangeOrderService,
-    private val strategyExecutions: FileBackedMutableSet<StrategyExecution>,
+    private val orderServiceGateway: OrderServiceGateway<ApiKeyId>,
+    private val strategyExecutions: FileBackedMutableSet<StrategyExecutionDto>,
     private val javaExecutorService: ExecutorService,
 ) : StrategyExecutorProvider {
 
@@ -31,20 +32,20 @@ class BinanceStrategyExecutorProvider(
         StrategyType.BUY_WITH_MARKET_ORDER_BELOW_PRICE -> BuyWithMarketOrderBelowPriceStrategy.Builder().withStrategySpecificParameters(this.strategySpecificParameters).build()
     }
 
-    override fun createStrategyExecutor(strategyParameters: StrategyParameters): StrategyExecutor {
+    override fun createStrategyExecutor(strategyParameters: StrategyParametersDto): StrategyExecutor {
         return BinanceStrategyExecutor(
             strategyExecution = strategyParameters.toStrategyExecution(),
-            exchangeOrderService = exchangeOrderService,
+            orderServiceGateway = orderServiceGateway,
             strategyExecutions = strategyExecutions,
             strategy = strategyParameters.toStrategy(strategyParameters.strategyType),
             javaExecutorService = javaExecutorService,
         )
     }
 
-    override fun createStrategyExecutor(strategyExecution: StrategyExecution): StrategyExecutor {
+    override fun createStrategyExecutor(strategyExecution: StrategyExecutionDto): StrategyExecutor {
         return BinanceStrategyExecutor(
             strategyExecution = strategyExecution,
-            exchangeOrderService = exchangeOrderService,
+            orderServiceGateway = orderServiceGateway,
             strategyExecutions = strategyExecutions,
             strategy = strategyExecution.toStrategy(strategyExecution.strategyType),
             javaExecutorService = javaExecutorService,

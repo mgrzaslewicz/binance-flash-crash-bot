@@ -2,9 +2,9 @@ package autocoin.binance.bot.exchange
 
 import autocoin.binance.bot.eventbus.EventBus
 import autocoin.binance.bot.eventbus.EventType
-import automate.profit.autocoin.exchange.currency.CurrencyPair
-import automate.profit.autocoin.exchange.currency.toXchangeCurrencyPair
-import automate.profit.autocoin.exchange.peruser.toCurrencyPair
+import com.autocoin.exchangegateway.api.exchange.currency.defaultCurrencyPairToXchange
+import com.autocoin.exchangegateway.api.exchange.currency.defaultXchangeCurrencyPairTransformer
+import com.autocoin.exchangegateway.spi.exchange.currency.CurrencyPair
 import com.binance.api.client.BinanceApiCallback
 import com.binance.api.client.BinanceApiWebSocketClient
 import com.binance.api.client.domain.event.AggTradeEvent
@@ -16,11 +16,12 @@ import java.time.Clock
 import java.time.Duration
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicReference
+import java.util.function.Function
 import kotlin.system.measureTimeMillis
 
 data class CurrencyPairWithPrice(
     val currencyPair: CurrencyPair,
-    val price: BigDecimal
+    val price: BigDecimal,
 )
 
 val priceUpdatedEventType = object : EventType<CurrencyPairWithPrice> {
@@ -31,6 +32,8 @@ class BinancePriceStream(
     private val eventBus: EventBus,
     private val binanceApiWebSocketClient: BinanceApiWebSocketClient,
     private val clock: Clock,
+    private val currencyPairToXchange: Function<CurrencyPair, org.knowm.xchange.currency.CurrencyPair> = defaultCurrencyPairToXchange,
+    private val xchangeCurrencyPairTransformer: Function<org.knowm.xchange.currency.CurrencyPair, CurrencyPair> = defaultXchangeCurrencyPairTransformer,
 ) {
     private companion object : KLogging()
 
@@ -40,8 +43,8 @@ class BinancePriceStream(
     private var connectionStartedAt: Instant? = null
     private var websocketFailureCount: Int = 0
 
-    private fun CurrencyPair.toBinanceSymbol() = BinanceAdapters.toSymbol(this.toXchangeCurrencyPair()).lowercase()
-    private fun String.toCurrencyPair() = BinanceAdapters.adaptSymbol(this).toCurrencyPair()
+    private fun CurrencyPair.toBinanceSymbol() = BinanceAdapters.toSymbol(currencyPairToXchange.apply(this)).lowercase()
+    private fun String.toCurrencyPair() = BinanceAdapters.adaptSymbol(this).let { xchangeCurrencyPairTransformer.apply(it) }
 
     private val apiCallback = object : BinanceApiCallback<AggTradeEvent> {
 

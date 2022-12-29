@@ -9,9 +9,11 @@ import com.autocoin.exchangegateway.spi.exchange.order.Order
 import com.autocoin.exchangegateway.spi.exchange.order.gateway.OrderServiceGateway
 import mu.KLogging
 import java.math.BigDecimal
+import java.time.Duration
 
-class PreLoggingOrderServiceGateway(
+class AddingDelayOrderServiceGateway(
     private val decorated: OrderServiceGateway<ApiKeyId>,
+    private val delay: Duration = Duration.ofSeconds(1),
 ) : OrderServiceGateway<ApiKeyId> by decorated {
     companion object : KLogging()
 
@@ -20,11 +22,11 @@ class PreLoggingOrderServiceGateway(
         apiKey: ApiKeySupplier<ApiKeyId>,
         cancelOrderParams: CancelOrderParams,
     ): Boolean {
-        logger.info { "[${exchangeName.value}] Going to cancelOrder $cancelOrderParams" }
+        Thread.sleep(delay.toMillis())
         return decorated.cancelOrder(
             exchangeName = exchangeName,
             apiKey = apiKey,
-            cancelOrderParams = cancelOrderParams
+            cancelOrderParams = cancelOrderParams,
         )
     }
 
@@ -35,7 +37,7 @@ class PreLoggingOrderServiceGateway(
         buyPrice: BigDecimal,
         amount: BigDecimal,
     ): Order {
-        logger.info { "[${exchangeName.value}] Going to placeLimitBuyOrder exchangeName=$exchangeName, apiKey.id=${apiKey.id}, currencyPair=$currencyPair, buyPrice=${buyPrice.toPlainString()}, amount=${amount.toPlainString()}" }
+        Thread.sleep(delay.toMillis())
         return decorated.placeLimitBuyOrder(
             exchangeName = exchangeName,
             apiKey = apiKey,
@@ -45,23 +47,7 @@ class PreLoggingOrderServiceGateway(
         )
     }
 
-    override fun placeMarketBuyOrderWithCounterCurrencyAmount(
-        exchangeName: ExchangeName,
-        apiKey: ApiKeySupplier<ApiKeyId>,
-        currencyPair: CurrencyPair,
-        counterCurrencyAmount: BigDecimal,
-        currentPrice: BigDecimal,
-    ): Order {
-        logger.info { "[${exchangeName.value}] Going to placeLimitBuyOrder exchangeName=$exchangeName, apiKey.id=${apiKey.id}, currencyPair=$currencyPair, currentPrice=${currentPrice.toPlainString()}" }
-        return decorated.placeMarketBuyOrderWithCounterCurrencyAmount(
-            exchangeName = exchangeName,
-            apiKey = apiKey,
-            currencyPair = currencyPair,
-            counterCurrencyAmount = counterCurrencyAmount,
-            currentPrice = currentPrice,
-        )
-    }
 }
 
-fun OrderServiceGateway<ApiKeyId>.preLogging() = PreLoggingOrderServiceGateway(this)
-
+fun OrderServiceGateway<ApiKeyId>.addingDelay(delay: Duration = Duration.ofSeconds(1)) =
+    AddingDelayOrderServiceGateway(this, delay = delay)

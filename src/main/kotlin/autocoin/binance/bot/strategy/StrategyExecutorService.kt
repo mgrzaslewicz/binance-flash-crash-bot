@@ -1,14 +1,14 @@
 package autocoin.binance.bot.strategy
 
 import autocoin.binance.bot.exchange.PriceListener
-import autocoin.binance.bot.strategy.execution.StrategyExecution
-import autocoin.binance.bot.strategy.parameters.StrategyParameters
-import automate.profit.autocoin.exchange.currency.CurrencyPair
+import autocoin.binance.bot.strategy.execution.StrategyExecutionDto
+import autocoin.binance.bot.strategy.parameters.StrategyParametersDto
+import com.autocoin.exchangegateway.spi.exchange.currency.CurrencyPair
 
 
 interface StrategyExecutorService : PriceListener {
-    fun addStrategyExecutor(strategyParameters: StrategyParameters)
+    fun addStrategyExecutor(strategyParameters: StrategyParametersDto)
     fun currencyPairsCurrentlyNeeded(): List<CurrencyPair>
-    fun addOrResumeStrategyExecutors(strategyParametersList: Collection<StrategyParameters>)
-    fun getRunningStrategies(): List<StrategyExecution>
+    fun addOrResumeStrategyExecutors(strategyParametersList: Collection<StrategyParametersDto>)
+    fun getRunningStrategies(): List<StrategyExecutionDto>
 }

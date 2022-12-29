@@ -1,26 +1,34 @@
 package autocoin.binance.bot.exchange
 
-import automate.profit.autocoin.exchange.apikey.ExchangeKeyDto
-import automate.profit.autocoin.exchange.currency.CurrencyPair
-import automate.profit.autocoin.exchange.order.ExchangeCancelOrderParams
-import automate.profit.autocoin.exchange.order.ExchangeOpenOrders
-import automate.profit.autocoin.exchange.order.ExchangeOrder
-import automate.profit.autocoin.exchange.order.ExchangeOrderService
-import automate.profit.autocoin.exchange.order.ExchangeOrderStatus
-import automate.profit.autocoin.exchange.order.ExchangeOrderType
+import autocoin.binance.bot.exchange.apikey.ApiKeyId
+import com.autocoin.exchangegateway.api.exchange.order.Order
+import com.autocoin.exchangegateway.api.exchange.xchange.ExchangeNames.Companion.binance
+import com.autocoin.exchangegateway.spi.exchange.ExchangeName
+import com.autocoin.exchangegateway.spi.exchange.apikey.ApiKeySupplier
+import com.autocoin.exchangegateway.spi.exchange.currency.CurrencyPair
+import com.autocoin.exchangegateway.spi.exchange.order.CancelOrderParams
+import com.autocoin.exchangegateway.spi.exchange.order.OrderSide
+import com.autocoin.exchangegateway.spi.exchange.order.OrderStatus
+import com.autocoin.exchangegateway.spi.exchange.order.gateway.OrderServiceGateway
 import mu.KLogging
 import java.math.BigDecimal
 import java.time.Clock
 import java.util.*
+import com.autocoin.exchangegateway.spi.exchange.currency.CurrencyPair as SpiCurrencyPair
+import com.autocoin.exchangegateway.spi.exchange.order.Order as SpiOrder
 
-class TestOrderService(private val clock: Clock = Clock.systemDefaultZone()) : ExchangeOrderService {
+class TestOrderService(private val clock: Clock = Clock.systemDefaultZone()) : OrderServiceGateway<ApiKeyId> {
     private companion object : KLogging()
 
     val successfulActionHistory: MutableList<Any> = mutableListOf()
     private var placeBuyLimitOrderInvocationIndex = 0
 
 
-    override fun cancelOrder(exchangeName: String, exchangeKey: ExchangeKeyDto, cancelOrderParams: ExchangeCancelOrderParams): Boolean {
+    override fun cancelOrder(
+        exchangeName: ExchangeName,
+        apiKey: ApiKeySupplier<ApiKeyId>,
+        cancelOrderParams: CancelOrderParams,
+    ): Boolean {
         successfulActionHistory += cancelOrderParams
         return true
     }
@@ -28,48 +36,26 @@ class TestOrderService(private val clock: Clock = Clock.systemDefaultZone()) : E
     var placeLimitBuyOrderInvocationFailureIndexes: List<Int> = emptyList()
 
 
-    override fun cancelOrder(exchangeName: String, exchangeUserId: String, cancelOrderParams: ExchangeCancelOrderParams): Boolean {
-        TODO("Not yet implemented")
-    }
-
-    override fun getOpenOrders(exchangeName: String, exchangeKey: ExchangeKeyDto): List<ExchangeOrder> {
-        TODO("Not yet implemented")
-    }
-
-    override fun getOpenOrders(exchangeName: String, exchangeUserId: String): List<ExchangeOrder> {
-        TODO("Not yet implemented")
-    }
-
-    override fun getOpenOrdersForAllExchangeKeys(currencyPairs: List<CurrencyPair>): List<ExchangeOpenOrders> {
-        TODO("Not yet implemented")
-    }
-
-    override fun isOrderNotOpen(exchangeName: String, exchangeUserId: String, order: ExchangeOrder): Boolean {
-        TODO("Not yet implemented")
-    }
-
     override fun placeLimitBuyOrder(
-        exchangeName: String,
-        exchangeKey: ExchangeKeyDto,
-        baseCurrencyCode: String,
-        counterCurrencyCode: String,
+        exchangeName: ExchangeName,
+        apiKey: ApiKeySupplier<ApiKeyId>,
+        currencyPair: SpiCurrencyPair,
         buyPrice: BigDecimal,
         amount: BigDecimal,
-        isDemoOrder: Boolean
-    ): ExchangeOrder {
+    ): Order {
         if (placeBuyLimitOrderInvocationIndex++ in placeLimitBuyOrderInvocationFailureIndexes) {
             throw Exception("Failed on purpose during placing buy limit order")
         } else {
-            logger.info { "Placing buy limit order with amount=$amount $baseCurrencyCode and buyPrice=$buyPrice $counterCurrencyCode" }
-            return ExchangeOrder(
-                exchangeName = "BINANCE",
+            logger.info { "Placing buy limit order with amount=$amount ${currencyPair.base} and buyPrice=$buyPrice ${currencyPair.counter}" }
+            return Order(
+                exchangeName = binance,
                 exchangeOrderId = UUID.randomUUID().toString(),
-                type = ExchangeOrderType.BID_BUY,
+                side = OrderSide.BID_BUY,
                 orderedAmount = amount,
                 filledAmount = BigDecimal.ZERO,
                 price = buyPrice,
-                currencyPair = CurrencyPair.of(baseCurrencyCode, counterCurrencyCode),
-                status = ExchangeOrderStatus.NEW,
+                currencyPair = currencyPair,
+                status = OrderStatus.NEW,
                 receivedAtMillis = clock.millis(),
                 exchangeTimestampMillis = null,
             ).apply {
@@ -78,87 +64,69 @@ class TestOrderService(private val clock: Clock = Clock.systemDefaultZone()) : E
         }
     }
 
-    override fun placeLimitBuyOrder(
-        exchangeName: String,
-        exchangeUserId: String,
-        baseCurrencyCode: String,
-        counterCurrencyCode: String,
-        buyPrice: BigDecimal,
-        amount: BigDecimal,
-        isDemoOrder: Boolean
-    ): ExchangeOrder {
+    override fun getOpenOrders(
+        exchangeName: ExchangeName,
+        apiKey: ApiKeySupplier<ApiKeyId>,
+    ): List<SpiOrder> {
+        TODO("Not yet implemented")
+    }
+
+    override fun getOpenOrders(
+        exchangeName: ExchangeName,
+        apiKey: ApiKeySupplier<ApiKeyId>,
+        currencyPair: CurrencyPair,
+    ): List<SpiOrder> {
         TODO("Not yet implemented")
     }
 
     override fun placeLimitSellOrder(
-        exchangeName: String,
-        exchangeKey: ExchangeKeyDto,
-        baseCurrencyCode: String,
-        counterCurrencyCode: String,
+        exchangeName: ExchangeName,
+        apiKey: ApiKeySupplier<ApiKeyId>,
+        currencyPair: CurrencyPair,
         sellPrice: BigDecimal,
         amount: BigDecimal,
-        isDemoOrder: Boolean
-    ): ExchangeOrder {
-        TODO("Not yet implemented")
-    }
-
-    override fun placeLimitSellOrder(
-        exchangeName: String,
-        exchangeUserId: String,
-        baseCurrencyCode: String,
-        counterCurrencyCode: String,
-        sellPrice: BigDecimal,
-        amount: BigDecimal,
-        isDemoOrder: Boolean
-    ): ExchangeOrder {
+    ): SpiOrder {
         TODO("Not yet implemented")
     }
 
     override fun placeMarketBuyOrderWithBaseCurrencyAmount(
-        exchangeName: String,
-        exchangeKey: ExchangeKeyDto,
-        baseCurrencyCode: String,
-        counterCurrencyCode: String,
-        counterCurrencyAmount: BigDecimal,
+        exchangeName: ExchangeName,
+        apiKey: ApiKeySupplier<ApiKeyId>,
+        currencyPair: CurrencyPair,
+        baseCurrencyAmount: BigDecimal,
         currentPrice: BigDecimal,
-        isDemoOrder: Boolean
-    ): ExchangeOrder {
+    ): SpiOrder {
         TODO("Not yet implemented")
     }
 
     override fun placeMarketBuyOrderWithCounterCurrencyAmount(
-        exchangeName: String,
-        exchangeKey: ExchangeKeyDto,
-        baseCurrencyCode: String,
-        counterCurrencyCode: String,
+        exchangeName: ExchangeName,
+        apiKey: ApiKeySupplier<ApiKeyId>,
+        currencyPair: CurrencyPair,
         counterCurrencyAmount: BigDecimal,
         currentPrice: BigDecimal,
-        isDemoOrder: Boolean
-    ): ExchangeOrder {
+    ): SpiOrder {
         TODO("Not yet implemented")
     }
 
     override fun placeMarketSellOrderWithBaseCurrencyAmount(
-        exchangeName: String,
-        exchangeKey: ExchangeKeyDto,
-        baseCurrencyCode: String,
-        counterCurrencyCode: String,
+        exchangeName: ExchangeName,
+        apiKey: ApiKeySupplier<ApiKeyId>,
+        currencyPair: CurrencyPair,
         baseCurrencyAmount: BigDecimal,
         currentPrice: BigDecimal,
-        isDemoOrder: Boolean
-    ): ExchangeOrder {
+    ): SpiOrder {
         TODO("Not yet implemented")
     }
 
     override fun placeMarketSellOrderWithCounterCurrencyAmount(
-        exchangeName: String,
-        exchangeKey: ExchangeKeyDto,
-        baseCurrencyCode: String,
-        counterCurrencyCode: String,
+        exchangeName: ExchangeName,
+        apiKey: ApiKeySupplier<ApiKeyId>,
+        currencyPair: CurrencyPair,
         counterCurrencyAmount: BigDecimal,
         currentPrice: BigDecimal,
-        isDemoOrder: Boolean
-    ): ExchangeOrder {
+    ): SpiOrder {
         TODO("Not yet implemented")
     }
+
 }

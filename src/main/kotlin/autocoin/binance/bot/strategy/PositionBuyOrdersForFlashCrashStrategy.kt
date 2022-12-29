@@ -3,7 +3,7 @@ package autocoin.binance.bot.strategy
 import autocoin.binance.bot.strategy.action.CancelOrderAction
 import autocoin.binance.bot.strategy.action.PlaceBuyLimitOrderAction
 import autocoin.binance.bot.strategy.action.StrategyAction
-import autocoin.binance.bot.strategy.execution.StrategyExecution
+import autocoin.binance.bot.strategy.execution.StrategyExecutionDto
 import autocoin.binance.bot.strategy.execution.repository.StrategyOrder
 import java.math.BigDecimal
 import java.math.MathContext
@@ -31,9 +31,12 @@ class PositionBuyOrdersForFlashCrashStrategy(
         }
     }
 
-    private fun StrategyExecution.hasNoMaximumNumberOfOrdersYet() = orders.size < numberOfBuyLimitOrdersToKeep
+    private fun StrategyExecutionDto.hasNoMaximumNumberOfOrdersYet() = orders.size < numberOfBuyLimitOrdersToKeep
 
-    override fun getActions(price: BigDecimal, strategyExecution: StrategyExecution): List<StrategyAction> {
+    override fun getActions(
+        price: BigDecimal,
+        strategyExecution: StrategyExecutionDto,
+    ): List<StrategyAction> {
         lowestPriceSoFar = lowestPriceSoFar.min(price)
 
         val lowBuyPrice = price
