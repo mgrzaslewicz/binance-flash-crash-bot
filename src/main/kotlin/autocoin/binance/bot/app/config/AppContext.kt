@@ -31,11 +31,14 @@ import com.autocoin.exchangegateway.api.exchange.currency.CurrencyPair
 import com.autocoin.exchangegateway.api.exchange.order.DemoOrderServiceGateway
 import com.autocoin.exchangegateway.api.exchange.order.service.authorized.XchangeAuthorizedOrderServiceFactory
 import com.autocoin.exchangegateway.api.exchange.wallet.service.authorized.XchangeAuthorizedWalletServiceFactory
+import com.autocoin.exchangegateway.api.exchange.xchange.ApiKeyToCacheKeyProvider
 import com.autocoin.exchangegateway.api.exchange.xchange.CachingXchangeProvider
 import com.autocoin.exchangegateway.api.exchange.xchange.DefaultXchangeProvider
 import com.autocoin.exchangegateway.api.exchange.xchange.XchangeApiKeyVerifierGateway
 import com.autocoin.exchangegateway.api.exchange.xchange.XchangeInstanceWrapper
 import com.autocoin.exchangegateway.api.exchange.xchange.XchangeSpecificationApiKeyAssigner
+import com.autocoin.exchangegateway.spi.exchange.ExchangeName
+import com.autocoin.exchangegateway.spi.exchange.apikey.ApiKeySupplier
 import com.autocoin.exchangegateway.spi.exchange.order.gateway.OrderServiceGatewayUsingAuthorizedOrderService
 import com.autocoin.exchangegateway.spi.exchange.wallet.gateway.WalletServiceGateway
 import com.autocoin.exchangegateway.spi.exchange.wallet.gateway.WalletServiceGatewayUsingAuthorizedWalletService
@@ -107,7 +110,15 @@ class AppContext(private val appConfig: AppConfig) {
     ).logging(logPrefix = "StrategyExecutions")
 
 
-    val xchangeProvider = CachingXchangeProvider<ApiKeyId>(
+    val xchangeProvider = CachingXchangeProvider(
+        apiKeyToCacheKey = object : ApiKeyToCacheKeyProvider<ApiKeyId, String> {
+            override operator fun invoke(
+                exchangeName: ExchangeName,
+                apiKeySupplier: ApiKeySupplier<ApiKeyId>,
+            ): String {
+                return apiKeySupplier.id.keyHash
+            }
+        },
         decorated = DefaultXchangeProvider(
             xchangeInstanceProvider = XchangeInstanceWrapper(),
             xchangeSpecificationApiKeyAssigner = XchangeSpecificationApiKeyAssigner(apiKeyVerifierGateway = XchangeApiKeyVerifierGateway()),
