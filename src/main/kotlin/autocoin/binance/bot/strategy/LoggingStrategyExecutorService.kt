@@ -15,7 +15,11 @@ class LoggingStrategyExecutorService(
     private val loggerWithMinDelayBetweenLogs = logger.withMinDelayBetweenLogs(minDelayBetweenLogs)
 
     override fun addOrResumeStrategyExecutors(strategyParametersList: Collection<StrategyParametersDto>) {
-        logger.info { "Adding or resuming following ${strategyParametersList.size} strategies: $strategyParametersList" }
+        logger.info {
+            "Adding or resuming following ${strategyParametersList.size} strategies: ${
+                strategyParametersList.map { "$it" }
+            }"
+        }
         decorated.addOrResumeStrategyExecutors(strategyParametersList)
     }
 
