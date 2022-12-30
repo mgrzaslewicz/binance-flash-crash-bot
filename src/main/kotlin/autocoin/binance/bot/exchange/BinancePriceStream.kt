@@ -15,6 +15,7 @@ import java.math.BigDecimal
 import java.time.Clock
 import java.time.Duration
 import java.time.Instant
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Function
 import kotlin.system.measureTimeMillis
@@ -41,7 +42,8 @@ class BinancePriceStream(
 
     private val binanceApiWebSocket: AtomicReference<Closeable> = AtomicReference()
     private var connectionStartedAt: Instant? = null
-    private var websocketFailureCount: Int = 0
+    private var websocketFailureCount = AtomicInteger()
+    private var websocketReconnectCount = AtomicInteger()
 
     private fun CurrencyPair.toBinanceSymbol() = BinanceAdapters.toSymbol(currencyPairToXchange.apply(this)).lowercase()
     private fun String.toCurrencyPair() = BinanceAdapters.adaptSymbol(this).let { xchangeCurrencyPairTransformer.apply(it) }
@@ -59,7 +61,7 @@ class BinancePriceStream(
         override fun onFailure(cause: Throwable?) {
             val previousConnectionDuration = Duration.between(connectionStartedAt, clock.instant())
             logger.error(cause) { "Websocket connection failed. It lasted for $previousConnectionDuration" }
-            websocketFailureCount++
+            websocketFailureCount.incrementAndGet()
             reconnect()
         }
 
@@ -94,11 +96,12 @@ class BinancePriceStream(
             binanceApiWebSocket.set(binanceApiWebSocketClient.onAggTradeEvent(binanceSymbols, apiCallback))
         }
         connectionStartedAt = clock.instant()
-
+        websocketReconnectCount.incrementAndGet()
         logger.info { "Websocket connection created within ${millisecondsToConnect}ms" }
     }
 
-    fun getWebsocketFailureCount() = websocketFailureCount
+    fun getWebsocketFailureCount() = websocketFailureCount.get()
+    fun getWebsocketReconnectCount() = websocketReconnectCount.get()
     fun getWebsocketConnectionStartedTimestamp() = connectionStartedAt
 
     fun isConnected() = binanceApiWebSocket.get() != null

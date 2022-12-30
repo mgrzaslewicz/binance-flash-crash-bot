@@ -28,7 +28,8 @@ data class Process(
 
 data class PriceStream(
     private val startedTimestamp: String,
-    val howManyTimesPriceWebSocketReconnected: Int,
+    val priceWebSocketReconnectCount: Int,
+    val priceWebSocketFailureCount: Int,
     val runningDuration: String,
 )
 
@@ -85,7 +86,8 @@ class HealthService(
                 PriceStream(
                     startedTimestamp = priceStreamStartTimestamp.toString(),
                     runningDuration = Duration.between(priceStreamStartTimestamp, Instant.now(clock)).toString(),
-                    howManyTimesPriceWebSocketReconnected = binancePriceStream.getWebsocketFailureCount(),
+                    priceWebSocketReconnectCount = binancePriceStream.getWebsocketReconnectCount(),
+                    priceWebSocketFailureCount = binancePriceStream.getWebsocketFailureCount(),
                 )
             } else null,
             runningStrategies = runningStrategies,
