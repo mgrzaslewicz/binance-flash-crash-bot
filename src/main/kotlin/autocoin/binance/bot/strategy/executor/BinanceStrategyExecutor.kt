@@ -74,6 +74,13 @@ class BinanceStrategyExecutor(
         }
     }
 
+    /**
+     * Underlying xchange implementation uses remote init lasting a few seconds.
+     * Better prevent it rather than wait when there is need to create order immediately.
+     */
+    fun warmup() {
+        orderServiceGateway.getOpenOrders(exchangeName = exchangeName, apiKey = currentStrategyExecution.apiKeySupplier)
+    }
 
     override fun cancelOrder(order: StrategyOrder): Boolean {
         val success = orderServiceGateway.cancelOrder(

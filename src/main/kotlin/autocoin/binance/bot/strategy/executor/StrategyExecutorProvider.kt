@@ -39,7 +39,7 @@ class BinanceStrategyExecutorProvider(
             strategyExecutions = strategyExecutions,
             strategy = strategyParameters.toStrategy(strategyParameters.strategyType),
             javaExecutorService = javaExecutorService,
-        )
+        ).apply { warmup() }
     }
 
     override fun createStrategyExecutor(strategyExecution: StrategyExecutionDto): StrategyExecutor {
@@ -49,6 +49,6 @@ class BinanceStrategyExecutorProvider(
             strategyExecutions = strategyExecutions,
             strategy = strategyExecution.toStrategy(strategyExecution.strategyType),
             javaExecutorService = javaExecutorService,
-        )
+        ).apply { warmup() }
     }
 }

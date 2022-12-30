@@ -68,7 +68,7 @@ class TestOrderService(private val clock: Clock = Clock.systemDefaultZone()) : O
         exchangeName: ExchangeName,
         apiKey: ApiKeySupplier<ApiKeyId>,
     ): List<SpiOrder> {
-        TODO("Not yet implemented")
+        return emptyList()
     }
 
     override fun getOpenOrders(
