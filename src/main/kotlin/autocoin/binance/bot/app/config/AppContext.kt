@@ -187,12 +187,6 @@ class AppContext(private val appConfig: AppConfig) {
             strategyExecutorProvider = strategyExecutorProvider,
         ).loggingStrategyExecutor(minDelayBetweenLogs = Duration.ofSeconds(1))
 
-    val userRepository = FileUserRepository(
-        fileRepositoryDirectory = appConfig.fileRepositoryDirectory,
-        objectMapper = objectMapper,
-        fileKeyValueRepository = fileKeyValueRepository,
-    ).logging()
-
     val healthService = HealthService(
         binancePriceStream = binancePriceStream,
         strategyExecutorService = strategyExecutionsService,
