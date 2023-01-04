@@ -39,7 +39,7 @@ class BinanceStrategyExecutorTest {
         tested = BinanceStrategyExecutor(
             strategyExecution = TestConfig.samplePositionBuyLimitOrdersStrategyExecution(),
             orderServiceGateway = orderService,
-            strategyExecutions = TestStrategyExecutionMutableSet(),
+            strategyExecutions = TestStrategyExecutionMutableSet.get(),
             baseCurrencyAmountScale = 5,
             counterCurrencyPriceScale = 2,
             javaExecutorService = MoreExecutors.newDirectExecutorService(),
@@ -75,7 +75,7 @@ class BinanceStrategyExecutorTest {
         tested = BinanceStrategyExecutor(
             strategyExecution = TestConfig.samplePositionBuyLimitOrdersStrategyExecution(),
             orderServiceGateway = orderService,
-            strategyExecutions = TestStrategyExecutionMutableSet(),
+            strategyExecutions = TestStrategyExecutionMutableSet.get(),
             baseCurrencyAmountScale = 5,
             counterCurrencyPriceScale = 2,
             javaExecutorService = Executors.newFixedThreadPool(2), // 2 threads as 1st one is going to be block for scheduling. With only 1 thread, second price update would not be handled

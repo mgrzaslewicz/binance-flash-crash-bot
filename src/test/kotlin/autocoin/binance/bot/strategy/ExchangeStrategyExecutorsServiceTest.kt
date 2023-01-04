@@ -34,7 +34,7 @@ class ExchangeStrategyExecutorsServiceTest {
     @Test
     fun shouldNotAllowToAddSecondStrategyWithTheSameUserAndCurrencyPair() {
         // given
-        val strategyExecutions = TestStrategyExecutionMutableSet()
+        val strategyExecutions = TestStrategyExecutionMutableSet.get()
         val tested = ExchangeStrategyExecutorService(
             strategyExecutions = strategyExecutions,
             strategyExecutorProvider = BinanceStrategyExecutorProvider(
@@ -53,7 +53,7 @@ class ExchangeStrategyExecutorsServiceTest {
     @Test
     fun shouldUpdatePrices() {
         // given
-        val strategyExecutions = TestStrategyExecutionMutableSet()
+        val strategyExecutions = TestStrategyExecutionMutableSet.get()
         val binanceStrategyExecutorProvider = BinanceStrategyExecutorProvider(
             orderServiceGateway = TestOrderService()
                 .preLogging()

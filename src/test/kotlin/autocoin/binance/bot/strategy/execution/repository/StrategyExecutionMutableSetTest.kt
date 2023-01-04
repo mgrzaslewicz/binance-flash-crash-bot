@@ -7,7 +7,6 @@ import autocoin.binance.bot.strategy.execution.StrategyExecutionDto
 import autocoin.binance.bot.strategy.executor.StrategyType
 import com.autocoin.exchangegateway.api.exchange.xchange.ExchangeNames.Companion.binance
 import com.autocoin.exchangegateway.spi.exchange.order.OrderStatus
-import com.autocoin.exchangegateway.spi.keyvalue.FileKeyValueRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import java.io.File
@@ -70,11 +69,11 @@ class StrategyExecutionMutableSetTest {
         val tempDir = Files.createTempDirectory(UUID.randomUUID().toString())
         File(exchangeKeysPath).copyTo(tempDir.resolve("strategy-executions-1.json").toFile())
 
-        val tested = StrategyExecutionFileBackedMutableSet(
-            fileRepositoryDirectory = tempDir,
+        val tested = StrategyExecutionFileBackedMutableSetBuilder(
+            fileRepositoryDirectory = tempDir.toFile(),
             objectMapper = objectMapper,
-            fileKeyValueRepository = FileKeyValueRepository(),
-        ).logging(logPrefix = "test")
+        ).build()
+            .logging(logPrefix = "test")
         // when
         tested.load()
         val found = tested.filter { it.userId == "sample-user-id-1" }
@@ -87,11 +86,10 @@ class StrategyExecutionMutableSetTest {
     fun shouldAddStrategy() {
         val tempDir = Files.createTempDirectory(UUID.randomUUID().toString())
 
-        val tested = StrategyExecutionFileBackedMutableSet(
-            fileRepositoryDirectory = tempDir,
+        val tested = StrategyExecutionFileBackedMutableSetBuilder(
+            fileRepositoryDirectory = tempDir.toFile(),
             objectMapper = objectMapper,
-            fileKeyValueRepository = FileKeyValueRepository(),
-        )
+        ).build()
         // when
         tested.add(expectedStrategyExecution)
         tested.save()
@@ -103,25 +101,24 @@ class StrategyExecutionMutableSetTest {
     fun shouldDeleteStrategy() {
         val tempDir = Files.createTempDirectory(UUID.randomUUID().toString())
 
-        val tested = StrategyExecutionFileBackedMutableSet(
-            fileRepositoryDirectory = tempDir,
+        val tested = StrategyExecutionFileBackedMutableSetBuilder(
+            fileRepositoryDirectory = tempDir.toFile(),
             objectMapper = objectMapper,
-            fileKeyValueRepository = FileKeyValueRepository(),
-        )
+        ).build()
         val anotherStrategyExecution = expectedStrategyExecution.copy(id = "sample-execution-id-2")
         // when
-        StrategyExecutionFileBackedMutableSet(
-            fileRepositoryDirectory = tempDir,
+        StrategyExecutionFileBackedMutableSetBuilder(
+            fileRepositoryDirectory = tempDir.toFile(),
             objectMapper = objectMapper,
-            fileKeyValueRepository = FileKeyValueRepository(),
-        ).apply {
-            add(expectedStrategyExecution)
-            save()
-            add(anotherStrategyExecution)
-            save()
-            remove(expectedStrategyExecution)
-            save()
-        }
+        ).build()
+            .apply {
+                add(expectedStrategyExecution)
+                save()
+                add(anotherStrategyExecution)
+                save()
+                remove(expectedStrategyExecution)
+                save()
+            }
         tested.load()
         // then
         assertThat(tested).containsOnly(anotherStrategyExecution)

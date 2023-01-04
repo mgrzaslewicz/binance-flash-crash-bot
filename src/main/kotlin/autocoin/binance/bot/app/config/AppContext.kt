@@ -18,13 +18,11 @@ import autocoin.binance.bot.health.HealthService
 import autocoin.binance.bot.httpserver.HealthController
 import autocoin.binance.bot.httpserver.ServerBuilder
 import autocoin.binance.bot.strategy.ExchangeStrategyExecutorService
-import autocoin.binance.bot.strategy.execution.repository.StrategyExecutionFileBackedMutableSet
+import autocoin.binance.bot.strategy.execution.repository.StrategyExecutionFileBackedMutableSetBuilder
 import autocoin.binance.bot.strategy.execution.repository.logging
 import autocoin.binance.bot.strategy.executor.BinanceStrategyExecutorProvider
 import autocoin.binance.bot.strategy.loggingStrategyExecutor
-import autocoin.binance.bot.strategy.parameters.repository.StrategyParametersFileBackedMutableSet
-import autocoin.binance.bot.user.repository.FileUserRepository
-import autocoin.binance.bot.user.repository.logging
+import autocoin.binance.bot.strategy.parameters.repository.StrategyParametersFileBackedMutableSetBuilder
 import autocoin.metrics.JsonlFileStatsDClient
 import autocoin.metrics.MetricsService
 import com.autocoin.exchangegateway.api.exchange.currency.CurrencyPair
@@ -42,7 +40,6 @@ import com.autocoin.exchangegateway.spi.exchange.apikey.ApiKeySupplier
 import com.autocoin.exchangegateway.spi.exchange.order.gateway.OrderServiceGatewayUsingAuthorizedOrderService
 import com.autocoin.exchangegateway.spi.exchange.wallet.gateway.WalletServiceGateway
 import com.autocoin.exchangegateway.spi.exchange.wallet.gateway.WalletServiceGatewayUsingAuthorizedWalletService
-import com.autocoin.exchangegateway.spi.keyvalue.FileKeyValueRepository
 import com.binance.api.client.BinanceApiClientFactory
 import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.KeyDeserializer
@@ -95,19 +92,20 @@ class AppContext(private val appConfig: AppConfig) {
     )
 
 
-    val fileKeyValueRepository = FileKeyValueRepository()
-
-    val strategyParameters = StrategyParametersFileBackedMutableSet(
-        fileRepositoryDirectory = appConfig.fileRepositoryDirectory,
+    val strategyParameters = StrategyParametersFileBackedMutableSetBuilder(
+        fileRepositoryDirectory = appConfig.fileRepositoryDirectory.toFile(),
         objectMapper = objectMapper,
-        fileKeyValueRepository = fileKeyValueRepository,
-    ).logging(logPrefix = "StrategyParameters")
+        clock = clock,
+    )
+        .build()
+        .logging(logPrefix = "StrategyParameters")
 
-    val strategyExecutions = StrategyExecutionFileBackedMutableSet(
-        fileRepositoryDirectory = appConfig.fileRepositoryDirectory,
+    val strategyExecutions = StrategyExecutionFileBackedMutableSetBuilder(
+        fileRepositoryDirectory = appConfig.fileRepositoryDirectory.toFile(),
         objectMapper = objectMapper,
-        fileKeyValueRepository = fileKeyValueRepository,
-    ).logging(logPrefix = "StrategyExecutions")
+        clock = clock,
+    ).build()
+        .logging(logPrefix = "StrategyExecutions")
 
 
     val xchangeProvider = CachingXchangeProvider(
