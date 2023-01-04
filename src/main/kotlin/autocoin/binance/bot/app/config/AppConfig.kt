@@ -29,6 +29,12 @@ data class AppConfig(
 
     ) {
 
+    val shouldDeleteStrategyExecutions: Boolean = (
+            getProperty("deleteStrategyExecutions")
+                ?: getenv("DELETE_STRATEGY_EXECUTIONS")
+                ?: "false"
+            ).toBoolean()
+
     fun createConfigFolders() {
         Files.createDirectories(botHomeFolder)
     }

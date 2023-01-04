@@ -5,11 +5,15 @@ import autocoin.binance.bot.app.config.AppContext
 import autocoin.binance.bot.exchange.priceUpdatedEventType
 import mu.KLogging
 
-class AppStarter(private val config: AppConfig, private val context: AppContext) {
+class AppStarter(
+    private val config: AppConfig,
+    private val context: AppContext,
+) {
     companion object : KLogging()
 
     fun start() {
         config.createConfigFolders()
+        deleteStrategyExecutions()
         with(context) {
             strategyExecutions.load()
             strategyParameters.load()
@@ -26,6 +30,14 @@ class AppStarter(private val config: AppConfig, private val context: AppContext)
 
             server.start()
             healthMetricsScheduler.scheduleSendingMetrics()
+        }
+    }
+
+    private fun deleteStrategyExecutions() {
+        if (config.shouldDeleteStrategyExecutions) {
+            logger.warn { "Deleting strategy executions" }
+            context.strategyExecutions.clear()
+            context.strategyExecutions.save()
         }
     }
 }
