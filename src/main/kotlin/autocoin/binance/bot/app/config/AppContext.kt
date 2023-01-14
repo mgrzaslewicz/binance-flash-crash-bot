@@ -153,7 +153,7 @@ class AppContext(private val appConfig: AppConfig) {
     }
 
     val orderServiceGateway = if (appConfig.shouldMakeRealOrders) {
-        logger.info { "Will make real orders" }
+        logger.info { "Will operate on real orders" }
         OrderServiceGatewayUsingAuthorizedOrderService(
             authorizedOrderServiceFactory = authorizedOrderServiceFactory,
         )
@@ -163,7 +163,7 @@ class AppContext(private val appConfig: AppConfig) {
             .measuringDuration("with rate limit, ")
 
     } else {
-        logger.warn { "Will NOT make real orders, just test market order at binance and return mock limit orders instead" }
+        logger.warn { "Will NOT operate on real orders, just test market order at binance and return mock limit orders instead" }
         DemoOrderServiceGateway<ApiKeyId>(
             clock = clock,
         )
