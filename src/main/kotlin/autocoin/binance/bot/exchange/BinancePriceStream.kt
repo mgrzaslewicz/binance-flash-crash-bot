@@ -67,7 +67,7 @@ class BinancePriceStream(
 
     }
 
-    fun listenForPriceUpdates(currencyPairs: List<CurrencyPair>) {
+    fun listenForPriceUpdates(currencyPairs: Set<CurrencyPair>) {
         subscribedCurrencyPairs.clear()
         subscribedCurrencyPairs.addAll(currencyPairs)
         reconnect()

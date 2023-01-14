@@ -30,8 +30,8 @@ class ExchangeStrategyExecutorService(
             ?.forEach { it.onPriceUpdated(currencyPairWithPrice) }
     }
 
-    override fun currencyPairsCurrentlyNeeded(): List<CurrencyPair> {
-        return runningStrategies.keys.toList()
+    override fun currencyPairsOfRunningStrategies(): Set<CurrencyPair> {
+        return runningStrategies.keys.toSet()
     }
 
     override fun addOrResumeStrategyExecutors(strategyParametersList: Collection<StrategyParametersDto>) {

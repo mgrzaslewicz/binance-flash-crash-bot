@@ -8,7 +8,7 @@ import com.autocoin.exchangegateway.spi.exchange.currency.CurrencyPair
 
 interface StrategyExecutorService : PriceListener {
     fun addStrategyExecutor(strategyParameters: StrategyParametersDto)
-    fun currencyPairsCurrentlyNeeded(): List<CurrencyPair>
+    fun currencyPairsOfRunningStrategies(): Set<CurrencyPair>
     fun addOrResumeStrategyExecutors(strategyParametersList: Collection<StrategyParametersDto>)
     fun getRunningStrategies(): List<StrategyExecutionDto>
 }

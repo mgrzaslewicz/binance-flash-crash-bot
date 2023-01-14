@@ -23,8 +23,8 @@ class AppStarter(
             eventBus.register(priceUpdatedEventType, strategyExecutionsService::onPriceUpdated)
             eventBus.register(priceUpdatedEventType, priceWebSocketConnectionKeeper::onPriceUpdated)
 
-            logger.info { "Starting listening for price changes: ${strategyExecutionsService.currencyPairsCurrentlyNeeded()}" }
-            binancePriceStream.listenForPriceUpdates(strategyExecutionsService.currencyPairsCurrentlyNeeded())
+            logger.info { "Starting listening for price changes: ${strategyExecutionsService.currencyPairsOfRunningStrategies()}" }
+            binancePriceStream.listenForPriceUpdates(strategyExecutionsService.currencyPairsOfRunningStrategies())
 
             priceWebSocketConnectionKeeper.scheduleCheckingConnection()
 

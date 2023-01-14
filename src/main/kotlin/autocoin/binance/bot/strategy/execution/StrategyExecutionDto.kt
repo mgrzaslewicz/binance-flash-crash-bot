@@ -6,8 +6,8 @@ import autocoin.binance.bot.exchange.apikey.md5
 import autocoin.binance.bot.strategy.execution.repository.StrategyOrder
 import autocoin.binance.bot.strategy.executor.StrategyType
 import autocoin.binance.bot.strategy.parameters.WithStrategySpecificParameters
-import com.autocoin.exchangegateway.api.exchange.ApiKey
-import com.autocoin.exchangegateway.api.exchange.ApiKeySupplier
+import com.autocoin.exchangegateway.api.exchange.apikey.ApiKey
+import com.autocoin.exchangegateway.api.exchange.apikey.ApiKeySupplier
 import com.autocoin.exchangegateway.api.exchange.currency.CurrencyPair
 import com.fasterxml.jackson.annotation.JsonIgnore
 import java.util.*
