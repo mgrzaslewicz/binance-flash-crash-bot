@@ -79,6 +79,7 @@ class BinanceStrategyExecutor(
      * Better prevent it rather than wait when there is need to create order immediately.
      */
     fun warmup() {
+        logger.info { "Warming up strategy of user ${currentStrategyExecution.apiKeySupplier.id}" }
         orderServiceGateway.getOpenOrders(exchangeName = exchangeName, apiKey = currentStrategyExecution.apiKeySupplier)
     }
 
