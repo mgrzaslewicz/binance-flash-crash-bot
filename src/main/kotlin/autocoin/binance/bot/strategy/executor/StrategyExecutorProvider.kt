@@ -28,8 +28,15 @@ class BinanceStrategyExecutorProvider(
 ) : StrategyExecutorProvider {
 
     private fun WithStrategySpecificParameters.toStrategy(strategyType: StrategyType) = when (strategyType) {
-        StrategyType.POSITION_BUY_ORDERS_FOR_FLASH_CRASH -> PositionBuyOrdersForFlashCrashStrategy.Builder().withStrategySpecificParameters(this.strategySpecificParameters).build()
-        StrategyType.BUY_WITH_MARKET_ORDER_BELOW_PRICE -> BuyWithMarketOrderBelowPriceStrategy.Builder().withStrategySpecificParameters(this.strategySpecificParameters).build()
+        StrategyType.POSITION_BUY_ORDERS_FOR_FLASH_CRASH -> PositionBuyOrdersForFlashCrashStrategy
+            .Builder()
+            .withStrategySpecificParameters(this.strategySpecificParameters)
+            .build()
+
+        StrategyType.BUY_WITH_MARKET_ORDER_BELOW_PRICE -> BuyWithMarketOrderBelowPriceStrategy
+            .Builder()
+            .withStrategySpecificParameters(this.strategySpecificParameters)
+            .build()
     }
 
     override fun createStrategyExecutor(strategyParameters: StrategyParametersDto): StrategyExecutor {
