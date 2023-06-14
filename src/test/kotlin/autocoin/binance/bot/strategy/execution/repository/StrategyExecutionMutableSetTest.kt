@@ -8,7 +8,7 @@ import autocoin.binance.bot.strategy.executor.StrategyType
 import com.autocoin.exchangegateway.api.exchange.xchange.ExchangeNames.Companion.binance
 import com.autocoin.exchangegateway.spi.exchange.order.OrderStatus
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import java.io.File
 import java.nio.file.Files
 import java.util.*
