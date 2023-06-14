@@ -114,4 +114,35 @@ class BuyWithMarketOrderBelowPriceStrategyTest {
         assertThat(actions).isEmpty()
     }
 
+    @Test
+    fun shouldBuyWithAllCurrencyWhenPriceGoesUpFromTheBottom() {
+        // when
+        tested.getActions(price = price2, strategyExecution = strategyExecution)
+        val actions = tested.getActions(price = price1, strategyExecution = strategyExecution)
+        // then
+        assertThat(actions).hasSize(1)
+        assertThat((actions[0] as PlaceBuyMarketOrderAction).counterCurrencyAmount).isEqualTo(
+            counterCurrencyAmountLimitForBuying
+        )
+    }
+
+    @Test
+    fun shouldBuyWithAllLeftCurrencyWhenPriceGoesUpFromTheBottom() {
+        // when
+        tested.getActions(price = price2, strategyExecution = strategyExecution)
+        val actions = tested.getActions(
+            price = price1,
+            strategyExecution = strategyExecution.copy(
+                orders = listOf(
+                    mock<StrategyOrder>().apply {
+                        whenever(this.amount).thenReturn(counterCurrencyAmountLimitForBuying.minus(BigDecimal.TEN))
+                    }
+                )
+            ),
+        )
+        // then
+        assertThat(actions).hasSize(1)
+        assertThat((actions[0] as PlaceBuyMarketOrderAction).counterCurrencyAmount).isEqualTo(BigDecimal.TEN)
+    }
+
 }

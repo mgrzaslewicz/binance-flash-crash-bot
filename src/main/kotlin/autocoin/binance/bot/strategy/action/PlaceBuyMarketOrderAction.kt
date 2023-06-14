@@ -11,7 +11,7 @@ class PlaceBuyMarketOrderAction(
     override fun apply(strategyExecutor: StrategyExecutor): Boolean {
         val result = strategyExecutor.placeBuyMarketOrder(
             currentPrice = currentPrice,
-            counterCurrencyAmount = counterCurrencyAmount
+            counterCurrencyAmount = counterCurrencyAmount,
         ) != null
         return result
     }
