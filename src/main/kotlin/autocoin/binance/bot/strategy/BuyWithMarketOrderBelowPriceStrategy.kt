@@ -71,11 +71,13 @@ class BuyWithMarketOrderBelowPriceStrategy(
     class Builder {
         companion object {
             val pricesTriggeringBuyMarketOrderParameter = "pricesTriggeringBuyMarketOrder"
+            val maxPriceForComingBackFromBottomBuyMarketOrderParameter = "maxPriceForComingBackFromBottomBuyMarketOrder"
             val counterCurrencyAmountLimitForBuyingParameter = "counterCurrencyAmountLimitForBuying"
         }
 
         private var pricesTriggeringBuyMarketOrder: MutableList<BigDecimal> = mutableListOf()
         private lateinit var counterCurrencyAmountLimitForBuying: BigDecimal
+        private lateinit var maxPriceForComingBackFromBottomBuyMarketOrder: BigDecimal
 
         fun withPricesTriggeringBuyMarketOrder(pricesTriggeringBuyMarketOrder: List<BigDecimal>): Builder {
             this.pricesTriggeringBuyMarketOrder = pricesTriggeringBuyMarketOrder.toMutableList()
@@ -95,6 +97,9 @@ class BuyWithMarketOrderBelowPriceStrategy(
             }
             parameters.getValue(counterCurrencyAmountLimitForBuyingParameter).let {
                 counterCurrencyAmountLimitForBuying = it.toBigDecimal()
+            }
+            parameters.getValue(maxPriceForComingBackFromBottomBuyMarketOrderParameter).let {
+                maxPriceForComingBackFromBottomBuyMarketOrder = it.toBigDecimal()
             }
             return this
         }

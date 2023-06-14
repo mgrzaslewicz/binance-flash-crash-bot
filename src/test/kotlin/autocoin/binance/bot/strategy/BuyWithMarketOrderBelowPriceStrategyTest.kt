@@ -16,12 +16,14 @@ class BuyWithMarketOrderBelowPriceStrategyTest {
     private val price1 = 100.toBigDecimal()
     private val price2 = 90.toBigDecimal()
     private val price3 = 80.toBigDecimal()
+    private val maxPriceForComingBackFromBottomBuyMarketOrderParameter = 10_000.toBigDecimal()
     private val smallDelta = 0.01.toBigDecimal()
     private val allPrices = listOf(price1, price2, price3)
     private val counterCurrencyAmountLimitForBuying = 150.toBigDecimal()
     private val strategyParameters: StrategyParametersDto = samplePlaceBuyMarketOrdersBelowPriceStrategyParameters(
         pricesTriggeringBuyMarketOrderParameter = allPrices,
-        counterCurrencyAmountLimitForBuying = counterCurrencyAmountLimitForBuying
+        counterCurrencyAmountLimitForBuying = counterCurrencyAmountLimitForBuying,
+        maxPriceForComingBackFromBottomBuyMarketOrderParameter = maxPriceForComingBackFromBottomBuyMarketOrderParameter,
     )
     private val strategyExecution = strategyParameters.toStrategyExecution()
     private lateinit var tested: BuyWithMarketOrderBelowPriceStrategy
@@ -119,6 +121,21 @@ class BuyWithMarketOrderBelowPriceStrategyTest {
         // when
         tested.getActions(price = price2, strategyExecution = strategyExecution)
         val actions = tested.getActions(price = price2.plus(smallDelta), strategyExecution = strategyExecution)
+        // then
+        assertThat(actions).hasSize(1)
+        assertThat((actions[0] as PlaceBuyMarketOrderAction).counterCurrencyAmount).isEqualTo(
+            counterCurrencyAmountLimitForBuying
+        )
+    }
+
+    @Test
+    fun shouldNotBuyWhenPriceGoesUpFromTheBottomAndPriceIsTooHigh() {
+        // when
+        tested.getActions(price = price1.minus(smallDelta), strategyExecution = strategyExecution)
+        val actions = tested.getActions(
+            price = maxPriceForComingBackFromBottomBuyMarketOrderParameter.plus(smallDelta),
+            strategyExecution = strategyExecution
+        )
         // then
         assertThat(actions).hasSize(1)
         assertThat((actions[0] as PlaceBuyMarketOrderAction).counterCurrencyAmount).isEqualTo(
