@@ -118,7 +118,7 @@ class BuyWithMarketOrderBelowPriceStrategyTest {
     fun shouldBuyWithAllCurrencyWhenPriceGoesUpFromTheBottom() {
         // when
         tested.getActions(price = price2, strategyExecution = strategyExecution)
-        val actions = tested.getActions(price = price1, strategyExecution = strategyExecution)
+        val actions = tested.getActions(price = price2.plus(smallDelta), strategyExecution = strategyExecution)
         // then
         assertThat(actions).hasSize(1)
         assertThat((actions[0] as PlaceBuyMarketOrderAction).counterCurrencyAmount).isEqualTo(

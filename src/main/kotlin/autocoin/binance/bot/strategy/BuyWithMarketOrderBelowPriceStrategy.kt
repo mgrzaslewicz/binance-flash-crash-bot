@@ -22,7 +22,7 @@ class BuyWithMarketOrderBelowPriceStrategy(
     private val counterCurrencyAmountPerOrder = counterCurrencyAmountLimitForBuying
         .divide(numberOfBuyMarketOrdersToPlace.toBigDecimal(), mathContext)
 
-    private var minimumPricePointReached: BigDecimal? = null
+    private var minimumReachedPriceTriggeringBuy: BigDecimal? = null
     private val plusInfinity = Integer.MAX_VALUE.toBigDecimal()
 
     private fun StrategyExecutionDto.hasNoMaximumNumberOfOrdersYet() = orders.size < numberOfBuyMarketOrdersToPlace
@@ -35,7 +35,7 @@ class BuyWithMarketOrderBelowPriceStrategy(
             strategyExecution.hasNoMaximumNumberOfOrdersYet() -> {
                 val currentPricePoint = pricesTriggeringBuyMarketOrder[strategyExecution.orders.size]
                 when {
-                    price >= (minimumPricePointReached ?: plusInfinity) -> {
+                    price >= (minimumReachedPriceTriggeringBuy ?: plusInfinity) -> {
                         listOf(
                             PlaceBuyMarketOrderAction(
                                 currentPrice = price,
@@ -46,7 +46,7 @@ class BuyWithMarketOrderBelowPriceStrategy(
                     }
 
                     price < currentPricePoint -> {
-                        minimumPricePointReached = currentPricePoint
+                        minimumReachedPriceTriggeringBuy = price.min(currentPricePoint)
                         listOf(
                             PlaceBuyMarketOrderAction(
                                 currentPrice = price,
