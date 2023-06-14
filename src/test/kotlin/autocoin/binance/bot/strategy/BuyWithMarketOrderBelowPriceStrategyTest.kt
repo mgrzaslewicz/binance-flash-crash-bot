@@ -1,37 +1,35 @@
 package autocoin.binance.bot.strategy
 
-import autocoin.binance.bot.TestConfig
+import autocoin.binance.bot.TestConfig.samplePlaceBuyMarketOrdersBelowPriceStrategyParameters
+import autocoin.binance.bot.strategy.PositionBuyOrdersForFlashCrashStrategyTest.TestStrategyExecutor
 import autocoin.binance.bot.strategy.action.PlaceBuyMarketOrderAction
 import autocoin.binance.bot.strategy.execution.repository.StrategyOrder
 import autocoin.binance.bot.strategy.executor.StrategyExecutor
 import autocoin.binance.bot.strategy.parameters.StrategyParametersDto
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 
 class BuyWithMarketOrderBelowPriceStrategyTest {
-    private lateinit var strategyParameters: StrategyParametersDto
+    private val strategyParameters: StrategyParametersDto = samplePlaceBuyMarketOrdersBelowPriceStrategyParameters(
+        pricesTriggeringBuyMarketOrderParameter = listOf(100, 90, 80).map { it.toBigDecimal() },
+        counterCurrencyAmountLimitForBuying = 150.toBigDecimal(),
+    )
     private lateinit var strategyExecutor: StrategyExecutor
     private lateinit var tested: BuyWithMarketOrderBelowPriceStrategy
-
-    @BeforeEach
-    fun setup() {
-        strategyParameters = TestConfig.samplePlaceBuyMarketOrdersBelowPriceStrategyParameters(
-            pricesTriggeringBuyMarketOrderParameter = listOf(100.toBigDecimal(), 90.toBigDecimal(), 80.toBigDecimal()),
-            counterCurrencyAmountLimitForBuying = 150.toBigDecimal(),
-        )
-    }
 
     @Test
     fun shouldBuyNothingWhenPriceAboveBuyPoint() {
         // given
-        strategyExecutor = PositionBuyOrdersForFlashCrashStrategyTest.TestStrategyExecutor(strategyExecution = strategyParameters.toStrategyExecution())
+        strategyExecutor = TestStrategyExecutor(strategyExecution = strategyParameters.toStrategyExecution())
         tested = BuyWithMarketOrderBelowPriceStrategy.Builder()
             .withStrategySpecificParameters(strategyParameters.strategySpecificParameters)
             .build()
         // when
-        val actions = tested.getActions(price = 101.toBigDecimal(), strategyExecution = strategyExecutor.strategyExecution)
+        val actions = tested.getActions(
+            price = 101.toBigDecimal(),
+            strategyExecution = strategyExecutor.strategyExecution,
+        )
         // then
         assertThat(actions).isEmpty()
     }
@@ -39,12 +37,15 @@ class BuyWithMarketOrderBelowPriceStrategyTest {
     @Test
     fun shouldBuyWhenPriceBelowFirstPricePoint() {
         // given
-        strategyExecutor = PositionBuyOrdersForFlashCrashStrategyTest.TestStrategyExecutor(strategyExecution = strategyParameters.toStrategyExecution())
+        strategyExecutor = TestStrategyExecutor(strategyExecution = strategyParameters.toStrategyExecution())
         tested = BuyWithMarketOrderBelowPriceStrategy.Builder()
             .withStrategySpecificParameters(strategyParameters.strategySpecificParameters)
             .build()
         // when
-        val actions = tested.getActions(price = 99.99.toBigDecimal(), strategyExecution = strategyExecutor.strategyExecution)
+        val actions = tested.getActions(
+            price = 99.99.toBigDecimal(),
+            strategyExecution = strategyExecutor.strategyExecution,
+        )
         // then
         assertThat(actions).hasSize(1)
         assertThat((actions[0] as PlaceBuyMarketOrderAction).counterCurrencyAmount).isEqualTo(50.toBigDecimal())
@@ -53,7 +54,7 @@ class BuyWithMarketOrderBelowPriceStrategyTest {
     @Test
     fun shouldNotBuyWhenPriceAboveNextPricePoint() {
         // given
-        strategyExecutor = PositionBuyOrdersForFlashCrashStrategyTest.TestStrategyExecutor(
+        strategyExecutor = TestStrategyExecutor(
             strategyExecution = strategyParameters.toStrategyExecution().copy(
                 orders = listOf(
                     StrategyOrder(
@@ -71,7 +72,10 @@ class BuyWithMarketOrderBelowPriceStrategyTest {
             .withStrategySpecificParameters(strategyParameters.strategySpecificParameters)
             .build()
         // when
-        val actions = tested.getActions(price = 99.99.toBigDecimal(), strategyExecution = strategyExecutor.strategyExecution)
+        val actions = tested.getActions(
+            price = 99.99.toBigDecimal(),
+            strategyExecution = strategyExecutor.strategyExecution,
+        )
         // then
         assertThat(actions).isEmpty()
     }
@@ -79,7 +83,7 @@ class BuyWithMarketOrderBelowPriceStrategyTest {
     @Test
     fun shouldBuyWhenPriceAboveNextPricePoint() {
         // given
-        strategyExecutor = PositionBuyOrdersForFlashCrashStrategyTest.TestStrategyExecutor(
+        strategyExecutor = TestStrategyExecutor(
             strategyExecution = strategyParameters.toStrategyExecution().copy(
                 orders = listOf(
                     StrategyOrder(
@@ -97,7 +101,10 @@ class BuyWithMarketOrderBelowPriceStrategyTest {
             .withStrategySpecificParameters(strategyParameters.strategySpecificParameters)
             .build()
         // when
-        val actions = tested.getActions(price = 89.99.toBigDecimal(), strategyExecution = strategyExecutor.strategyExecution)
+        val actions = tested.getActions(
+            price = 89.99.toBigDecimal(),
+            strategyExecution = strategyExecutor.strategyExecution,
+        )
         // then
         assertThat(actions).hasSize(1)
         assertThat((actions[0] as PlaceBuyMarketOrderAction).counterCurrencyAmount).isEqualTo(50.toBigDecimal())
@@ -106,7 +113,7 @@ class BuyWithMarketOrderBelowPriceStrategyTest {
     @Test
     fun shouldNotBuyWhenAllOrdersMade() {
         // given
-        strategyExecutor = PositionBuyOrdersForFlashCrashStrategyTest.TestStrategyExecutor(
+        strategyExecutor = TestStrategyExecutor(
             strategyExecution = strategyParameters.toStrategyExecution().copy(
                 orders = listOf(mock(), mock(), mock()),
             )
@@ -115,7 +122,10 @@ class BuyWithMarketOrderBelowPriceStrategyTest {
             .withStrategySpecificParameters(strategyParameters.strategySpecificParameters)
             .build()
         // when
-        val actions = tested.getActions(price = 89.99.toBigDecimal(), strategyExecution = strategyExecutor.strategyExecution)
+        val actions = tested.getActions(
+            price = 89.99.toBigDecimal(),
+            strategyExecution = strategyExecutor.strategyExecution,
+        )
         // then
         assertThat(actions).isEmpty()
     }
