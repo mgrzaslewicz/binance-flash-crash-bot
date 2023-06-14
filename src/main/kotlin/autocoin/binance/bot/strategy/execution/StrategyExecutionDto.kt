@@ -1,37 +1,31 @@
 package autocoin.binance.bot.strategy.execution
 
-import autocoin.binance.bot.exchange.apikey.ApiKeyDto
 import autocoin.binance.bot.exchange.apikey.ApiKeyId
 import autocoin.binance.bot.exchange.apikey.md5
 import autocoin.binance.bot.strategy.execution.repository.StrategyOrder
-import autocoin.binance.bot.strategy.executor.StrategyType
+import autocoin.binance.bot.strategy.parameters.StrategyParametersDto
 import autocoin.binance.bot.strategy.parameters.WithStrategySpecificParameters
 import com.autocoin.exchangegateway.api.exchange.apikey.ApiKey
 import com.autocoin.exchangegateway.api.exchange.apikey.ApiKeySupplier
-import com.autocoin.exchangegateway.api.exchange.currency.CurrencyPair
 import com.fasterxml.jackson.annotation.JsonIgnore
 import java.util.*
 
-
 data class StrategyExecutionDto(
+    val parameters: StrategyParametersDto,
     val id: String = UUID.randomUUID().toString(),
-    val strategyType: StrategyType,
-    val userId: String,
     val exchangeName: String,
-    val apiKey: ApiKeyDto,
-
-    val baseCurrencyCode: String,
-    val counterCurrencyCode: String,
-
-    override val strategySpecificParameters: Map<String, String>,
-
     val orders: List<StrategyOrder> = emptyList(),
-
     val createTimeMillis: Long,
+) : WithStrategySpecificParameters by parameters {
 
-    ) : WithStrategySpecificParameters {
     @JsonIgnore
-    val currencyPair = CurrencyPair.of(baseCurrencyCode, counterCurrencyCode)
+    val userId = parameters.userId
+
+    @JsonIgnore
+    val strategyType = parameters.strategyType
+
+    @JsonIgnore
+    val currencyPair = parameters.currencyPair
 
     @JsonIgnore
     val numberOfOrders = orders.size
@@ -39,13 +33,13 @@ data class StrategyExecutionDto(
     @JsonIgnore
     val apiKeySupplier: ApiKeySupplier<ApiKeyId> = ApiKeySupplier(
         id = ApiKeyId(
-            userId = userId,
-            keyHash = apiKey.publicKey.md5() + ":" + apiKey.secretKey.md5(),
+            userId = parameters.userId,
+            keyHash = parameters.apiKey.publicKey.md5() + ":" + parameters.apiKey.secretKey.md5(),
         ),
         supplier = {
             ApiKey(
-                publicKey = apiKey.publicKey,
-                secretKey = apiKey.secretKey,
+                publicKey = parameters.apiKey.publicKey,
+                secretKey = parameters.apiKey.secretKey,
             )
         }
     )
@@ -68,9 +62,7 @@ data class StrategyExecutionDto(
 
         other as StrategyExecutionDto
 
-        if (id != other.id) return false
-
-        return true
+        return id == other.id
     }
 
     override fun hashCode(): Int {

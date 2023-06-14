@@ -5,6 +5,7 @@ import autocoin.binance.bot.exchange.apikey.ApiKeyDto
 import autocoin.binance.bot.strategy.PositionBuyOrdersForFlashCrashStrategy.Builder.Companion.counterCurrencyAmountLimitForBuyingParameter
 import autocoin.binance.bot.strategy.execution.StrategyExecutionDto
 import autocoin.binance.bot.strategy.executor.StrategyType
+import autocoin.binance.bot.strategy.parameters.StrategyParametersDto
 import com.autocoin.exchangegateway.api.exchange.xchange.ExchangeNames.Companion.binance
 import com.autocoin.exchangegateway.spi.exchange.order.OrderStatus
 import org.assertj.core.api.Assertions.assertThat
@@ -15,26 +16,28 @@ import java.util.*
 
 class StrategyExecutionMutableSetTest {
     private val exchangeKeysPath =
-        File(StrategyExecutionMutableSetTest::class.java.getResource("/sample-strategy-executions.json").toURI()).absolutePath
+        File(
+            StrategyExecutionMutableSetTest::class.java.getResource("/sample-strategy-executions.json").toURI()
+        ).absolutePath
 
 
     private val expectedStrategyExecution = StrategyExecutionDto(
+        parameters = StrategyParametersDto(
+            userId = "sample-user-id-1",
+            baseCurrencyCode = "BTC",
+            counterCurrencyCode = "USDT",
+            strategyType = StrategyType.POSITION_BUY_ORDERS_FOR_FLASH_CRASH,
+            strategySpecificParameters = mapOf(
+                counterCurrencyAmountLimitForBuyingParameter to 1500.0.toBigDecimal().toPlainString(),
+            ),
+            apiKey = ApiKeyDto(
+                publicKey = "sample binance api key",
+                secretKey = "sample binance secret key",
+            )
+        ),
         id = "sample-execution-id-1",
-        userId = "sample-user-id-1",
         exchangeName = binance.value,
-
-        baseCurrencyCode = "BTC",
-        counterCurrencyCode = "USDT",
-
-        strategyType = StrategyType.POSITION_BUY_ORDERS_FOR_FLASH_CRASH,
-        strategySpecificParameters = mapOf(
-            counterCurrencyAmountLimitForBuyingParameter to 1500.0.toBigDecimal().toPlainString(),
-        ),
         createTimeMillis = 3,
-        apiKey = ApiKeyDto(
-            publicKey = "sample binance api key",
-            secretKey = "sample binance secret key",
-        ),
 
         orders = listOf(
             StrategyOrder(

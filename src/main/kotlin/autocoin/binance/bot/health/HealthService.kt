@@ -56,7 +56,7 @@ class HealthService(
             .asSequence()
             .map { strategy ->
                 RunningStrategy(
-                    currencyPair = strategy.baseCurrencyCode + "/" + strategy.counterCurrencyCode,
+                    currencyPair = strategy.currencyPair.toString(),
                     user = strategy.userId,
                     type = strategy.strategyType.name,
                     orders = strategy.orders.asSequence()

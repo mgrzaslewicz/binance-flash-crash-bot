@@ -1,26 +1,22 @@
 [
   {
+    "parameters": {
+      "userId": "sample-user-id-1",
+      "strategyType": "POSITION_BUY_ORDERS_FOR_FLASH_CRASH",
+      "baseCurrencyCode": "BTC",
+      "counterCurrencyCode": "USDT",
+      "apiKey": {
+        "publicKey": "sample binance api key",
+        "secretKey": "sample binance secret key"
+      },
+      "strategySpecificParameters": {
+        "counterCurrencyAmountLimitForBuying": "1500.0",
+        "numberOfBuyLimitOrdersToKeep": 3
+      }
+    },
     "id": "sample-execution-id-1",
-    "userId": "sample-user-id-1",
-    "strategyType": "POSITION_BUY_ORDERS_FOR_FLASH_CRASH",
     "exchangeName": "BINANCE",
-    "baseCurrencyCode": "BTC",
-    "counterCurrencyCode": "USDT",
-    "strategySpecificParameters": {
-      "counterCurrencyAmountLimitForBuying": "1500.0",
-      "numberOfBuyLimitOrdersToKeep": 3
-    },
     "createTimeMillis": 3,
-    "exchangeApiKey": {
-      "apiKey": "sample binance api key",
-      "secretKey": "sample binance secret key",
-      "exchangeId": "does not matter",
-      "exchangeName": "BINANCE",
-      "exchangeSpecificKeyParameters": {},
-      "exchangeUserId": "does not matter",
-      "exchangeUserName": "does not matter",
-      "userName": null
-    },
     "orders": [
       {
         "id": "sample-order-id-1",

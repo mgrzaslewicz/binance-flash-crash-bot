@@ -11,8 +11,11 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 
 class BuyWithMarketOrderBelowPriceStrategyTest {
+    private val price1 = 100.toBigDecimal()
+    private val price2 = 90.toBigDecimal()
+    private val price3 = 80.toBigDecimal()
     private val strategyParameters: StrategyParametersDto = samplePlaceBuyMarketOrdersBelowPriceStrategyParameters(
-        pricesTriggeringBuyMarketOrderParameter = listOf(100, 90, 80).map { it.toBigDecimal() },
+        pricesTriggeringBuyMarketOrderParameter = listOf(price1, price2, price3),
         counterCurrencyAmountLimitForBuying = 150.toBigDecimal(),
     )
     private lateinit var strategyExecutor: StrategyExecutor
