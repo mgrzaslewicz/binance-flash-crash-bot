@@ -1,18 +1,11 @@
 package autocoin.binance.bot.app.config
 
 import autocoin.binance.bot.eventbus.DefaultEventBus
-import autocoin.binance.bot.exchange.BinancePriceStream
-import autocoin.binance.bot.exchange.LoggingOnlyWalletServiceGateway
-import autocoin.binance.bot.exchange.PriceWebSocketConnectionKeeper
-import autocoin.binance.bot.exchange.addingDelay
+import autocoin.binance.bot.exchange.*
 import autocoin.binance.bot.exchange.apikey.ApiKeyId
 import autocoin.binance.bot.exchange.binance.AddingBinanceMarketOrderWithCounterCurrencyAmountAuthorizedOrderService
 import autocoin.binance.bot.exchange.binance.AddingTestBinanceMarketOrderWithCounterCurrencyAmountAuthorizedOrderService
 import autocoin.binance.bot.exchange.binance.BinanceAuthorizedOrderServiceFactory
-import autocoin.binance.bot.exchange.measuringDuration
-import autocoin.binance.bot.exchange.mockingLimitBuyOrder
-import autocoin.binance.bot.exchange.preLogging
-import autocoin.binance.bot.exchange.rateLimiting
 import autocoin.binance.bot.health.HealthMetricsScheduler
 import autocoin.binance.bot.health.HealthService
 import autocoin.binance.bot.httpserver.HealthController
@@ -29,12 +22,7 @@ import com.autocoin.exchangegateway.api.exchange.currency.CurrencyPair
 import com.autocoin.exchangegateway.api.exchange.order.DemoOrderServiceGateway
 import com.autocoin.exchangegateway.api.exchange.order.service.authorized.XchangeAuthorizedOrderServiceFactory
 import com.autocoin.exchangegateway.api.exchange.wallet.service.authorized.XchangeAuthorizedWalletServiceFactory
-import com.autocoin.exchangegateway.api.exchange.xchange.ApiKeyToCacheKeyProvider
-import com.autocoin.exchangegateway.api.exchange.xchange.CachingXchangeProvider
-import com.autocoin.exchangegateway.api.exchange.xchange.DefaultXchangeProvider
-import com.autocoin.exchangegateway.api.exchange.xchange.XchangeApiKeyVerifierGateway
-import com.autocoin.exchangegateway.api.exchange.xchange.XchangeInstanceWrapper
-import com.autocoin.exchangegateway.api.exchange.xchange.XchangeSpecificationApiKeyAssigner
+import com.autocoin.exchangegateway.api.exchange.xchange.*
 import com.autocoin.exchangegateway.spi.exchange.ExchangeName
 import com.autocoin.exchangegateway.spi.exchange.apikey.ApiKeySupplier
 import com.autocoin.exchangegateway.spi.exchange.order.gateway.OrderServiceGatewayUsingAuthorizedOrderService
@@ -104,7 +92,8 @@ class AppContext(private val appConfig: AppConfig) {
         fileRepositoryDirectory = appConfig.fileRepositoryDirectory.toFile(),
         objectMapper = objectMapper,
         clock = clock,
-    ).build()
+    )
+        .build()
         .logging(logPrefix = "StrategyExecutions")
 
 
@@ -142,12 +131,22 @@ class AppContext(private val appConfig: AppConfig) {
         if (appConfig.shouldMakeRealOrders) {
             BinanceAuthorizedOrderServiceFactory(
                 decorated = it,
-                wrapper = { orderService -> AddingBinanceMarketOrderWithCounterCurrencyAmountAuthorizedOrderService(clock, orderService) },
+                wrapper = { orderService ->
+                    AddingBinanceMarketOrderWithCounterCurrencyAmountAuthorizedOrderService(
+                        clock = clock,
+                        decorated = orderService,
+                    )
+                },
             )
         } else {
             BinanceAuthorizedOrderServiceFactory(
                 decorated = it,
-                wrapper = { orderService -> AddingTestBinanceMarketOrderWithCounterCurrencyAmountAuthorizedOrderService(clock, orderService) },
+                wrapper = { orderService ->
+                    AddingTestBinanceMarketOrderWithCounterCurrencyAmountAuthorizedOrderService(
+                        clock = clock,
+                        decorated = orderService,
+                    )
+                },
             )
         }
     }

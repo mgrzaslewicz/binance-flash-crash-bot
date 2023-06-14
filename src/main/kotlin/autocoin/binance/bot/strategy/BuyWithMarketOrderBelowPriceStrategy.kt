@@ -27,21 +27,25 @@ class BuyWithMarketOrderBelowPriceStrategy(
         price: BigDecimal,
         strategyExecution: StrategyExecutionDto,
     ): List<StrategyAction> {
-        return if (strategyExecution.hasNoMaximumNumberOfOrdersYet()) {
-            val currentPricePoint = pricesTriggeringBuyMarketOrder[strategyExecution.orders.size]
-            if (price < currentPricePoint) {
-                listOf(
-                    PlaceBuyMarketOrderAction(
-                        currentPrice = price,
-                        counterCurrencyAmount = counterCurrencyAmountPerOrder,
-                        shouldBreakActionChainOnFail = true
-                    )
-                )
-            } else {
-                emptyList()
+        return when {
+            strategyExecution.hasNoMaximumNumberOfOrdersYet() -> {
+                val currentPricePoint = pricesTriggeringBuyMarketOrder[strategyExecution.orders.size]
+                when {
+                    price < currentPricePoint -> {
+                        listOf(
+                            PlaceBuyMarketOrderAction(
+                                currentPrice = price,
+                                counterCurrencyAmount = counterCurrencyAmountPerOrder,
+                                shouldBreakActionChainOnFail = true
+                            )
+                        )
+                    }
+
+                    else -> emptyList()
+                }
             }
-        } else {
-            emptyList()
+
+            else -> emptyList()
         }
     }
 
@@ -66,7 +70,9 @@ class BuyWithMarketOrderBelowPriceStrategy(
 
         fun withStrategySpecificParameters(parameters: Map<String, String>): Builder {
             parameters.getValue(pricesTriggeringBuyMarketOrderParameter).let {
-                pricesTriggeringBuyMarketOrder = it.split(",").map { price -> price.trim().toBigDecimal() }.toMutableList()
+                pricesTriggeringBuyMarketOrder = it.split(",")
+                    .map { price -> price.trim().toBigDecimal() }
+                    .toMutableList()
             }
             parameters.getValue(counterCurrencyAmountLimitForBuyingParameter).let {
                 counterCurrencyAmountLimitForBuying = it.toBigDecimal()
