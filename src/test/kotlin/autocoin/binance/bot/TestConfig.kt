@@ -3,6 +3,7 @@ package autocoin.binance.bot
 import autocoin.binance.bot.exchange.apikey.ApiKeyDto
 import autocoin.binance.bot.strategy.BuyWithMarketOrderBelowPriceStrategy
 import autocoin.binance.bot.strategy.PositionBuyOrdersForFlashCrashStrategy
+import autocoin.binance.bot.strategy.execution.StrategyExecutionDto.Companion.toStrategyExecution
 import autocoin.binance.bot.strategy.executor.StrategyType
 import autocoin.binance.bot.strategy.parameters.StrategyParametersDto
 import com.autocoin.exchangegateway.api.exchange.currency.CurrencyPair

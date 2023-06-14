@@ -3,6 +3,7 @@ package autocoin.binance.bot.strategy
 import autocoin.binance.bot.TestConfig.samplePlaceBuyMarketOrdersBelowPriceStrategyParameters
 import autocoin.binance.bot.strategy.PositionBuyOrdersForFlashCrashStrategyTest.TestStrategyExecutor
 import autocoin.binance.bot.strategy.action.PlaceBuyMarketOrderAction
+import autocoin.binance.bot.strategy.execution.StrategyExecutionDto.Companion.toStrategyExecution
 import autocoin.binance.bot.strategy.execution.repository.StrategyOrder
 import autocoin.binance.bot.strategy.executor.StrategyExecutor
 import autocoin.binance.bot.strategy.parameters.StrategyParametersDto

@@ -2,6 +2,8 @@ package autocoin.binance.bot.strategy
 
 import autocoin.binance.bot.exchange.CurrencyPairWithPrice
 import autocoin.binance.bot.strategy.execution.StrategyExecutionDto
+import autocoin.binance.bot.strategy.execution.StrategyExecutionDto.Companion.matchesStrategyExecution
+import autocoin.binance.bot.strategy.execution.StrategyExecutionDto.Companion.toResumedStrategyExecution
 import autocoin.binance.bot.strategy.execution.repository.FileBackedMutableSet
 import autocoin.binance.bot.strategy.executor.StrategyExecutor
 import autocoin.binance.bot.strategy.executor.StrategyExecutorProvider

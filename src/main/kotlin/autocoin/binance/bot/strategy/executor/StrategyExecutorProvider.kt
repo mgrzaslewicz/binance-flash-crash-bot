@@ -4,6 +4,7 @@ import autocoin.binance.bot.exchange.apikey.ApiKeyId
 import autocoin.binance.bot.strategy.BuyWithMarketOrderBelowPriceStrategy
 import autocoin.binance.bot.strategy.PositionBuyOrdersForFlashCrashStrategy
 import autocoin.binance.bot.strategy.execution.StrategyExecutionDto
+import autocoin.binance.bot.strategy.execution.StrategyExecutionDto.Companion.toStrategyExecution
 import autocoin.binance.bot.strategy.execution.repository.FileBackedMutableSet
 import autocoin.binance.bot.strategy.parameters.StrategyParametersDto
 import autocoin.binance.bot.strategy.parameters.WithStrategySpecificParameters

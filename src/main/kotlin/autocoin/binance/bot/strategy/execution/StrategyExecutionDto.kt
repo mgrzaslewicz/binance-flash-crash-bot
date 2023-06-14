@@ -7,7 +7,9 @@ import autocoin.binance.bot.strategy.parameters.StrategyParametersDto
 import autocoin.binance.bot.strategy.parameters.WithStrategySpecificParameters
 import com.autocoin.exchangegateway.api.exchange.apikey.ApiKey
 import com.autocoin.exchangegateway.api.exchange.apikey.ApiKeySupplier
+import com.autocoin.exchangegateway.api.exchange.xchange.ExchangeNames
 import com.fasterxml.jackson.annotation.JsonIgnore
+import java.time.ZonedDateTime
 import java.util.*
 
 data class StrategyExecutionDto(
@@ -17,6 +19,29 @@ data class StrategyExecutionDto(
     val orders: List<StrategyOrder> = emptyList(),
     val createTimeMillis: Long,
 ) : WithStrategySpecificParameters by parameters {
+
+    companion object {
+        fun StrategyParametersDto.toStrategyExecution(): StrategyExecutionDto {
+            return StrategyExecutionDto(
+                exchangeName = ExchangeNames.binance.value,
+                parameters = this,
+                createTimeMillis = ZonedDateTime.now().toInstant().toEpochMilli(),
+            )
+        }
+
+        fun StrategyParametersDto.matchesStrategyExecution(strategyExecution: StrategyExecutionDto): Boolean {
+            return userId == strategyExecution.userId
+                    && currencyPair == strategyExecution.currencyPair
+                    && strategyType == strategyExecution.strategyType
+        }
+
+        fun StrategyParametersDto.toResumedStrategyExecution(strategyExecution: StrategyExecutionDto): StrategyExecutionDto {
+            check(matchesStrategyExecution(strategyExecution)) { "Cannot resume non matching strategy execution" }
+            return strategyExecution.copy(
+                parameters = strategyExecution.parameters.copy(apiKey = strategyExecution.parameters.apiKey)
+            )
+        }
+    }
 
     @JsonIgnore
     val userId = parameters.userId
