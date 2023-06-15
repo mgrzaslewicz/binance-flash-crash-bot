@@ -21,7 +21,11 @@ class PositionBuyOrdersForFlashCrashStrategy(
     private val maxBigDecimal = Integer.MAX_VALUE.toBigDecimal()
     private var lowestPriceSoFar: BigDecimal = maxBigDecimal
 
-    private fun fillUpToNBuyOrdersActions(buyPrice: BigDecimal, baseCurrencyAmount: BigDecimal, lackingOrders: Int): List<StrategyAction> {
+    private fun fillUpToNBuyOrdersActions(
+        buyPrice: BigDecimal,
+        baseCurrencyAmount: BigDecimal,
+        lackingOrders: Int
+    ): List<StrategyAction> {
         return (1..lackingOrders).map {
             PlaceBuyLimitOrderAction(
                 price = buyPrice,
@@ -54,7 +58,10 @@ class PositionBuyOrdersForFlashCrashStrategy(
             )
         } else {
             val repositionPriceThreshold =
-                strategyExecution.orderWithMaxPrice!!.price - strategyExecution.orderWithMaxPrice.price.multiply(orderRepositionRelativeDropThreshold, mathContext)
+                strategyExecution.orderWithMaxPrice!!.price - strategyExecution.orderWithMaxPrice.price.multiply(
+                    orderRepositionRelativeDropThreshold,
+                    mathContext
+                )
             if (lowBuyPrice < repositionPriceThreshold) {
                 return cancelOrderWithHighestPriceAndPlaceNewOne(
                     buyPrice = lowBuyPrice,
@@ -66,7 +73,11 @@ class PositionBuyOrdersForFlashCrashStrategy(
         return emptyList()
     }
 
-    private fun cancelOrderWithHighestPriceAndPlaceNewOne(buyPrice: BigDecimal, baseCurrencyAmount: BigDecimal, strategyOrderWithMaxPrice: StrategyOrder): List<StrategyAction> {
+    private fun cancelOrderWithHighestPriceAndPlaceNewOne(
+        buyPrice: BigDecimal,
+        baseCurrencyAmount: BigDecimal,
+        strategyOrderWithMaxPrice: StrategyOrder
+    ): List<StrategyAction> {
         return listOf(
             CancelOrderAction(strategyOrder = strategyOrderWithMaxPrice, shouldBreakActionChainOnFail = true),
             PlaceBuyLimitOrderAction(
@@ -79,8 +90,8 @@ class PositionBuyOrdersForFlashCrashStrategy(
 
     class Builder {
         companion object {
-            val numberOfBuyLimitOrdersToKeepParameter = "numberOfBuyLimitOrdersToKeep"
-            val counterCurrencyAmountLimitForBuyingParameter = "counterCurrencyAmountLimitForBuying"
+            private val numberOfBuyLimitOrdersToKeepParameter = "numberOfBuyLimitOrdersToKeep"
+            private val counterCurrencyAmountLimitForBuyingParameter = "counterCurrencyAmountLimitForBuying"
         }
 
         private var minPriceDownMultiplier: BigDecimal = 0.2.toBigDecimal()
@@ -108,6 +119,16 @@ class PositionBuyOrdersForFlashCrashStrategy(
             this.numberOfBuyLimitOrdersToKeep = numberOfBuyLimitOrdersToKeep
             return this
         }
+
+        fun withCounterCurrencyAmountLimitForBuying(counterCurrencyAmountLimitForBuying: BigDecimal): Builder {
+            this.counterCurrencyAmountLimitForBuying = counterCurrencyAmountLimitForBuying
+            return this
+        }
+
+        fun toStrategySpecificParameters(): Map<String, String> = mapOf(
+            numberOfBuyLimitOrdersToKeepParameter to numberOfBuyLimitOrdersToKeep.toString(),
+            counterCurrencyAmountLimitForBuyingParameter to counterCurrencyAmountLimitForBuying.toPlainString(),
+        )
 
         fun withStrategySpecificParameters(parameters: Map<String, String>): Builder {
             parameters.getValue(numberOfBuyLimitOrdersToKeepParameter).let {

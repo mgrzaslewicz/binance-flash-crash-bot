@@ -21,9 +21,9 @@ class BuyWithMarketOrderBelowPriceStrategyTest {
     private val allPrices = listOf(price1, price2, price3)
     private val counterCurrencyAmountLimitForBuying = 150.toBigDecimal()
     private val strategyParameters: StrategyParametersDto = samplePlaceBuyMarketOrdersBelowPriceStrategyParameters(
-        pricesTriggeringBuyMarketOrderParameter = allPrices,
+        pricesTriggeringBuyMarketOrder = allPrices,
         counterCurrencyAmountLimitForBuying = counterCurrencyAmountLimitForBuying,
-        maxPriceForComingBackFromBottomBuyMarketOrderParameter = maxPriceForComingBackFromBottomBuyMarketOrderParameter,
+        maxPriceForComingBackFromBottomBuyMarketOrder = maxPriceForComingBackFromBottomBuyMarketOrderParameter,
     )
     private val strategyExecution = strategyParameters.toStrategyExecution()
     private lateinit var tested: BuyWithMarketOrderBelowPriceStrategy

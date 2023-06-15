@@ -2,7 +2,7 @@ package autocoin.binance.bot.strategy.execution.repository
 
 import autocoin.binance.bot.app.config.objectMapper
 import autocoin.binance.bot.exchange.apikey.ApiKeyDto
-import autocoin.binance.bot.strategy.PositionBuyOrdersForFlashCrashStrategy.Builder.Companion.counterCurrencyAmountLimitForBuyingParameter
+import autocoin.binance.bot.strategy.PositionBuyOrdersForFlashCrashStrategy
 import autocoin.binance.bot.strategy.execution.StrategyExecutionDto
 import autocoin.binance.bot.strategy.executor.StrategyType
 import autocoin.binance.bot.strategy.parameters.StrategyParametersDto
@@ -15,7 +15,7 @@ import java.nio.file.Files
 import java.util.*
 
 class StrategyExecutionMutableSetTest {
-    private val exchangeKeysPath =
+    private val sampleStrategyExecutionsJson =
         File(
             StrategyExecutionMutableSetTest::class.java.getResource("/sample-strategy-executions.json").toURI()
         ).absolutePath
@@ -27,9 +27,9 @@ class StrategyExecutionMutableSetTest {
             baseCurrencyCode = "BTC",
             counterCurrencyCode = "USDT",
             strategyType = StrategyType.POSITION_BUY_ORDERS_FOR_FLASH_CRASH,
-            strategySpecificParameters = mapOf(
-                counterCurrencyAmountLimitForBuyingParameter to 1500.0.toBigDecimal().toPlainString(),
-            ),
+            strategySpecificParameters = PositionBuyOrdersForFlashCrashStrategy.Builder()
+                .withCounterCurrencyAmountLimitForBuying(1500.0.toBigDecimal())
+                .toStrategySpecificParameters(),
             apiKey = ApiKeyDto(
                 publicKey = "sample binance api key",
                 secretKey = "sample binance secret key",
@@ -70,7 +70,7 @@ class StrategyExecutionMutableSetTest {
     @Test
     fun shouldGetByUserId() {
         val tempDir = Files.createTempDirectory(UUID.randomUUID().toString())
-        File(exchangeKeysPath).copyTo(tempDir.resolve("strategy-executions-1.json").toFile())
+        File(sampleStrategyExecutionsJson).copyTo(tempDir.resolve("strategy-executions-1.json").toFile())
 
         val tested = StrategyExecutionFileBackedMutableSetBuilder(
             fileRepositoryDirectory = tempDir.toFile(),

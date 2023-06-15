@@ -24,10 +24,10 @@ object TestConfig {
                 publicKey = "key-1",
                 secretKey = "secret-1",
             ),
-            strategySpecificParameters = mapOf(
-                PositionBuyOrdersForFlashCrashStrategy.Builder.numberOfBuyLimitOrdersToKeepParameter to numberOfBuyLimitOrdersToKeep.toString(),
-                PositionBuyOrdersForFlashCrashStrategy.Builder.counterCurrencyAmountLimitForBuyingParameter to counterCurrencyAmountLimitForBuying.toPlainString(),
-            ),
+            strategySpecificParameters = PositionBuyOrdersForFlashCrashStrategy.Builder()
+                .withNumberOfBuyLimitOrdersToKeep(numberOfBuyLimitOrdersToKeep)
+                .withCounterCurrencyAmountLimitForBuying(counterCurrencyAmountLimitForBuying)
+                .toStrategySpecificParameters()
         )
     }
 
@@ -40,9 +40,9 @@ object TestConfig {
     ).toStrategyExecution()
 
     fun samplePlaceBuyMarketOrdersBelowPriceStrategyParameters(
-        pricesTriggeringBuyMarketOrderParameter: List<BigDecimal>,
+        pricesTriggeringBuyMarketOrder: List<BigDecimal>,
         counterCurrencyAmountLimitForBuying: BigDecimal,
-        maxPriceForComingBackFromBottomBuyMarketOrderParameter: BigDecimal,
+        maxPriceForComingBackFromBottomBuyMarketOrder: BigDecimal,
     ): StrategyParametersDto {
         return StrategyParametersDto(
             baseCurrencyCode = currencyPair.base,
@@ -53,14 +53,11 @@ object TestConfig {
                 publicKey = "key-1",
                 secretKey = "secret-1",
             ),
-            strategySpecificParameters = mapOf(
-                BuyWithMarketOrderBelowPriceStrategy.Builder
-                    .pricesTriggeringBuyMarketOrderParameter to pricesTriggeringBuyMarketOrderParameter.joinToString { it.toPlainString() },
-                BuyWithMarketOrderBelowPriceStrategy.Builder
-                    .maxPriceForComingBackFromBottomBuyMarketOrderParameter to maxPriceForComingBackFromBottomBuyMarketOrderParameter.toPlainString(),
-                BuyWithMarketOrderBelowPriceStrategy.Builder
-                    .counterCurrencyAmountLimitForBuyingParameter to counterCurrencyAmountLimitForBuying.toPlainString(),
-            ),
+            strategySpecificParameters = BuyWithMarketOrderBelowPriceStrategy.Builder()
+                .withPricesTriggeringBuyMarketOrder(pricesTriggeringBuyMarketOrder)
+                .withMaxPriceForComingBackFromBottomBuyMarketOrder(maxPriceForComingBackFromBottomBuyMarketOrder)
+                .withCounterCurrencyAmountLimitForBuying(counterCurrencyAmountLimitForBuying)
+                .toStrategySpecificParameters()
         )
     }
 
@@ -69,8 +66,8 @@ object TestConfig {
         counterCurrencyAmountLimitForBuying: BigDecimal,
         maxPriceForComingBackFromBottomBuyMarketOrderParameter: BigDecimal,
     ) = samplePlaceBuyMarketOrdersBelowPriceStrategyParameters(
-        pricesTriggeringBuyMarketOrderParameter = pricesTriggeringBuyMarketOrderParameter,
+        pricesTriggeringBuyMarketOrder = pricesTriggeringBuyMarketOrderParameter,
         counterCurrencyAmountLimitForBuying = counterCurrencyAmountLimitForBuying,
-        maxPriceForComingBackFromBottomBuyMarketOrderParameter = maxPriceForComingBackFromBottomBuyMarketOrderParameter,
+        maxPriceForComingBackFromBottomBuyMarketOrder = maxPriceForComingBackFromBottomBuyMarketOrderParameter,
     ).toStrategyExecution()
 }

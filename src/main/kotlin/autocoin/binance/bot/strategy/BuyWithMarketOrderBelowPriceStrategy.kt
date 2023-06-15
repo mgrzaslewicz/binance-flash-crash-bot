@@ -70,9 +70,10 @@ class BuyWithMarketOrderBelowPriceStrategy(
 
     class Builder {
         companion object {
-            val pricesTriggeringBuyMarketOrderParameter = "pricesTriggeringBuyMarketOrder"
-            val maxPriceForComingBackFromBottomBuyMarketOrderParameter = "maxPriceForComingBackFromBottomBuyMarketOrder"
-            val counterCurrencyAmountLimitForBuyingParameter = "counterCurrencyAmountLimitForBuying"
+            private val pricesTriggeringBuyMarketOrderParameter = "pricesTriggeringBuyMarketOrder"
+            private val maxPriceForComingBackFromBottomBuyMarketOrderParameter =
+                "maxPriceForComingBackFromBottomBuyMarketOrder"
+            private val counterCurrencyAmountLimitForBuyingParameter = "counterCurrencyAmountLimitForBuying"
         }
 
         private var pricesTriggeringBuyMarketOrder: MutableList<BigDecimal> = mutableListOf()
@@ -88,6 +89,17 @@ class BuyWithMarketOrderBelowPriceStrategy(
             this.counterCurrencyAmountLimitForBuying = counterCurrencyAmountLimitForBuying
             return this
         }
+
+        fun withMaxPriceForComingBackFromBottomBuyMarketOrder(maxPriceForComingBackFromBottomBuyMarketOrder: BigDecimal): Builder {
+            this.maxPriceForComingBackFromBottomBuyMarketOrder = maxPriceForComingBackFromBottomBuyMarketOrder
+            return this
+        }
+
+        fun toStrategySpecificParameters(): Map<String, String> = mapOf(
+            pricesTriggeringBuyMarketOrderParameter to pricesTriggeringBuyMarketOrder.joinToString(","),
+            counterCurrencyAmountLimitForBuyingParameter to counterCurrencyAmountLimitForBuying.toPlainString(),
+            maxPriceForComingBackFromBottomBuyMarketOrderParameter to maxPriceForComingBackFromBottomBuyMarketOrder.toPlainString(),
+        )
 
         fun withStrategySpecificParameters(parameters: Map<String, String>): Builder {
             parameters.getValue(pricesTriggeringBuyMarketOrderParameter).let {
