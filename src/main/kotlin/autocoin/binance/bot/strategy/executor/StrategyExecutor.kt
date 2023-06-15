@@ -18,4 +18,6 @@ interface StrategyExecutor : PriceListener {
         currentPrice: BigDecimal,
         counterCurrencyAmount: BigDecimal,
     ): Order?
+
+    fun withdraw(currency: String, walletAddress: String): Boolean
 }

@@ -20,9 +20,7 @@ class PositionBuyOrdersForFlashCrashStrategyTest {
 
     class TestStrategyExecutor(override val strategyExecution: StrategyExecutionDto) : StrategyExecutor {
 
-        override fun cancelOrder(order: StrategyOrder): Boolean {
-            return true
-        }
+        override fun cancelOrder(order: StrategyOrder) = true
 
         override fun placeBuyLimitOrder(
             buyPrice: BigDecimal,
@@ -37,6 +35,8 @@ class PositionBuyOrdersForFlashCrashStrategyTest {
         ): Order? {
             return null
         }
+
+        override fun withdraw(currency: String, walletAddress: String) = true
 
         override fun onPriceUpdated(currencyPairWithPrice: CurrencyPairWithPrice) {
         }
@@ -56,9 +56,11 @@ class PositionBuyOrdersForFlashCrashStrategyTest {
     fun shouldCreate4BuyLimitOrdersWhenNoneBefore() {
         // given
         val numberOfBuyLimitOrdersToKeep = 4
-        strategyExecutor = TestStrategyExecutor(TestConfig.samplePositionBuyLimitOrdersStrategyExecution(numberOfBuyLimitOrdersToKeep = numberOfBuyLimitOrdersToKeep))
+        strategyExecutor =
+            TestStrategyExecutor(TestConfig.samplePositionBuyLimitOrdersStrategyExecution(numberOfBuyLimitOrdersToKeep = numberOfBuyLimitOrdersToKeep))
         // when
-        val actions = tested.getActions(price = 16150.7.toBigDecimal(), strategyExecution = strategyExecutor.strategyExecution)
+        val actions =
+            tested.getActions(price = 16150.7.toBigDecimal(), strategyExecution = strategyExecutor.strategyExecution)
         // then
         assertThat(actions).hasSize(numberOfBuyLimitOrdersToKeep)
         assertThat((actions[0] as PlaceBuyLimitOrderAction).price).isEqualTo(BigDecimal("3262.4414"))
@@ -77,7 +79,8 @@ class PositionBuyOrdersForFlashCrashStrategyTest {
             )
         )
         // when
-        val actions = tested.getActions(price = 16150.7.toBigDecimal(), strategyExecution = strategyExecutor.strategyExecution)
+        val actions =
+            tested.getActions(price = 16150.7.toBigDecimal(), strategyExecution = strategyExecutor.strategyExecution)
         // then
         assertThat(actions).hasSize(1)
         with(actions[0] as PlaceBuyLimitOrderAction) {
@@ -128,7 +131,8 @@ class PositionBuyOrdersForFlashCrashStrategyTest {
             )
         )
         // when
-        val actions = tested.getActions(price = 120.0.toBigDecimal(), strategyExecution = strategyExecutor.strategyExecution)
+        val actions =
+            tested.getActions(price = 120.0.toBigDecimal(), strategyExecution = strategyExecutor.strategyExecution)
         // then
         assertThat(actions).hasSize(2)
         assertThat((actions[0] as CancelOrderAction).strategyOrder.id).isEqualTo(strategyExecutor.strategyExecution.orders[3].id)
@@ -180,7 +184,8 @@ class PositionBuyOrdersForFlashCrashStrategyTest {
             )
         )
         // when
-        val actions = tested.getActions(price = 128.0.toBigDecimal(), strategyExecution = strategyExecutor.strategyExecution)
+        val actions =
+            tested.getActions(price = 128.0.toBigDecimal(), strategyExecution = strategyExecutor.strategyExecution)
         // then
         assertThat(actions).isEmpty()
     }

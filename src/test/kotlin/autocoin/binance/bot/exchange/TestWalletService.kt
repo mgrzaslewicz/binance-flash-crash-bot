@@ -1,36 +1,26 @@
 package autocoin.binance.bot.exchange
 
 import autocoin.binance.bot.exchange.apikey.ApiKeyId
-import com.autocoin.exchangegateway.api.exchange.currency.CurrencyBalance
 import com.autocoin.exchangegateway.spi.exchange.ExchangeName
 import com.autocoin.exchangegateway.spi.exchange.apikey.ApiKeySupplier
+import com.autocoin.exchangegateway.spi.exchange.currency.CurrencyBalance
 import com.autocoin.exchangegateway.spi.exchange.wallet.WithdrawResult
 import com.autocoin.exchangegateway.spi.exchange.wallet.gateway.WalletServiceGateway
-import mu.KLogging
 import java.math.BigDecimal
-import com.autocoin.exchangegateway.spi.exchange.currency.CurrencyBalance as SpiCurrencyBalance
 
-class LoggingOnlyWalletServiceGateway : WalletServiceGateway<ApiKeyId> {
-    companion object : KLogging()
-
+class TestWalletService : WalletServiceGateway<ApiKeyId> {
     override fun getCurrencyBalance(
         exchangeName: ExchangeName,
         apiKey: ApiKeySupplier<ApiKeyId>,
-        currencyCode: String,
+        currencyCode: String
     ): CurrencyBalance {
-        logger.info { "[$exchangeName] Would get currencyBalance for currency=$currencyCode, key=$apiKey" }
-        return CurrencyBalance(
-            currencyCode = currencyCode,
-            amountAvailable = BigDecimal.ZERO,
-            totalAmount = BigDecimal.ZERO,
-            amountInOrders = BigDecimal.ZERO
-        )
+        TODO("Not yet implemented")
     }
 
     override fun getCurrencyBalances(
         exchangeName: ExchangeName,
-        apiKey: ApiKeySupplier<ApiKeyId>,
-    ): List<SpiCurrencyBalance> {
+        apiKey: ApiKeySupplier<ApiKeyId>
+    ): List<CurrencyBalance> {
         TODO("Not yet implemented")
     }
 
@@ -43,5 +33,4 @@ class LoggingOnlyWalletServiceGateway : WalletServiceGateway<ApiKeyId> {
     ): WithdrawResult {
         TODO("Not yet implemented")
     }
-
 }

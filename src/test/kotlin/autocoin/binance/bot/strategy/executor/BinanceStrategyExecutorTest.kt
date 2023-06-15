@@ -3,6 +3,7 @@ package autocoin.binance.bot.strategy.executor
 import autocoin.binance.bot.TestConfig
 import autocoin.binance.bot.exchange.CurrencyPairWithPrice
 import autocoin.binance.bot.exchange.TestOrderService
+import autocoin.binance.bot.exchange.TestWalletService
 import autocoin.binance.bot.strategy.Strategy
 import autocoin.binance.bot.strategy.action.PlaceBuyLimitOrderAction
 import autocoin.binance.bot.strategy.action.StrategyAction
@@ -24,11 +25,13 @@ class BinanceStrategyExecutorTest {
     private companion object : KLogging()
 
     private lateinit var orderService: TestOrderService
+    private lateinit var walletService: TestWalletService
     private lateinit var tested: BinanceStrategyExecutor
 
     @BeforeEach
     fun setup() {
         orderService = TestOrderService()
+        walletService = TestWalletService()
     }
 
     private fun currencyPairWithPrice(price: BigDecimal) = CurrencyPairWithPrice(currencyPair = TestConfig.currencyPair, price = price)
@@ -39,6 +42,7 @@ class BinanceStrategyExecutorTest {
         tested = BinanceStrategyExecutor(
             strategyExecution = TestConfig.samplePositionBuyLimitOrdersStrategyExecution(),
             orderServiceGateway = orderService,
+            walletServiceGateway = walletService,
             strategyExecutions = TestStrategyExecutionMutableSet.get(),
             baseCurrencyAmountScale = 5,
             counterCurrencyPriceScale = 2,
@@ -75,6 +79,7 @@ class BinanceStrategyExecutorTest {
         tested = BinanceStrategyExecutor(
             strategyExecution = TestConfig.samplePositionBuyLimitOrdersStrategyExecution(),
             orderServiceGateway = orderService,
+            walletServiceGateway = walletService,
             strategyExecutions = TestStrategyExecutionMutableSet.get(),
             baseCurrencyAmountScale = 5,
             counterCurrencyPriceScale = 2,

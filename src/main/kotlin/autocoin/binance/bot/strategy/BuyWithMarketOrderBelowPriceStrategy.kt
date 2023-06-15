@@ -2,6 +2,7 @@ package autocoin.binance.bot.strategy
 
 import autocoin.binance.bot.strategy.action.PlaceBuyMarketOrderAction
 import autocoin.binance.bot.strategy.action.StrategyAction
+import autocoin.binance.bot.strategy.action.WithdrawBaseCurrencyAction
 import autocoin.binance.bot.strategy.execution.StrategyExecutionDto
 import autocoin.binance.bot.strategy.execution.repository.StrategyOrder
 import java.math.BigDecimal
@@ -13,6 +14,7 @@ import java.math.RoundingMode
 class BuyWithMarketOrderBelowPriceStrategy private constructor(
     private val pricesTriggeringBuyMarketOrderSortedDesc: List<BigDecimal>,
     private val counterCurrencyAmountLimitForBuying: BigDecimal,
+    private val withdrawalAddress: String?,
 ) : Strategy {
     private val mathContext = MathContext(8, RoundingMode.HALF_EVEN)
     private val numberOfBuyMarketOrdersToPlace = pricesTriggeringBuyMarketOrderSortedDesc.size
@@ -33,23 +35,41 @@ class BuyWithMarketOrderBelowPriceStrategy private constructor(
                 val currentPricePoint = pricesTriggeringBuyMarketOrderSortedDesc[strategyExecution.orders.size]
                 when {
                     price >= (minimumReachedPriceTriggeringBuy ?: plusInfinity) -> {
-                        listOf(
+                        listOfNotNull(
                             PlaceBuyMarketOrderAction(
                                 currentPrice = price,
                                 counterCurrencyAmount = counterCurrencyAmountLeft(strategyExecution.orders),
                                 shouldBreakActionChainOnFail = true,
-                            )
+                            ),
+                            if (withdrawalAddress != null) {
+                                WithdrawBaseCurrencyAction(
+                                    currency = strategyExecution.currencyPair.base,
+                                    walletAddress = withdrawalAddress,
+                                    shouldBreakActionChainOnFail = false,
+                                )
+                            } else {
+                                null
+                            }
                         )
                     }
 
                     price < currentPricePoint -> {
                         minimumReachedPriceTriggeringBuy = price.min(currentPricePoint)
-                        listOf(
+                        listOfNotNull(
                             PlaceBuyMarketOrderAction(
                                 currentPrice = price,
                                 counterCurrencyAmount = counterCurrencyAmountPerOrder,
                                 shouldBreakActionChainOnFail = true,
-                            )
+                            ),
+                            if (withdrawalAddress != null) {
+                                WithdrawBaseCurrencyAction(
+                                    currency = strategyExecution.currencyPair.base,
+                                    walletAddress = withdrawalAddress,
+                                    shouldBreakActionChainOnFail = false,
+                                )
+                            } else {
+                                null
+                            }
                         )
                     }
 
@@ -71,11 +91,13 @@ class BuyWithMarketOrderBelowPriceStrategy private constructor(
             private val maxPriceForComingBackFromBottomBuyMarketOrderParameter =
                 "maxPriceForComingBackFromBottomBuyMarketOrder"
             private val counterCurrencyAmountLimitForBuyingParameter = "counterCurrencyAmountLimitForBuying"
+            private val withdrawalAddressParameter = "withdrawalAddress"
         }
 
         private var pricesTriggeringBuyMarketOrder: MutableList<BigDecimal> = mutableListOf()
         private lateinit var counterCurrencyAmountLimitForBuying: BigDecimal
         private lateinit var maxPriceForComingBackFromBottomBuyMarketOrder: BigDecimal
+        private var withdrawalAddress: String? = null
 
         fun withPricesTriggeringBuyMarketOrder(pricesTriggeringBuyMarketOrder: List<BigDecimal>): Builder {
             this.pricesTriggeringBuyMarketOrder = pricesTriggeringBuyMarketOrder.toMutableList()
@@ -92,11 +114,19 @@ class BuyWithMarketOrderBelowPriceStrategy private constructor(
             return this
         }
 
+        fun withWithdrawalAddress(withdrawalAddress: String): Builder {
+            this.withdrawalAddress = withdrawalAddress
+            return this
+        }
+
         fun toStrategySpecificParameters(): Map<String, String> = mapOf(
             pricesTriggeringBuyMarketOrderParameter to pricesTriggeringBuyMarketOrder.joinToString(","),
             counterCurrencyAmountLimitForBuyingParameter to counterCurrencyAmountLimitForBuying.toPlainString(),
             maxPriceForComingBackFromBottomBuyMarketOrderParameter to maxPriceForComingBackFromBottomBuyMarketOrder.toPlainString(),
+            withdrawalAddressParameter to withdrawalAddress,
         )
+            .filterValues { it != null }
+            .mapValues { it.value!! }
 
         fun withStrategySpecificParameters(parameters: Map<String, String>): Builder {
             parameters.getValue(pricesTriggeringBuyMarketOrderParameter).let {
@@ -110,6 +140,7 @@ class BuyWithMarketOrderBelowPriceStrategy private constructor(
             parameters.getValue(maxPriceForComingBackFromBottomBuyMarketOrderParameter).let {
                 maxPriceForComingBackFromBottomBuyMarketOrder = it.toBigDecimal()
             }
+            withdrawalAddress = parameters[withdrawalAddressParameter]
             return this
         }
 
@@ -117,6 +148,7 @@ class BuyWithMarketOrderBelowPriceStrategy private constructor(
             return BuyWithMarketOrderBelowPriceStrategy(
                 pricesTriggeringBuyMarketOrderSortedDesc = pricesTriggeringBuyMarketOrder.sortedDescending(),
                 counterCurrencyAmountLimitForBuying = counterCurrencyAmountLimitForBuying,
+                withdrawalAddress = withdrawalAddress,
             )
         }
     }

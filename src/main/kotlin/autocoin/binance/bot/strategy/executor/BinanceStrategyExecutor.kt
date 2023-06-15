@@ -12,6 +12,7 @@ import com.autocoin.exchangegateway.spi.exchange.ExchangeName
 import com.autocoin.exchangegateway.spi.exchange.order.Order
 import com.autocoin.exchangegateway.spi.exchange.order.OrderSide
 import com.autocoin.exchangegateway.spi.exchange.order.gateway.OrderServiceGateway
+import com.autocoin.exchangegateway.spi.exchange.wallet.gateway.WalletServiceGateway
 import mu.KLogging
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -24,6 +25,7 @@ import kotlin.system.measureTimeMillis
 class BinanceStrategyExecutor(
     strategyExecution: StrategyExecutionDto,
     private val orderServiceGateway: OrderServiceGateway<ApiKeyId>,
+    private val walletServiceGateway: WalletServiceGateway<ApiKeyId>,
     private val strategyExecutions: FileBackedMutableSet<StrategyExecutionDto>,
     private val clock: Clock = Clock.systemDefaultZone(),
     private val javaExecutorService: ExecutorService,
@@ -36,6 +38,7 @@ class BinanceStrategyExecutor(
 
     private var currentStrategyExecution: StrategyExecutionDto = strategyExecution.copy()
     private val preventFromStackingUpActionsLock: Lock = ReentrantLock()
+    private val preventFromParallelWithdrawalsLock: Lock = ReentrantLock()
 
     override val strategyExecution: StrategyExecutionDto
         get() = currentStrategyExecution
@@ -50,7 +53,8 @@ class BinanceStrategyExecutor(
 
     override fun onPriceUpdated(currencyPairWithPrice: CurrencyPairWithPrice) {
         javaExecutorService.submit {
-            val logTag = "user=${strategyExecution.userId}, currencyPair=${strategyExecution.currencyPair}, strategyType=${strategyExecution.strategyType}"
+            val logTag =
+                "user=${strategyExecution.userId}, currencyPair=${strategyExecution.currencyPair}, strategyType=${strategyExecution.strategyType}"
             if (previousActionsHaveFinished()) {
                 try {
                     val actions = strategy.getActions(currencyPairWithPrice.price, currentStrategyExecution)
@@ -143,6 +147,30 @@ class BinanceStrategyExecutor(
             logger.error(e) { "Placing buy market order failed" }
             null
         }
+    }
+
+    override fun withdraw(currency: String, walletAddress: String): Boolean {
+        if (preventFromParallelWithdrawalsLock.tryLock()) {
+            javaExecutorService.submit {
+                try {
+                    val balance = walletServiceGateway.getCurrencyBalance(
+                        exchangeName = binance,
+                        apiKey = currentStrategyExecution.apiKeySupplier,
+                        currencyCode = currentStrategyExecution.currencyPair.base,
+                    )
+                    walletServiceGateway.withdraw(
+                        exchangeName = binance,
+                        apiKey = currentStrategyExecution.apiKeySupplier,
+                        currencyCode = currentStrategyExecution.currencyPair.base,
+                        amount = balance.amountAvailable,
+                        address = walletAddress,
+                    )
+                } finally {
+                    preventFromParallelWithdrawalsLock.unlock()
+                }
+            }
+        }
+        return true
     }
 
     private fun onBuyOrderCanceled(buyOrder: StrategyOrder) {

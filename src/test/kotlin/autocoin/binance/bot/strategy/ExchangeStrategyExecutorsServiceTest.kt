@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.junit.jupiter.MockitoExtension
+import org.mockito.kotlin.mock
 import java.math.BigDecimal
 
 @ExtendWith(MockitoExtension::class)
@@ -39,6 +40,7 @@ class ExchangeStrategyExecutorsServiceTest {
             strategyExecutions = strategyExecutions,
             strategyExecutorProvider = BinanceStrategyExecutorProvider(
                 orderServiceGateway = TestOrderService(),
+                walletServiceGateway = mock(),
                 strategyExecutions = strategyExecutions,
                 javaExecutorService = MoreExecutors.newDirectExecutorService(),
             )
@@ -58,13 +60,15 @@ class ExchangeStrategyExecutorsServiceTest {
             orderServiceGateway = TestOrderService()
                 .preLogging()
                 .measuringDuration(),
+            walletServiceGateway = mock(),
             strategyExecutions = strategyExecutions,
             javaExecutorService = MoreExecutors.newDirectExecutorService(),
         )
         val createdExecutors: MutableList<RememberingPriceStrategyExecutor> = mutableListOf()
         val strategyExecutorProvider = object : StrategyExecutorProvider by binanceStrategyExecutorProvider {
             override fun createStrategyExecutor(strategyParameters: StrategyParametersDto): StrategyExecutor {
-                return binanceStrategyExecutorProvider.createStrategyExecutor(strategyParameters)
+                return binanceStrategyExecutorProvider
+                    .createStrategyExecutor(strategyParameters)
                     .rememberingPrice()
                     .also { createdExecutors += it }
             }

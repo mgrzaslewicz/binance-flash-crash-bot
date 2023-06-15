@@ -9,6 +9,7 @@ import autocoin.binance.bot.strategy.execution.repository.FileBackedMutableSet
 import autocoin.binance.bot.strategy.parameters.StrategyParametersDto
 import autocoin.binance.bot.strategy.parameters.WithStrategySpecificParameters
 import com.autocoin.exchangegateway.spi.exchange.order.gateway.OrderServiceGateway
+import com.autocoin.exchangegateway.spi.exchange.wallet.gateway.WalletServiceGateway
 import java.util.concurrent.ExecutorService
 
 interface StrategyExecutorProvider {
@@ -24,6 +25,7 @@ enum class StrategyType {
 
 class BinanceStrategyExecutorProvider(
     private val orderServiceGateway: OrderServiceGateway<ApiKeyId>,
+    private val walletServiceGateway: WalletServiceGateway<ApiKeyId>,
     private val strategyExecutions: FileBackedMutableSet<StrategyExecutionDto>,
     private val javaExecutorService: ExecutorService,
 ) : StrategyExecutorProvider {
@@ -44,6 +46,7 @@ class BinanceStrategyExecutorProvider(
         return BinanceStrategyExecutor(
             strategyExecution = strategyParameters.toStrategyExecution(),
             orderServiceGateway = orderServiceGateway,
+            walletServiceGateway = walletServiceGateway,
             strategyExecutions = strategyExecutions,
             strategy = strategyParameters.toStrategy(strategyParameters.strategyType),
             javaExecutorService = javaExecutorService,
@@ -54,6 +57,7 @@ class BinanceStrategyExecutorProvider(
         return BinanceStrategyExecutor(
             strategyExecution = strategyExecution,
             orderServiceGateway = orderServiceGateway,
+            walletServiceGateway = walletServiceGateway,
             strategyExecutions = strategyExecutions,
             strategy = strategyExecution.toStrategy(strategyExecution.strategyType),
             javaExecutorService = javaExecutorService,

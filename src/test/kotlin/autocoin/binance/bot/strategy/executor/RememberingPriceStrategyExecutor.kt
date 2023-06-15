@@ -4,10 +4,12 @@ import autocoin.binance.bot.exchange.CurrencyPairWithPrice
 import java.math.BigDecimal
 
 class RememberingPriceStrategyExecutor(private val decorated: StrategyExecutor) : StrategyExecutor by decorated {
-    val lastPrices: MutableList<BigDecimal> = mutableListOf()
+    private val prices = mutableListOf<BigDecimal>()
+    val lastPrices: List<BigDecimal> get() = prices.toList()
+
     override fun onPriceUpdated(currencyPairWithPrice: CurrencyPairWithPrice) {
         decorated.onPriceUpdated(currencyPairWithPrice)
-        lastPrices += currencyPairWithPrice.price
+        prices += currencyPairWithPrice.price
     }
 }
 

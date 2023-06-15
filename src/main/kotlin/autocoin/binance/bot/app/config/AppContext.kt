@@ -176,6 +176,7 @@ class AppContext(private val appConfig: AppConfig) {
 
     val strategyExecutorProvider = BinanceStrategyExecutorProvider(
         orderServiceGateway = orderServiceGateway,
+        walletServiceGateway = walletServiceGateway,
         strategyExecutions = strategyExecutions,
         javaExecutorService = Executors.newCachedThreadPool(),
     )
