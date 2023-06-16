@@ -9,7 +9,7 @@ import java.math.BigDecimal
 import java.math.MathContext
 import java.math.RoundingMode
 
-class PositionBuyOrdersForFlashCrashStrategy(
+class PositionBuyOrdersForFlashCrashStrategy private constructor(
     private val minPriceDownMultiplier: BigDecimal,
     private val makePriceBitBiggerThanLowestLimit: BigDecimal,
     private val orderRepositionRelativeDropThreshold: BigDecimal,

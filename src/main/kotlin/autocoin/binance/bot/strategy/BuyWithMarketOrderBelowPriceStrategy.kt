@@ -9,16 +9,12 @@ import java.math.MathContext
 import java.math.RoundingMode
 
 
-class BuyWithMarketOrderBelowPriceStrategy(
-    /**
-     * Sorted descending
-     */
-    private val pricesTriggeringBuyMarketOrder: List<BigDecimal>,
+class BuyWithMarketOrderBelowPriceStrategy private constructor(
+    private val pricesTriggeringBuyMarketOrderSortedDesc: List<BigDecimal>,
     private val counterCurrencyAmountLimitForBuying: BigDecimal,
 ) : Strategy {
-
     private val mathContext = MathContext(8, RoundingMode.HALF_EVEN)
-    private val numberOfBuyMarketOrdersToPlace = pricesTriggeringBuyMarketOrder.size
+    private val numberOfBuyMarketOrdersToPlace = pricesTriggeringBuyMarketOrderSortedDesc.size
     private val counterCurrencyAmountPerOrder = counterCurrencyAmountLimitForBuying
         .divide(numberOfBuyMarketOrdersToPlace.toBigDecimal(), mathContext)
 
@@ -33,7 +29,7 @@ class BuyWithMarketOrderBelowPriceStrategy(
     ): List<StrategyAction> {
         return when {
             strategyExecution.hasNoMaximumNumberOfOrdersYet() -> {
-                val currentPricePoint = pricesTriggeringBuyMarketOrder[strategyExecution.orders.size]
+                val currentPricePoint = pricesTriggeringBuyMarketOrderSortedDesc[strategyExecution.orders.size]
                 when {
                     price >= (minimumReachedPriceTriggeringBuy ?: plusInfinity) -> {
                         listOf(
@@ -118,7 +114,7 @@ class BuyWithMarketOrderBelowPriceStrategy(
 
         fun build(): BuyWithMarketOrderBelowPriceStrategy {
             return BuyWithMarketOrderBelowPriceStrategy(
-                pricesTriggeringBuyMarketOrder = pricesTriggeringBuyMarketOrder.sortedByDescending { it },
+                pricesTriggeringBuyMarketOrderSortedDesc = pricesTriggeringBuyMarketOrder.sortedDescending(),
                 counterCurrencyAmountLimitForBuying = counterCurrencyAmountLimitForBuying,
             )
         }
