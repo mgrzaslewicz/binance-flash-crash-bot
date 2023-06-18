@@ -1,6 +1,7 @@
-package autocoin.binance.bot.exchange
+package autocoin.binance.bot.exchange.order
 
 import autocoin.binance.bot.exchange.apikey.ApiKeyId
+import autocoin.binance.bot.exchange.ratelimit.RateLimiterProvider
 import com.autocoin.exchangegateway.spi.exchange.ExchangeName
 import com.autocoin.exchangegateway.spi.exchange.apikey.ApiKeySupplier
 import com.autocoin.exchangegateway.spi.exchange.currency.CurrencyPair
@@ -9,11 +10,10 @@ import com.autocoin.exchangegateway.spi.exchange.order.Order
 import com.autocoin.exchangegateway.spi.exchange.order.gateway.OrderServiceGateway
 import mu.KLogging
 import java.math.BigDecimal
-import java.time.Duration
 
-class AddingDelayOrderServiceGateway(
+class RateLimitingOrderServiceGateway(
     private val decorated: OrderServiceGateway<ApiKeyId>,
-    private val delay: Duration = Duration.ofSeconds(1),
+    private val rateLimiterProvider: RateLimiterProvider,
 ) : OrderServiceGateway<ApiKeyId> by decorated {
     companion object : KLogging()
 
@@ -22,11 +22,14 @@ class AddingDelayOrderServiceGateway(
         apiKey: ApiKeySupplier<ApiKeyId>,
         cancelOrderParams: CancelOrderParams,
     ): Boolean {
-        Thread.sleep(delay.toMillis())
+        val howManySecondsWaited = rateLimiterProvider(apiKey.id).acquire()
+        if (howManySecondsWaited > 0.0) {
+            logger.info { "[${exchangeName.value}, apiKey.id=${apiKey.id}] Waited ${howManySecondsWaited * 1000} ms to acquire cancelOrder permit" }
+        }
         return decorated.cancelOrder(
             exchangeName = exchangeName,
             apiKey = apiKey,
-            cancelOrderParams = cancelOrderParams,
+            cancelOrderParams = cancelOrderParams
         )
     }
 
@@ -37,7 +40,10 @@ class AddingDelayOrderServiceGateway(
         buyPrice: BigDecimal,
         amount: BigDecimal,
     ): Order {
-        Thread.sleep(delay.toMillis())
+        val howManySecondsWaited = rateLimiterProvider(apiKey.id).acquire()
+        if (howManySecondsWaited > 0.0) {
+            logger.info { "[${exchangeName.value}, apiKey.id=${apiKey.id}] Waited ${howManySecondsWaited * 1000} ms to acquire placeLimitBuyOrder permit" }
+        }
         return decorated.placeLimitBuyOrder(
             exchangeName = exchangeName,
             apiKey = apiKey,
@@ -49,5 +55,5 @@ class AddingDelayOrderServiceGateway(
 
 }
 
-fun OrderServiceGateway<ApiKeyId>.addingDelay(delay: Duration = Duration.ofSeconds(1)) =
-    AddingDelayOrderServiceGateway(this, delay = delay)
+fun OrderServiceGateway<ApiKeyId>.rateLimiting(rateLimiterProvider: RateLimiterProvider) =
+    RateLimitingOrderServiceGateway(decorated = this, rateLimiterProvider = rateLimiterProvider)

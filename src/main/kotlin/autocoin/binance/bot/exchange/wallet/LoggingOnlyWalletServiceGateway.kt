@@ -1,4 +1,4 @@
-package autocoin.binance.bot.exchange
+package autocoin.binance.bot.exchange.wallet
 
 import autocoin.binance.bot.exchange.apikey.ApiKeyId
 import com.autocoin.exchangegateway.api.exchange.currency.CurrencyBalance

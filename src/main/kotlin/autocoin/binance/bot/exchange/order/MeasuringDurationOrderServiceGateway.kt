@@ -1,4 +1,4 @@
-package autocoin.binance.bot.exchange
+package autocoin.binance.bot.exchange.order
 
 import autocoin.binance.bot.exchange.apikey.ApiKeyId
 import com.autocoin.exchangegateway.spi.exchange.ExchangeName

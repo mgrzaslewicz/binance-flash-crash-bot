@@ -3,8 +3,8 @@ package autocoin.binance.bot.strategy
 import autocoin.binance.bot.TestConfig
 import autocoin.binance.bot.exchange.CurrencyPairWithPrice
 import autocoin.binance.bot.exchange.TestOrderService
-import autocoin.binance.bot.exchange.measuringDuration
-import autocoin.binance.bot.exchange.preLogging
+import autocoin.binance.bot.exchange.order.measuringDuration
+import autocoin.binance.bot.exchange.order.preLogging
 import autocoin.binance.bot.strategy.execution.repository.TestStrategyExecutionMutableSet
 import autocoin.binance.bot.strategy.executor.*
 import autocoin.binance.bot.strategy.parameters.StrategyParametersDto

@@ -1,12 +1,15 @@
 package autocoin.binance.bot.app.config
 
 import autocoin.binance.bot.eventbus.DefaultEventBus
-import autocoin.binance.bot.exchange.*
+import autocoin.binance.bot.exchange.BinancePriceStream
+import autocoin.binance.bot.exchange.PriceWebSocketConnectionKeeper
 import autocoin.binance.bot.exchange.apikey.ApiKeyId
 import autocoin.binance.bot.exchange.binance.AddingBinanceMarketOrderWithCounterCurrencyAmountAuthorizedOrderService
 import autocoin.binance.bot.exchange.binance.AddingTestBinanceMarketOrderWithCounterCurrencyAmountAuthorizedOrderService
 import autocoin.binance.bot.exchange.binance.BinanceAuthorizedOrderServiceFactory
+import autocoin.binance.bot.exchange.order.*
 import autocoin.binance.bot.exchange.ratelimit.PerApiKeyRateLimiterProvider
+import autocoin.binance.bot.exchange.wallet.LoggingOnlyWalletServiceGateway
 import autocoin.binance.bot.health.HealthMetricsScheduler
 import autocoin.binance.bot.health.HealthService
 import autocoin.binance.bot.httpserver.HealthController
