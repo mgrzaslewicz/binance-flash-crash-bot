@@ -6,6 +6,7 @@ import autocoin.binance.bot.exchange.apikey.ApiKeyId
 import autocoin.binance.bot.exchange.binance.AddingBinanceMarketOrderWithCounterCurrencyAmountAuthorizedOrderService
 import autocoin.binance.bot.exchange.binance.AddingTestBinanceMarketOrderWithCounterCurrencyAmountAuthorizedOrderService
 import autocoin.binance.bot.exchange.binance.BinanceAuthorizedOrderServiceFactory
+import autocoin.binance.bot.exchange.ratelimit.PerApiKeyRateLimiterProvider
 import autocoin.binance.bot.health.HealthMetricsScheduler
 import autocoin.binance.bot.health.HealthService
 import autocoin.binance.bot.httpserver.HealthController
@@ -116,6 +117,8 @@ class AppContext(private val appConfig: AppConfig) {
         xchangeProvider = xchangeProvider,
     )
 
+    val perApiKeyRateLimiterProvider = PerApiKeyRateLimiterProvider()
+
     val walletServiceGateway: WalletServiceGateway<ApiKeyId> = if (appConfig.shouldMakeRealOrders) {
         WalletServiceGatewayUsingAuthorizedWalletService(
             authorizedWalletServiceFactory = authorizedWalletServiceFactory,
@@ -158,7 +161,7 @@ class AppContext(private val appConfig: AppConfig) {
         )
             .preLogging()
             .measuringDuration()
-            .rateLimiting()
+            .rateLimiting(rateLimiterProvider = perApiKeyRateLimiterProvider)
             .measuringDuration("with rate limit, ")
 
     } else {
@@ -169,7 +172,7 @@ class AppContext(private val appConfig: AppConfig) {
             .mockingLimitBuyOrder(clock = clock)
             .preLogging()
             .addingDelay(Duration.ofSeconds(1))
-            .rateLimiting(permitsPerSecond = 0.1)
+            .rateLimiting(PerApiKeyRateLimiterProvider(permitsPerSecondPerApiKey = 0.1))
             .measuringDuration("including rate limit permit duration, ")
     }
 

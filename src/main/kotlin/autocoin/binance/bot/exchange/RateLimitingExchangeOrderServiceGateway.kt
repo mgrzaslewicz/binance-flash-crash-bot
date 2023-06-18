@@ -1,37 +1,28 @@
 package autocoin.binance.bot.exchange
 
 import autocoin.binance.bot.exchange.apikey.ApiKeyId
+import autocoin.binance.bot.exchange.ratelimit.RateLimiterProvider
 import com.autocoin.exchangegateway.spi.exchange.ExchangeName
 import com.autocoin.exchangegateway.spi.exchange.apikey.ApiKeySupplier
 import com.autocoin.exchangegateway.spi.exchange.currency.CurrencyPair
 import com.autocoin.exchangegateway.spi.exchange.order.CancelOrderParams
 import com.autocoin.exchangegateway.spi.exchange.order.Order
 import com.autocoin.exchangegateway.spi.exchange.order.gateway.OrderServiceGateway
-import com.google.common.util.concurrent.RateLimiter
 import mu.KLogging
 import java.math.BigDecimal
-import java.util.concurrent.ConcurrentHashMap
 
 class RateLimitingExchangeOrderServiceGateway(
     private val decorated: OrderServiceGateway<ApiKeyId>,
-    private val permitsPerSecondPerApiKey: Double = 5.0,
+    private val rateLimiterProvider: RateLimiterProvider,
 ) : OrderServiceGateway<ApiKeyId> by decorated {
     companion object : KLogging()
-
-    /**
-     * https://www.binance.com/en/support/announcement/notice-on-adjusting-order-rate-limits-to-the-spot-exchange-2188a59425384e2082b79d9beccf669c
-     */
-    private val rateLimitersPerApiKey = ConcurrentHashMap<ApiKeyId, RateLimiter>()
-
-    private fun ApiKeySupplier<ApiKeyId>.rateLimiter() =
-        rateLimitersPerApiKey.computeIfAbsent(this.id) { RateLimiter.create(permitsPerSecondPerApiKey) }
 
     override fun cancelOrder(
         exchangeName: ExchangeName,
         apiKey: ApiKeySupplier<ApiKeyId>,
         cancelOrderParams: CancelOrderParams,
     ): Boolean {
-        val howManySecondsWaited = apiKey.rateLimiter().acquire()
+        val howManySecondsWaited = rateLimiterProvider(apiKey.id).acquire()
         if (howManySecondsWaited > 0.0) {
             logger.info { "[${exchangeName.value}, apiKey.id=${apiKey.id}] Waited ${howManySecondsWaited * 1000} ms to acquire cancelOrder permit" }
         }
@@ -49,7 +40,7 @@ class RateLimitingExchangeOrderServiceGateway(
         buyPrice: BigDecimal,
         amount: BigDecimal,
     ): Order {
-        val howManySecondsWaited = apiKey.rateLimiter().acquire()
+        val howManySecondsWaited = rateLimiterProvider(apiKey.id).acquire()
         if (howManySecondsWaited > 0.0) {
             logger.info { "[${exchangeName.value}, apiKey.id=${apiKey.id}] Waited ${howManySecondsWaited * 1000} ms to acquire placeLimitBuyOrder permit" }
         }
@@ -64,5 +55,5 @@ class RateLimitingExchangeOrderServiceGateway(
 
 }
 
-fun OrderServiceGateway<ApiKeyId>.rateLimiting(permitsPerSecond: Double = 5.0) =
-    RateLimitingExchangeOrderServiceGateway(decorated = this, permitsPerSecondPerApiKey = permitsPerSecond)
+fun OrderServiceGateway<ApiKeyId>.rateLimiting(rateLimiterProvider: RateLimiterProvider) =
+    RateLimitingExchangeOrderServiceGateway(decorated = this, rateLimiterProvider = rateLimiterProvider)
