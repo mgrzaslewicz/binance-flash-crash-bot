@@ -9,6 +9,7 @@ import java.math.BigDecimal
 import java.math.MathContext
 import java.math.RoundingMode
 
+// TODO constructor parameters are the same parameters as provided by strategyExecution. Maybe we should just pass strategyExecution instead of all these parameters?
 class PositionBuyOrdersForFlashCrashStrategy private constructor(
     private val minPriceDownMultiplier: BigDecimal,
     private val makePriceBitBiggerThanLowestLimit: BigDecimal,

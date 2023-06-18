@@ -9,6 +9,7 @@ import java.math.MathContext
 import java.math.RoundingMode
 
 
+// TODO constructor parameters are the same parameters as provided by strategyExecution. Maybe we should just pass strategyExecution instead of all these parameters?
 class BuyWithMarketOrderBelowPriceStrategy private constructor(
     private val pricesTriggeringBuyMarketOrderSortedDesc: List<BigDecimal>,
     private val counterCurrencyAmountLimitForBuying: BigDecimal,
