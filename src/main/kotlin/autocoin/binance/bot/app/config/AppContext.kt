@@ -10,6 +10,9 @@ import autocoin.binance.bot.exchange.binance.BinanceAuthorizedOrderServiceFactor
 import autocoin.binance.bot.exchange.order.*
 import autocoin.binance.bot.exchange.ratelimit.PerApiKeyRateLimiterProvider
 import autocoin.binance.bot.exchange.wallet.LoggingOnlyWalletServiceGateway
+import autocoin.binance.bot.exchange.wallet.measuringDuration
+import autocoin.binance.bot.exchange.wallet.preLogging
+import autocoin.binance.bot.exchange.wallet.rateLimiting
 import autocoin.binance.bot.health.HealthMetricsScheduler
 import autocoin.binance.bot.health.HealthService
 import autocoin.binance.bot.httpserver.HealthController
@@ -126,6 +129,10 @@ class AppContext(private val appConfig: AppConfig) {
         WalletServiceGatewayUsingAuthorizedWalletService(
             authorizedWalletServiceFactory = authorizedWalletServiceFactory,
         )
+            .preLogging()
+            .measuringDuration()
+            .rateLimiting(rateLimiterProvider = perApiKeyRateLimiterProvider)
+            .measuringDuration("with rate limit, ")
     } else {
         LoggingOnlyWalletServiceGateway()
     }
