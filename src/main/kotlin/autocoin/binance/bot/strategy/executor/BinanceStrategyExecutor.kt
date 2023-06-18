@@ -165,6 +165,8 @@ class BinanceStrategyExecutor(
                         amount = balance.amountAvailable,
                         address = walletAddress,
                     )
+                } catch (e: Exception) {
+                    logger.error(e) { "Withdraw failed" }
                 } finally {
                     preventFromParallelWithdrawalsLock.unlock()
                 }
