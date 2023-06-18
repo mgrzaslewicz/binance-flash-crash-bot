@@ -8,6 +8,7 @@ import com.autocoin.exchangegateway.spi.exchange.wallet.WithdrawResult
 import com.autocoin.exchangegateway.spi.exchange.wallet.gateway.WalletServiceGateway
 import mu.KLogging
 import java.math.BigDecimal
+import java.util.*
 import com.autocoin.exchangegateway.spi.exchange.currency.CurrencyBalance as SpiCurrencyBalance
 
 class LoggingOnlyWalletServiceGateway : WalletServiceGateway<ApiKeyId> {
@@ -18,7 +19,7 @@ class LoggingOnlyWalletServiceGateway : WalletServiceGateway<ApiKeyId> {
         apiKey: ApiKeySupplier<ApiKeyId>,
         currencyCode: String,
     ): CurrencyBalance {
-        logger.info { "[$exchangeName] Would get currencyBalance for currency=$currencyCode, key=$apiKey" }
+        logger.info { "[$exchangeName] Would get currencyBalance for currency=$currencyCode, key.id=${apiKey.id}" }
         return CurrencyBalance(
             currencyCode = currencyCode,
             amountAvailable = BigDecimal.ZERO,
@@ -41,7 +42,10 @@ class LoggingOnlyWalletServiceGateway : WalletServiceGateway<ApiKeyId> {
         amount: BigDecimal,
         address: String
     ): WithdrawResult {
-        TODO("Not yet implemented")
+        logger.info { "[$exchangeName] Would withdraw for currency=$currencyCode, key.id=${apiKey.id}, amount=${amount.toPlainString()}, address=$address" }
+        return object : WithdrawResult {
+            override val transactionId = UUID.randomUUID().toString()
+        }
     }
 
 }
