@@ -158,11 +158,12 @@ class BinanceStrategyExecutor(
                         apiKey = currentStrategyExecution.apiKeySupplier,
                         currencyCode = currentStrategyExecution.currencyPair.base,
                     )
+                    val amountAdjusted = balance.amountAvailable.setScale(baseCurrencyAmountScale, RoundingMode.DOWN)
                     walletServiceGateway.withdraw(
                         exchangeName = binance,
                         apiKey = currentStrategyExecution.apiKeySupplier,
                         currencyCode = currentStrategyExecution.currencyPair.base,
-                        amount = balance.amountAvailable,
+                        amount = amountAdjusted,
                         address = walletAddress,
                     )
                 } catch (e: Exception) {

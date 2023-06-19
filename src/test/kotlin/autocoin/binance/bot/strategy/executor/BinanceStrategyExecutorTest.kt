@@ -27,17 +27,21 @@ class BinanceStrategyExecutorTest {
     private lateinit var orderService: TestOrderService
     private lateinit var walletService: TestWalletService
     private lateinit var tested: BinanceStrategyExecutor
+    private val walletCurrencyAmountAvailable = mapOf(
+        TestConfig.currencyPair.base to BigDecimal("1100.78961234"),
+    )
 
     @BeforeEach
     fun setup() {
         orderService = TestOrderService()
-        walletService = TestWalletService()
+        walletService = TestWalletService(walletCurrencyAmountAvailable)
     }
 
-    private fun currencyPairWithPrice(price: BigDecimal) = CurrencyPairWithPrice(currencyPair = TestConfig.currencyPair, price = price)
+    private fun currencyPairWithPrice(price: BigDecimal) =
+        CurrencyPairWithPrice(currencyPair = TestConfig.currencyPair, price = price)
 
     @Test
-    fun shouldAdjustAmountAndScale() {
+    fun shouldAdjustOrderAmountAndScale() {
         // given
         tested = BinanceStrategyExecutor(
             strategyExecution = TestConfig.samplePositionBuyLimitOrdersStrategyExecution(),
@@ -69,6 +73,32 @@ class BinanceStrategyExecutorTest {
         assertThat(orderService.successfulActionHistory).hasSize(1)
         assertThat((orderService.successfulActionHistory[0] as Order).price).isEqualTo(16000.12.toBigDecimal())
         assertThat((orderService.successfulActionHistory[0] as Order).orderedAmount).isEqualTo(456.98765.toBigDecimal())
+    }
+
+    @Test
+    fun shouldAdjustWithdrawScale() {
+        // given
+        tested = BinanceStrategyExecutor(
+            strategyExecution = TestConfig.samplePositionBuyLimitOrdersStrategyExecution(),
+            orderServiceGateway = orderService,
+            walletServiceGateway = walletService,
+            strategyExecutions = TestStrategyExecutionMutableSet.get(),
+            baseCurrencyAmountScale = 5,
+            counterCurrencyPriceScale = 2,
+            javaExecutorService = MoreExecutors.newDirectExecutorService(),
+            strategy = object : Strategy {
+                override fun getActions(
+                    price: BigDecimal,
+                    strategyExecution: StrategyExecutionDto,
+                ): List<StrategyAction> = emptyList()
+
+            }
+        )
+        // when
+        tested.withdraw(currency = TestConfig.currencyPair.base, walletAddress = "test")
+        // then
+        assertThat(walletService.withdrawals).hasSize(1)
+        assertThat(walletService.withdrawals[0].amount).isEqualTo(1100.78961.toBigDecimal())
     }
 
     @Test
