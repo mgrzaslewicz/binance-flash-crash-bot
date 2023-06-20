@@ -10,18 +10,16 @@ import java.math.BigDecimal
 import java.math.MathContext
 import java.math.RoundingMode
 
-// TODO constructor parameters are the same parameters as provided by strategyExecution. Maybe we should just pass strategyExecution instead of all these parameters?
-class PositionBuyOrdersForFlashCrashStrategy private constructor(
-    private val minPriceDownMultiplier: BigDecimal,
-    private val makePriceBitBiggerThanLowestLimit: BigDecimal,
-    private val orderRepositionRelativeDropThreshold: BigDecimal,
-    private val numberOfBuyLimitOrdersToKeep: Int,
-    private val counterCurrencyAmountLimitForBuying: BigDecimal,
-) : Strategy {
+class PositionBuyOrdersForFlashCrashStrategy : Strategy {
+    private val minPriceDownMultiplier: BigDecimal = 0.2.toBigDecimal()
+    private val makePriceBitBiggerThanLowestLimit: BigDecimal = BigDecimal(1.01)
+    private val orderRepositionRelativeDropThreshold: BigDecimal = BigDecimal(0.01)
 
     private val mathContext = MathContext(8, RoundingMode.HALF_EVEN)
     private val maxBigDecimal = Integer.MAX_VALUE.toBigDecimal()
     private var lowestPriceSoFar: BigDecimal = maxBigDecimal
+    private var parsedParameters: Parameters? = null
+    private var strategyParametersHashCode: Int? = null
 
     private fun fillUpToNBuyOrdersActions(
         buyPrice: BigDecimal,
@@ -37,24 +35,26 @@ class PositionBuyOrdersForFlashCrashStrategy private constructor(
         }
     }
 
-    private fun StrategyExecutionDto.hasNoMaximumNumberOfOrdersYet() = orders.size < numberOfBuyLimitOrdersToKeep
 
     override fun getActions(
         price: BigDecimal,
         strategyExecution: StrategyExecutionDto,
     ): List<StrategyAction> {
+        val strategySpecificParameters = getStrategySpecificParameters(strategyExecution)
+        val hasNoMaximumNumberOfOrdersYet =
+            strategyExecution.orders.size < strategySpecificParameters.numberOfBuyLimitOrdersToKeep
         lowestPriceSoFar = lowestPriceSoFar.min(price)
 
         val lowBuyPrice = price
             .multiply(minPriceDownMultiplier, mathContext)
             .multiply(makePriceBitBiggerThanLowestLimit, mathContext)
-        val counterCurrencyAmountPerOrder = counterCurrencyAmountLimitForBuying
-            .divide(numberOfBuyLimitOrdersToKeep.toBigDecimal(), mathContext)
+        val counterCurrencyAmountPerOrder = strategySpecificParameters.counterCurrencyAmountLimitForBuying
+            .divide(strategySpecificParameters.numberOfBuyLimitOrdersToKeep.toBigDecimal(), mathContext)
         val baseCurrencyAmount = counterCurrencyAmountPerOrder.divide(lowBuyPrice, mathContext)
 
-        if (strategyExecution.hasNoMaximumNumberOfOrdersYet()) {
+        if (hasNoMaximumNumberOfOrdersYet) {
             return fillUpToNBuyOrdersActions(
-                lackingOrders = numberOfBuyLimitOrdersToKeep - strategyExecution.numberOfOrders,
+                lackingOrders = strategySpecificParameters.numberOfBuyLimitOrdersToKeep - strategyExecution.numberOfOrders,
                 buyPrice = lowBuyPrice,
                 baseCurrencyAmount = baseCurrencyAmount
             )
@@ -75,6 +75,14 @@ class PositionBuyOrdersForFlashCrashStrategy private constructor(
         return emptyList()
     }
 
+    private fun getStrategySpecificParameters(strategyExecution: StrategyExecutionDto): Parameters {
+        if (strategyParametersHashCode != strategyExecution.parameters.hashCode()) {
+            parsedParameters = ParametersBuilder().withStrategySpecificParameters(strategyExecution).toParameters()
+            strategyParametersHashCode = strategyExecution.parameters.hashCode()
+        }
+        return parsedParameters!!
+    }
+
     private fun cancelOrderWithHighestPriceAndPlaceNewOne(
         buyPrice: BigDecimal,
         baseCurrencyAmount: BigDecimal,
@@ -90,49 +98,36 @@ class PositionBuyOrdersForFlashCrashStrategy private constructor(
         )
     }
 
-    class Builder {
-        companion object {
-            private val numberOfBuyLimitOrdersToKeepParameter = "numberOfBuyLimitOrdersToKeep"
-            private val counterCurrencyAmountLimitForBuyingParameter = "counterCurrencyAmountLimitForBuying"
-        }
+    companion object {
+        private const val numberOfBuyLimitOrdersToKeepParameter = "numberOfBuyLimitOrdersToKeep"
+        private const val counterCurrencyAmountLimitForBuyingParameter = "counterCurrencyAmountLimitForBuying"
+    }
 
-        private var minPriceDownMultiplier: BigDecimal = 0.2.toBigDecimal()
-        private var makePriceBitBiggerThanLowestLimit: BigDecimal = BigDecimal(1.01)
-        private var orderRepositionRelativeDropThreshold: BigDecimal = BigDecimal(0.01)
+    data class Parameters(
+        val numberOfBuyLimitOrdersToKeep: Int,
+        val counterCurrencyAmountLimitForBuying: BigDecimal,
+    )
+
+    class ParametersBuilder {
         private var numberOfBuyLimitOrdersToKeep: Int = 4
         private lateinit var counterCurrencyAmountLimitForBuying: BigDecimal
 
-        fun withMinPriceDownMultiplier(minPriceDownMultiplier: BigDecimal): Builder {
-            this.minPriceDownMultiplier = minPriceDownMultiplier
-            return this
-        }
-
-        fun withMakePriceBitBiggerThanLowestLimit(makePriceBitBiggerThanLowestLimit: BigDecimal): Builder {
-            this.makePriceBitBiggerThanLowestLimit = makePriceBitBiggerThanLowestLimit
-            return this
-        }
-
-        fun withOrderRepositionRelativeDropThreshold(orderRepositionRelativeDropThreshold: BigDecimal): Builder {
-            this.orderRepositionRelativeDropThreshold = orderRepositionRelativeDropThreshold
-            return this
-        }
-
-        fun withNumberOfBuyLimitOrdersToKeep(numberOfBuyLimitOrdersToKeep: Int): Builder {
+        fun withNumberOfBuyLimitOrdersToKeep(numberOfBuyLimitOrdersToKeep: Int): ParametersBuilder {
             this.numberOfBuyLimitOrdersToKeep = numberOfBuyLimitOrdersToKeep
             return this
         }
 
-        fun withCounterCurrencyAmountLimitForBuying(counterCurrencyAmountLimitForBuying: BigDecimal): Builder {
+        fun withCounterCurrencyAmountLimitForBuying(counterCurrencyAmountLimitForBuying: BigDecimal): ParametersBuilder {
             this.counterCurrencyAmountLimitForBuying = counterCurrencyAmountLimitForBuying
             return this
         }
 
-        fun toStrategySpecificParameters(): Map<String, String> = mapOf(
+        fun toSMap(): Map<String, String> = mapOf(
             numberOfBuyLimitOrdersToKeepParameter to numberOfBuyLimitOrdersToKeep.toString(),
             counterCurrencyAmountLimitForBuyingParameter to counterCurrencyAmountLimitForBuying.toPlainString(),
         )
 
-        fun withStrategySpecificParameters(parameters: WithStrategySpecificParameters): Builder {
+        fun withStrategySpecificParameters(parameters: WithStrategySpecificParameters): ParametersBuilder {
             parameters.getParameter(numberOfBuyLimitOrdersToKeepParameter).let {
                 checkNotNull(it)
                 numberOfBuyLimitOrdersToKeep = it.toInt()
@@ -144,11 +139,8 @@ class PositionBuyOrdersForFlashCrashStrategy private constructor(
             return this
         }
 
-        fun build(): PositionBuyOrdersForFlashCrashStrategy {
-            return PositionBuyOrdersForFlashCrashStrategy(
-                minPriceDownMultiplier = minPriceDownMultiplier,
-                makePriceBitBiggerThanLowestLimit = makePriceBitBiggerThanLowestLimit,
-                orderRepositionRelativeDropThreshold = orderRepositionRelativeDropThreshold,
+        fun toParameters(): Parameters {
+            return Parameters(
                 numberOfBuyLimitOrdersToKeep = numberOfBuyLimitOrdersToKeep,
                 counterCurrencyAmountLimitForBuying = counterCurrencyAmountLimitForBuying,
             )

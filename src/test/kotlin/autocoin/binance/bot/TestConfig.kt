@@ -23,10 +23,10 @@ object TestConfig {
                 publicKey = "key-1",
                 secretKey = "secret-1",
             ),
-            strategySpecificParameters = PositionBuyOrdersForFlashCrashStrategy.Builder()
+            strategySpecificParameters = PositionBuyOrdersForFlashCrashStrategy.ParametersBuilder()
                 .withNumberOfBuyLimitOrdersToKeep(numberOfBuyLimitOrdersToKeep)
                 .withCounterCurrencyAmountLimitForBuying(counterCurrencyAmountLimitForBuying)
-                .toStrategySpecificParameters()
+                .toSMap()
         )
     }
 

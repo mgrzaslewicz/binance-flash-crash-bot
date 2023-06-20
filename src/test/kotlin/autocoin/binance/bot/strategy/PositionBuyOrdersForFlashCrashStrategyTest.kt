@@ -43,13 +43,9 @@ class PositionBuyOrdersForFlashCrashStrategyTest {
 
     }
 
-    private val minPriceDownMultiplier = 0.2.toBigDecimal()
-
     @BeforeEach
     fun setup() {
-        tested = PositionBuyOrdersForFlashCrashStrategy.Builder()
-            .withStrategySpecificParameters(TestConfig.samplePositionBuyLimitOrdersSampleStrategyParameters())
-            .withMinPriceDownMultiplier(minPriceDownMultiplier).build()
+        tested = PositionBuyOrdersForFlashCrashStrategy()
     }
 
     @Test

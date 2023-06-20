@@ -27,9 +27,9 @@ class StrategyExecutionMutableSetTest {
             baseCurrencyCode = "BTC",
             counterCurrencyCode = "USDT",
             strategyType = StrategyType.POSITION_BUY_ORDERS_FOR_FLASH_CRASH,
-            strategySpecificParameters = PositionBuyOrdersForFlashCrashStrategy.Builder()
+            strategySpecificParameters = PositionBuyOrdersForFlashCrashStrategy.ParametersBuilder()
                 .withCounterCurrencyAmountLimitForBuying(1500.0.toBigDecimal())
-                .toStrategySpecificParameters(),
+                .toSMap(),
             apiKey = ApiKeyDto(
                 publicKey = "sample binance api key",
                 secretKey = "sample binance secret key",
