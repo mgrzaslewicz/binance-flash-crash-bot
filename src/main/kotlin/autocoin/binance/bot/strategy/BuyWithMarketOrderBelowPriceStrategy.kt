@@ -16,12 +16,14 @@ class BuyWithMarketOrderBelowPriceStrategy : Strategy {
 
     private var minimumReachedPriceTriggeringBuy: BigDecimal? = null
     private val plusInfinity = Integer.MAX_VALUE.toBigDecimal()
+    private var parsedParameters: Parameters? = null
+    private var strategyParametersHashCode: Int? = null
 
     override fun getActions(
         price: BigDecimal,
         strategyExecution: StrategyExecutionDto,
     ): List<StrategyAction> {
-        val strategySpecificParameters = ParametersBuilder().withStrategySpecificParameters(strategyExecution).toParameters()
+        val strategySpecificParameters = getStrategySpecificParameters(strategyExecution)
         val hasNoMaximumNumberOfOrdersYet =
             strategyExecution.orders.size < strategySpecificParameters.numberOfBuyMarketOrdersToPlace()
         return when {
@@ -76,6 +78,14 @@ class BuyWithMarketOrderBelowPriceStrategy : Strategy {
 
             else -> emptyList()
         }
+    }
+
+    private fun getStrategySpecificParameters(strategyExecution: StrategyExecutionDto): Parameters {
+        if (strategyParametersHashCode != strategyExecution.parameters.hashCode()) {
+            parsedParameters = ParametersBuilder().withStrategySpecificParameters(strategyExecution).toParameters()
+            strategyParametersHashCode = strategyExecution.parameters.hashCode()
+        }
+        return parsedParameters!!
     }
 
     private fun Parameters.counterCurrencyAmountPerOrder() =
