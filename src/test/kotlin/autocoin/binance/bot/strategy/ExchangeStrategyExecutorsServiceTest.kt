@@ -3,11 +3,11 @@ package autocoin.binance.bot.strategy
 import autocoin.binance.bot.TestConfig
 import autocoin.binance.bot.exchange.TestOrderService
 import autocoin.binance.bot.exchange.order.measuringDuration
-import autocoin.binance.bot.exchange.order.preLogging
 import autocoin.binance.bot.strategy.execution.repository.TestStrategyExecutionMutableSet
 import autocoin.binance.bot.strategy.executor.*
 import autocoin.binance.bot.strategy.parameters.StrategyParametersDto
 import com.autocoin.exchangegateway.api.exchange.currency.CurrencyPair
+import com.autocoin.exchangegateway.api.exchange.order.gateway.preLogging
 import com.autocoin.exchangegateway.api.price.CurrencyPairWithPrice
 import com.google.common.util.concurrent.MoreExecutors
 import mu.KLogging
