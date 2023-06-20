@@ -1,5 +1,7 @@
 package autocoin.binance.bot.exchange
 
+import com.autocoin.exchangegateway.spi.exchange.price.CurrencyPairWithPrice
+import com.autocoin.exchangegateway.spi.exchange.price.PriceListener
 import mu.KLogging
 import java.time.Clock
 import java.time.Duration

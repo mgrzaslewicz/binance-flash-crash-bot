@@ -1,9 +1,9 @@
 package autocoin.binance.bot.strategy
 
-import autocoin.binance.bot.exchange.PriceListener
 import autocoin.binance.bot.strategy.execution.StrategyExecutionDto
 import autocoin.binance.bot.strategy.parameters.StrategyParametersDto
 import com.autocoin.exchangegateway.spi.exchange.currency.CurrencyPair
+import com.autocoin.exchangegateway.spi.exchange.price.PriceListener
 
 
 interface StrategyExecutorService : PriceListener {

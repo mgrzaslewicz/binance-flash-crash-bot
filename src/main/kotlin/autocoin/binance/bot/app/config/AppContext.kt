@@ -186,7 +186,6 @@ class AppContext(private val appConfig: AppConfig) {
             .measuringDuration("including rate limit permit duration, ")
     }
 
-
     val strategyExecutorProvider = BinanceStrategyExecutorProvider(
         orderServiceGateway = orderServiceGateway,
         walletServiceGateway = walletServiceGateway,

@@ -1,8 +1,8 @@
 package autocoin.binance.bot.strategy
 
-import autocoin.binance.bot.exchange.CurrencyPairWithPrice
 import autocoin.binance.bot.logger.withMinDelayBetweenLogs
 import autocoin.binance.bot.strategy.parameters.StrategyParametersDto
+import com.autocoin.exchangegateway.spi.exchange.price.CurrencyPairWithPrice
 import mu.KLogging
 import java.time.Duration
 

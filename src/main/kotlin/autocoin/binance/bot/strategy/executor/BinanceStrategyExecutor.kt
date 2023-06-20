@@ -1,6 +1,5 @@
 package autocoin.binance.bot.strategy.executor
 
-import autocoin.binance.bot.exchange.CurrencyPairWithPrice
 import autocoin.binance.bot.exchange.apikey.ApiKeyId
 import autocoin.binance.bot.strategy.Strategy
 import autocoin.binance.bot.strategy.execution.StrategyExecutionDto
@@ -12,6 +11,7 @@ import com.autocoin.exchangegateway.spi.exchange.ExchangeName
 import com.autocoin.exchangegateway.spi.exchange.order.Order
 import com.autocoin.exchangegateway.spi.exchange.order.OrderSide
 import com.autocoin.exchangegateway.spi.exchange.order.gateway.OrderServiceGateway
+import com.autocoin.exchangegateway.spi.exchange.price.CurrencyPairWithPrice
 import com.autocoin.exchangegateway.spi.exchange.wallet.gateway.WalletServiceGateway
 import mu.KLogging
 import java.math.BigDecimal

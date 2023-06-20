@@ -1,7 +1,6 @@
 package autocoin.binance.bot.strategy.executor
 
 import autocoin.binance.bot.TestConfig
-import autocoin.binance.bot.exchange.CurrencyPairWithPrice
 import autocoin.binance.bot.exchange.TestOrderService
 import autocoin.binance.bot.exchange.TestWalletService
 import autocoin.binance.bot.strategy.Strategy
@@ -11,6 +10,7 @@ import autocoin.binance.bot.strategy.action.StrategyActionExecutor
 import autocoin.binance.bot.strategy.execution.StrategyExecutionDto
 import autocoin.binance.bot.strategy.execution.repository.TestStrategyExecutionMutableSet
 import com.autocoin.exchangegateway.api.exchange.order.Order
+import com.autocoin.exchangegateway.api.price.CurrencyPairWithPrice
 import com.google.common.util.concurrent.MoreExecutors
 import mu.KLogging
 import org.assertj.core.api.Assertions.assertThat

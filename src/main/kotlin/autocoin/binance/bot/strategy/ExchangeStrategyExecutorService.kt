@@ -1,6 +1,5 @@
 package autocoin.binance.bot.strategy
 
-import autocoin.binance.bot.exchange.CurrencyPairWithPrice
 import autocoin.binance.bot.strategy.execution.StrategyExecutionDto
 import autocoin.binance.bot.strategy.execution.StrategyExecutionDto.Companion.matchesStrategyExecution
 import autocoin.binance.bot.strategy.execution.StrategyExecutionDto.Companion.toResumedStrategyExecution
@@ -9,6 +8,7 @@ import autocoin.binance.bot.strategy.executor.StrategyExecutor
 import autocoin.binance.bot.strategy.executor.StrategyExecutorProvider
 import autocoin.binance.bot.strategy.parameters.StrategyParametersDto
 import com.autocoin.exchangegateway.spi.exchange.currency.CurrencyPair
+import com.autocoin.exchangegateway.spi.exchange.price.CurrencyPairWithPrice
 
 class ExchangeStrategyExecutorService(
     private val strategyExecutions: FileBackedMutableSet<StrategyExecutionDto>,

@@ -1,6 +1,6 @@
 package autocoin.binance.bot.strategy.executor
 
-import autocoin.binance.bot.exchange.CurrencyPairWithPrice
+import com.autocoin.exchangegateway.spi.exchange.price.CurrencyPairWithPrice
 import java.math.BigDecimal
 
 class RememberingPriceStrategyExecutor(private val decorated: StrategyExecutor) : StrategyExecutor by decorated {

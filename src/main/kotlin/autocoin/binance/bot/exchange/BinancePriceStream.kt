@@ -4,6 +4,7 @@ import autocoin.binance.bot.eventbus.EventBus
 import autocoin.binance.bot.eventbus.EventType
 import com.autocoin.exchangegateway.api.exchange.currency.defaultCurrencyPairToXchange
 import com.autocoin.exchangegateway.api.exchange.currency.defaultXchangeCurrencyPairTransformer
+import com.autocoin.exchangegateway.api.price.CurrencyPairWithPrice
 import com.autocoin.exchangegateway.spi.exchange.currency.CurrencyPair
 import com.binance.api.client.BinanceApiCallback
 import com.binance.api.client.BinanceApiWebSocketClient
@@ -11,7 +12,6 @@ import com.binance.api.client.domain.event.AggTradeEvent
 import mu.KLogging
 import org.knowm.xchange.binance.BinanceAdapters
 import java.io.Closeable
-import java.math.BigDecimal
 import java.time.Clock
 import java.time.Duration
 import java.time.Instant
@@ -19,13 +19,9 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Function
 import kotlin.system.measureTimeMillis
+import com.autocoin.exchangegateway.spi.exchange.price.CurrencyPairWithPrice as SpiCurrencyPairWithPrice
 
-data class CurrencyPairWithPrice(
-    val currencyPair: CurrencyPair,
-    val price: BigDecimal,
-)
-
-val priceUpdatedEventType = object : EventType<CurrencyPairWithPrice> {
+val priceUpdatedEventType = object : EventType<SpiCurrencyPairWithPrice> {
     override fun isAsync() = false
 }
 
