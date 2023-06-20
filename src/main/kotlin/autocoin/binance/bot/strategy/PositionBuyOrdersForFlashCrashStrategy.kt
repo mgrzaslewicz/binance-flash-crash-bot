@@ -5,6 +5,7 @@ import autocoin.binance.bot.strategy.action.PlaceBuyLimitOrderAction
 import autocoin.binance.bot.strategy.action.StrategyAction
 import autocoin.binance.bot.strategy.execution.StrategyExecutionDto
 import autocoin.binance.bot.strategy.execution.repository.StrategyOrder
+import autocoin.binance.bot.strategy.parameters.WithStrategySpecificParameters
 import java.math.BigDecimal
 import java.math.MathContext
 import java.math.RoundingMode
@@ -131,11 +132,13 @@ class PositionBuyOrdersForFlashCrashStrategy private constructor(
             counterCurrencyAmountLimitForBuyingParameter to counterCurrencyAmountLimitForBuying.toPlainString(),
         )
 
-        fun withStrategySpecificParameters(parameters: Map<String, String>): Builder {
-            parameters.getValue(numberOfBuyLimitOrdersToKeepParameter).let {
+        fun withStrategySpecificParameters(parameters: WithStrategySpecificParameters): Builder {
+            parameters.getParameter(numberOfBuyLimitOrdersToKeepParameter).let {
+                checkNotNull(it)
                 numberOfBuyLimitOrdersToKeep = it.toInt()
             }
-            parameters.getValue(counterCurrencyAmountLimitForBuyingParameter).let {
+            parameters.getParameter(counterCurrencyAmountLimitForBuyingParameter).let {
+                checkNotNull(it)
                 counterCurrencyAmountLimitForBuying = it.toBigDecimal()
             }
             return this

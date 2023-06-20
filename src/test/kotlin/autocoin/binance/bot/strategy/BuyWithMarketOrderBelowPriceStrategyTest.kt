@@ -44,7 +44,7 @@ class BuyWithMarketOrderBelowPriceStrategyTest {
     @BeforeEach
     fun setup() {
         tested = BuyWithMarketOrderBelowPriceStrategy.Builder()
-            .withStrategySpecificParameters(strategyExecution.strategySpecificParameters)
+            .withStrategySpecificParameters(strategyExecution)
             .build()
     }
 
@@ -65,13 +65,13 @@ class BuyWithMarketOrderBelowPriceStrategyTest {
         val strategyExecution = strategyExecution.copy(
             parameters = strategyParameters.copy(
                 strategySpecificParameters = BuyWithMarketOrderBelowPriceStrategy.Builder()
-                    .withStrategySpecificParameters(strategyExecution.strategySpecificParameters)
+                    .withStrategySpecificParameters(strategyExecution)
                     .withWithdrawalAddress("withdrawal-address-1")
                     .toStrategySpecificParameters()
             ),
         )
         tested = BuyWithMarketOrderBelowPriceStrategy.Builder()
-            .withStrategySpecificParameters(strategyExecution.strategySpecificParameters)
+            .withStrategySpecificParameters(strategyExecution)
             .build()
         // when
         val actions = tested.getActions(

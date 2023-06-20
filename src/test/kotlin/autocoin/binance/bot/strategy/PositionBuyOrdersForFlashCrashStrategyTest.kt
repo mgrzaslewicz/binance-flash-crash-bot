@@ -48,7 +48,7 @@ class PositionBuyOrdersForFlashCrashStrategyTest {
     @BeforeEach
     fun setup() {
         tested = PositionBuyOrdersForFlashCrashStrategy.Builder()
-            .withStrategySpecificParameters(TestConfig.samplePositionBuyLimitOrdersSampleStrategyParameters().strategySpecificParameters)
+            .withStrategySpecificParameters(TestConfig.samplePositionBuyLimitOrdersSampleStrategyParameters())
             .withMinPriceDownMultiplier(minPriceDownMultiplier).build()
     }
 

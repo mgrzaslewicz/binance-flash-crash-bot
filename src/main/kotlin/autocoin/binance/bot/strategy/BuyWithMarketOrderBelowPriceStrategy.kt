@@ -5,6 +5,7 @@ import autocoin.binance.bot.strategy.action.StrategyAction
 import autocoin.binance.bot.strategy.action.WithdrawBaseCurrencyAction
 import autocoin.binance.bot.strategy.execution.StrategyExecutionDto
 import autocoin.binance.bot.strategy.execution.repository.StrategyOrder
+import autocoin.binance.bot.strategy.parameters.WithStrategySpecificParameters
 import java.math.BigDecimal
 import java.math.MathContext
 import java.math.RoundingMode
@@ -128,19 +129,22 @@ class BuyWithMarketOrderBelowPriceStrategy private constructor(
             .filterValues { it != null }
             .mapValues { it.value!! }
 
-        fun withStrategySpecificParameters(parameters: Map<String, String>): Builder {
-            parameters.getValue(pricesTriggeringBuyMarketOrderParameter).let {
+        fun withStrategySpecificParameters(parameters: WithStrategySpecificParameters): Builder {
+            parameters.getParameter(pricesTriggeringBuyMarketOrderParameter).let {
+                checkNotNull(it)
                 pricesTriggeringBuyMarketOrder = it.split(",")
                     .map { price -> price.trim().toBigDecimal() }
                     .toMutableList()
             }
-            parameters.getValue(counterCurrencyAmountLimitForBuyingParameter).let {
+            parameters.getParameter(counterCurrencyAmountLimitForBuyingParameter).let {
+                checkNotNull(it)
                 counterCurrencyAmountLimitForBuying = it.toBigDecimal()
             }
-            parameters.getValue(maxPriceForComingBackFromBottomBuyMarketOrderParameter).let {
+            parameters.getParameter(maxPriceForComingBackFromBottomBuyMarketOrderParameter).let {
+                checkNotNull(it)
                 maxPriceForComingBackFromBottomBuyMarketOrder = it.toBigDecimal()
             }
-            withdrawalAddress = parameters[withdrawalAddressParameter]
+            withdrawalAddress = parameters.getParameter(withdrawalAddressParameter)
             return this
         }
 
