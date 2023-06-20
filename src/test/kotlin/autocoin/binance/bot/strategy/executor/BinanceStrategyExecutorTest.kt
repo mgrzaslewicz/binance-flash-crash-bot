@@ -7,6 +7,7 @@ import autocoin.binance.bot.exchange.TestWalletService
 import autocoin.binance.bot.strategy.Strategy
 import autocoin.binance.bot.strategy.action.PlaceBuyLimitOrderAction
 import autocoin.binance.bot.strategy.action.StrategyAction
+import autocoin.binance.bot.strategy.action.StrategyActionExecutor
 import autocoin.binance.bot.strategy.execution.StrategyExecutionDto
 import autocoin.binance.bot.strategy.execution.repository.TestStrategyExecutionMutableSet
 import com.autocoin.exchangegateway.api.exchange.order.Order
@@ -126,7 +127,7 @@ class BinanceStrategyExecutorTest {
                             shouldBreakActionChainOnFail = false,
                         ),
                         object : StrategyAction {
-                            override fun apply(strategyExecutor: StrategyExecutor): Boolean {
+                            override fun apply(strategyExecutor: StrategyActionExecutor): Boolean {
                                 handledPriceUpdateCounter.incrementAndGet()
                                 logger.info { "Blocking forever" }
                                 blockForeverLock.lock()

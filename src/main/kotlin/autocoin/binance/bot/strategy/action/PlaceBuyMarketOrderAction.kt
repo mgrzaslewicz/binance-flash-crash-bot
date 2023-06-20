@@ -1,6 +1,5 @@
 package autocoin.binance.bot.strategy.action
 
-import autocoin.binance.bot.strategy.executor.StrategyExecutor
 import java.math.BigDecimal
 
 class PlaceBuyMarketOrderAction(
@@ -8,11 +7,14 @@ class PlaceBuyMarketOrderAction(
     val currentPrice: BigDecimal,
     override val shouldBreakActionChainOnFail: Boolean
 ) : StrategyAction {
-    override fun apply(strategyExecutor: StrategyExecutor): Boolean {
-        val result = strategyExecutor.placeBuyMarketOrder(
-            currentPrice = currentPrice,
-            counterCurrencyAmount = counterCurrencyAmount,
-        ) != null
-        return result
+    override fun apply(strategyExecutor: StrategyActionExecutor): Boolean {
+        if (strategyExecutor is PlaceBuyMarketOrderActionExecutor) {
+            return strategyExecutor.placeBuyMarketOrder(
+                currentPrice = currentPrice,
+                counterCurrencyAmount = counterCurrencyAmount,
+            ) != null
+        } else {
+            throw IllegalArgumentException("StrategyExecutor must implement PlaceBuyMarketOrderActionExecutor")
+        }
     }
 }
