@@ -6,8 +6,8 @@ import autocoin.binance.bot.strategy.PositionBuyOrdersForFlashCrashStrategy
 import autocoin.binance.bot.strategy.execution.StrategyExecutionDto
 import autocoin.binance.bot.strategy.execution.StrategyExecutionDto.Companion.toStrategyExecution
 import autocoin.binance.bot.strategy.execution.repository.FileBackedMutableSet
-import autocoin.binance.bot.strategy.parameters.StrategyParametersDto
 import autocoin.binance.bot.strategy.parameters.WithStrategySpecificParameters
+import autocoin.binance.bot.strategy.parameters.StrategyParametersDto
 import com.autocoin.exchangegateway.spi.exchange.order.gateway.OrderServiceGateway
 import com.autocoin.exchangegateway.spi.exchange.wallet.gateway.WalletServiceGateway
 import java.util.concurrent.ExecutorService
@@ -36,10 +36,7 @@ class BinanceStrategyExecutorProvider(
             .withStrategySpecificParameters(this)
             .build()
 
-        StrategyType.BUY_WITH_MARKET_ORDER_BELOW_PRICE -> BuyWithMarketOrderBelowPriceStrategy
-            .Builder()
-            .withStrategySpecificParameters(this)
-            .build()
+        StrategyType.BUY_WITH_MARKET_ORDER_BELOW_PRICE -> BuyWithMarketOrderBelowPriceStrategy()
     }
 
     override fun createStrategyExecutor(strategyParameters: StrategyParametersDto): StrategyExecutor {

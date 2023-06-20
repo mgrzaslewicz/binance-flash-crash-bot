@@ -11,41 +11,37 @@ import java.math.MathContext
 import java.math.RoundingMode
 
 
-// TODO constructor parameters are the same parameters as provided by strategyExecution. Maybe we should just pass strategyExecution instead of all these parameters?
-class BuyWithMarketOrderBelowPriceStrategy private constructor(
-    private val pricesTriggeringBuyMarketOrderSortedDesc: List<BigDecimal>,
-    private val counterCurrencyAmountLimitForBuying: BigDecimal,
-    private val withdrawalAddress: String?,
-) : Strategy {
+class BuyWithMarketOrderBelowPriceStrategy : Strategy {
     private val mathContext = MathContext(8, RoundingMode.HALF_EVEN)
-    private val numberOfBuyMarketOrdersToPlace = pricesTriggeringBuyMarketOrderSortedDesc.size
-    private val counterCurrencyAmountPerOrder = counterCurrencyAmountLimitForBuying
-        .divide(numberOfBuyMarketOrdersToPlace.toBigDecimal(), mathContext)
 
     private var minimumReachedPriceTriggeringBuy: BigDecimal? = null
     private val plusInfinity = Integer.MAX_VALUE.toBigDecimal()
-
-    private fun StrategyExecutionDto.hasNoMaximumNumberOfOrdersYet() = orders.size < numberOfBuyMarketOrdersToPlace
 
     override fun getActions(
         price: BigDecimal,
         strategyExecution: StrategyExecutionDto,
     ): List<StrategyAction> {
+        val strategySpecificParameters = ParametersBuilder().withStrategySpecificParameters(strategyExecution).toParameters()
+        val hasNoMaximumNumberOfOrdersYet =
+            strategyExecution.orders.size < strategySpecificParameters.numberOfBuyMarketOrdersToPlace()
         return when {
-            strategyExecution.hasNoMaximumNumberOfOrdersYet() -> {
-                val currentPricePoint = pricesTriggeringBuyMarketOrderSortedDesc[strategyExecution.orders.size]
+            hasNoMaximumNumberOfOrdersYet -> {
+                val currentPricePoint =
+                    strategySpecificParameters.pricesTriggeringBuyMarketOrder[strategyExecution.orders.size]
                 when {
                     price >= (minimumReachedPriceTriggeringBuy ?: plusInfinity) -> {
                         listOfNotNull(
                             PlaceBuyMarketOrderAction(
                                 currentPrice = price,
-                                counterCurrencyAmount = counterCurrencyAmountLeft(strategyExecution.orders),
+                                counterCurrencyAmount = strategySpecificParameters.counterCurrencyAmountLeft(
+                                    strategyExecution.orders
+                                ),
                                 shouldBreakActionChainOnFail = true,
                             ),
-                            if (withdrawalAddress != null) {
+                            if (strategySpecificParameters.withdrawalAddress != null) {
                                 WithdrawBaseCurrencyAction(
                                     currency = strategyExecution.currencyPair.base,
-                                    walletAddress = withdrawalAddress,
+                                    walletAddress = strategySpecificParameters.withdrawalAddress,
                                     shouldBreakActionChainOnFail = false,
                                 )
                             } else {
@@ -59,13 +55,13 @@ class BuyWithMarketOrderBelowPriceStrategy private constructor(
                         listOfNotNull(
                             PlaceBuyMarketOrderAction(
                                 currentPrice = price,
-                                counterCurrencyAmount = counterCurrencyAmountPerOrder,
+                                counterCurrencyAmount = strategySpecificParameters.counterCurrencyAmountPerOrder(),
                                 shouldBreakActionChainOnFail = true,
                             ),
-                            if (withdrawalAddress != null) {
+                            if (strategySpecificParameters.withdrawalAddress != null) {
                                 WithdrawBaseCurrencyAction(
                                     currency = strategyExecution.currencyPair.base,
-                                    walletAddress = withdrawalAddress,
+                                    walletAddress = strategySpecificParameters.withdrawalAddress,
                                     shouldBreakActionChainOnFail = false,
                                 )
                             } else {
@@ -82,54 +78,57 @@ class BuyWithMarketOrderBelowPriceStrategy private constructor(
         }
     }
 
-    private fun counterCurrencyAmountLeft(orders: List<StrategyOrder>): BigDecimal {
+    private fun Parameters.counterCurrencyAmountPerOrder() =
+        counterCurrencyAmountLimitForBuying.divide(this.numberOfBuyMarketOrdersToPlace().toBigDecimal(), mathContext)
+
+    private fun Parameters.counterCurrencyAmountLeft(orders: List<StrategyOrder>): BigDecimal {
         return counterCurrencyAmountLimitForBuying - orders.sumOf { it.amount }
     }
 
-    class Builder {
-        companion object {
-            private val pricesTriggeringBuyMarketOrderParameter = "pricesTriggeringBuyMarketOrder"
-            private val maxPriceForComingBackFromBottomBuyMarketOrderParameter =
-                "maxPriceForComingBackFromBottomBuyMarketOrder"
-            private val counterCurrencyAmountLimitForBuyingParameter = "counterCurrencyAmountLimitForBuying"
-            private val withdrawalAddressParameter = "withdrawalAddress"
-        }
+    companion object {
+        private const val pricesTriggeringBuyMarketOrderParameter = "pricesTriggeringBuyMarketOrder"
+        private const val maxPriceForComingBackFromBottomBuyMarketOrderParameter =
+            "maxPriceForComingBackFromBottomBuyMarketOrder"
+        private const val counterCurrencyAmountLimitForBuyingParameter = "counterCurrencyAmountLimitForBuying"
+        private const val withdrawalAddressParameter = "withdrawalAddress"
+    }
 
+    data class Parameters(
+        val pricesTriggeringBuyMarketOrder: List<BigDecimal>,
+        val counterCurrencyAmountLimitForBuying: BigDecimal,
+        val maxPriceForComingBackFromBottomBuyMarketOrder: BigDecimal,
+        val withdrawalAddress: String?,
+    ) {
+        fun numberOfBuyMarketOrdersToPlace() = pricesTriggeringBuyMarketOrder.size
+    }
+
+    class ParametersBuilder {
         private var pricesTriggeringBuyMarketOrder: MutableList<BigDecimal> = mutableListOf()
         private lateinit var counterCurrencyAmountLimitForBuying: BigDecimal
         private lateinit var maxPriceForComingBackFromBottomBuyMarketOrder: BigDecimal
         private var withdrawalAddress: String? = null
 
-        fun withPricesTriggeringBuyMarketOrder(pricesTriggeringBuyMarketOrder: List<BigDecimal>): Builder {
+        fun withPricesTriggeringBuyMarketOrder(pricesTriggeringBuyMarketOrder: List<BigDecimal>): ParametersBuilder {
             this.pricesTriggeringBuyMarketOrder = pricesTriggeringBuyMarketOrder.toMutableList()
             return this
         }
 
-        fun withCounterCurrencyAmountLimitForBuying(counterCurrencyAmountLimitForBuying: BigDecimal): Builder {
+        fun withCounterCurrencyAmountLimitForBuying(counterCurrencyAmountLimitForBuying: BigDecimal): ParametersBuilder {
             this.counterCurrencyAmountLimitForBuying = counterCurrencyAmountLimitForBuying
             return this
         }
 
-        fun withMaxPriceForComingBackFromBottomBuyMarketOrder(maxPriceForComingBackFromBottomBuyMarketOrder: BigDecimal): Builder {
+        fun withMaxPriceForComingBackFromBottomBuyMarketOrder(maxPriceForComingBackFromBottomBuyMarketOrder: BigDecimal): ParametersBuilder {
             this.maxPriceForComingBackFromBottomBuyMarketOrder = maxPriceForComingBackFromBottomBuyMarketOrder
             return this
         }
 
-        fun withWithdrawalAddress(withdrawalAddress: String): Builder {
+        fun withWithdrawalAddress(withdrawalAddress: String): ParametersBuilder {
             this.withdrawalAddress = withdrawalAddress
             return this
         }
 
-        fun toStrategySpecificParameters(): Map<String, String> = mapOf(
-            pricesTriggeringBuyMarketOrderParameter to pricesTriggeringBuyMarketOrder.joinToString(","),
-            counterCurrencyAmountLimitForBuyingParameter to counterCurrencyAmountLimitForBuying.toPlainString(),
-            maxPriceForComingBackFromBottomBuyMarketOrderParameter to maxPriceForComingBackFromBottomBuyMarketOrder.toPlainString(),
-            withdrawalAddressParameter to withdrawalAddress,
-        )
-            .filterValues { it != null }
-            .mapValues { it.value!! }
-
-        fun withStrategySpecificParameters(parameters: WithStrategySpecificParameters): Builder {
+        fun withStrategySpecificParameters(parameters: WithStrategySpecificParameters): ParametersBuilder {
             parameters.getParameter(pricesTriggeringBuyMarketOrderParameter).let {
                 checkNotNull(it)
                 pricesTriggeringBuyMarketOrder = it.split(",")
@@ -148,13 +147,22 @@ class BuyWithMarketOrderBelowPriceStrategy private constructor(
             return this
         }
 
-        fun build(): BuyWithMarketOrderBelowPriceStrategy {
-            return BuyWithMarketOrderBelowPriceStrategy(
-                pricesTriggeringBuyMarketOrderSortedDesc = pricesTriggeringBuyMarketOrder.sortedDescending(),
-                counterCurrencyAmountLimitForBuying = counterCurrencyAmountLimitForBuying,
-                withdrawalAddress = withdrawalAddress,
-            )
-        }
+        fun toMap(): Map<String, String> = mapOf(
+            pricesTriggeringBuyMarketOrderParameter to pricesTriggeringBuyMarketOrder.joinToString(","),
+            counterCurrencyAmountLimitForBuyingParameter to counterCurrencyAmountLimitForBuying.toPlainString(),
+            maxPriceForComingBackFromBottomBuyMarketOrderParameter to maxPriceForComingBackFromBottomBuyMarketOrder.toPlainString(),
+            withdrawalAddressParameter to withdrawalAddress,
+        )
+            .filterValues { it != null }
+            .mapValues { it.value!! }
+
+        fun toParameters(): Parameters = Parameters(
+            pricesTriggeringBuyMarketOrder = pricesTriggeringBuyMarketOrder.sortedDescending(),
+            counterCurrencyAmountLimitForBuying = counterCurrencyAmountLimitForBuying,
+            maxPriceForComingBackFromBottomBuyMarketOrder = maxPriceForComingBackFromBottomBuyMarketOrder,
+            withdrawalAddress = withdrawalAddress,
+        )
+
     }
 
 }

@@ -32,20 +32,18 @@ class BuyWithMarketOrderBelowPriceStrategyTest {
             publicKey = "key-1",
             secretKey = "secret-1",
         ),
-        strategySpecificParameters = BuyWithMarketOrderBelowPriceStrategy.Builder()
+        strategySpecificParameters = BuyWithMarketOrderBelowPriceStrategy.ParametersBuilder()
             .withPricesTriggeringBuyMarketOrder(pricesTriggeringBuyMarketOrder)
             .withMaxPriceForComingBackFromBottomBuyMarketOrder(maxPriceForComingBackFromBottomBuyMarketOrder)
             .withCounterCurrencyAmountLimitForBuying(counterCurrencyAmountLimitForBuying)
-            .toStrategySpecificParameters()
+            .toMap()
     )
     private val strategyExecution = strategyParameters.toStrategyExecution()
     private lateinit var tested: BuyWithMarketOrderBelowPriceStrategy
 
     @BeforeEach
     fun setup() {
-        tested = BuyWithMarketOrderBelowPriceStrategy.Builder()
-            .withStrategySpecificParameters(strategyExecution)
-            .build()
+        tested = BuyWithMarketOrderBelowPriceStrategy()
     }
 
     @Test
@@ -64,15 +62,13 @@ class BuyWithMarketOrderBelowPriceStrategyTest {
         // given
         val strategyExecution = strategyExecution.copy(
             parameters = strategyParameters.copy(
-                strategySpecificParameters = BuyWithMarketOrderBelowPriceStrategy.Builder()
+                strategySpecificParameters = BuyWithMarketOrderBelowPriceStrategy.ParametersBuilder()
                     .withStrategySpecificParameters(strategyExecution)
                     .withWithdrawalAddress("withdrawal-address-1")
-                    .toStrategySpecificParameters()
+                    .toMap()
             ),
         )
-        tested = BuyWithMarketOrderBelowPriceStrategy.Builder()
-            .withStrategySpecificParameters(strategyExecution)
-            .build()
+        tested = BuyWithMarketOrderBelowPriceStrategy()
         // when
         val actions = tested.getActions(
             price = price1.minus(smallDelta),

@@ -3,8 +3,8 @@ package autocoin.binance.bot.strategy.execution
 import autocoin.binance.bot.exchange.apikey.ApiKeyId
 import autocoin.binance.bot.exchange.apikey.md5
 import autocoin.binance.bot.strategy.execution.repository.StrategyOrder
-import autocoin.binance.bot.strategy.parameters.StrategyParametersDto
 import autocoin.binance.bot.strategy.parameters.WithStrategySpecificParameters
+import autocoin.binance.bot.strategy.parameters.StrategyParametersDto
 import com.autocoin.exchangegateway.api.exchange.apikey.ApiKey
 import com.autocoin.exchangegateway.api.exchange.apikey.ApiKeySupplier
 import com.autocoin.exchangegateway.api.exchange.xchange.ExchangeNames
