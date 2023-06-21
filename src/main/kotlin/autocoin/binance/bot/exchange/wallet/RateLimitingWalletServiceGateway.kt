@@ -1,10 +1,10 @@
 package autocoin.binance.bot.exchange.wallet
 
 import autocoin.binance.bot.exchange.apikey.ApiKeyId
-import autocoin.binance.bot.exchange.ratelimit.RateLimiterProvider
 import com.autocoin.exchangegateway.spi.exchange.ExchangeName
 import com.autocoin.exchangegateway.spi.exchange.apikey.ApiKeySupplier
 import com.autocoin.exchangegateway.spi.exchange.currency.CurrencyBalance
+import com.autocoin.exchangegateway.spi.exchange.ratelimiter.RateLimiterProvider
 import com.autocoin.exchangegateway.spi.exchange.wallet.WithdrawResult
 import com.autocoin.exchangegateway.spi.exchange.wallet.gateway.WalletServiceGateway
 import mu.KLogging
@@ -12,7 +12,7 @@ import java.math.BigDecimal
 
 class RateLimitingWalletServiceGateway(
     private val decorated: WalletServiceGateway<ApiKeyId>,
-    private val rateLimiterProvider: RateLimiterProvider,
+    private val rateLimiterProvider: RateLimiterProvider<ApiKeyId>,
 ) : WalletServiceGateway<ApiKeyId> by decorated {
     companion object : KLogging()
 
@@ -53,5 +53,5 @@ class RateLimitingWalletServiceGateway(
     }
 }
 
-fun WalletServiceGateway<ApiKeyId>.rateLimiting(rateLimiterProvider: RateLimiterProvider) =
+fun WalletServiceGateway<ApiKeyId>.rateLimiting(rateLimiterProvider: RateLimiterProvider<ApiKeyId>) =
     RateLimitingWalletServiceGateway(decorated = this, rateLimiterProvider = rateLimiterProvider)

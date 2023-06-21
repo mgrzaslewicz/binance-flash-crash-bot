@@ -1,19 +1,19 @@
 package autocoin.binance.bot.exchange.order
 
 import autocoin.binance.bot.exchange.apikey.ApiKeyId
-import autocoin.binance.bot.exchange.ratelimit.RateLimiterProvider
 import com.autocoin.exchangegateway.spi.exchange.ExchangeName
 import com.autocoin.exchangegateway.spi.exchange.apikey.ApiKeySupplier
 import com.autocoin.exchangegateway.spi.exchange.currency.CurrencyPair
 import com.autocoin.exchangegateway.spi.exchange.order.CancelOrderParams
 import com.autocoin.exchangegateway.spi.exchange.order.Order
 import com.autocoin.exchangegateway.spi.exchange.order.gateway.OrderServiceGateway
+import com.autocoin.exchangegateway.spi.exchange.ratelimiter.RateLimiterProvider
 import mu.KLogging
 import java.math.BigDecimal
 
 class RateLimitingOrderServiceGateway(
     private val decorated: OrderServiceGateway<ApiKeyId>,
-    private val rateLimiterProvider: RateLimiterProvider,
+    private val rateLimiterProvider: RateLimiterProvider<ApiKeyId>,
 ) : OrderServiceGateway<ApiKeyId> by decorated {
     companion object : KLogging()
 
@@ -55,5 +55,5 @@ class RateLimitingOrderServiceGateway(
 
 }
 
-fun OrderServiceGateway<ApiKeyId>.rateLimiting(rateLimiterProvider: RateLimiterProvider) =
+fun OrderServiceGateway<ApiKeyId>.rateLimiting(rateLimiterProvider: RateLimiterProvider<ApiKeyId>) =
     RateLimitingOrderServiceGateway(decorated = this, rateLimiterProvider = rateLimiterProvider)

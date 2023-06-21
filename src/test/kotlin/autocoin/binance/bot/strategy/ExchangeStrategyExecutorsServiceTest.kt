@@ -23,10 +23,7 @@ import java.math.BigDecimal
 class ExchangeStrategyExecutorsServiceTest {
     companion object : KLogging()
 
-
     private val currencyPair = CurrencyPair.of("A", "B")
-
-
     private val strategy1Parameters = TestConfig.samplePositionBuyLimitOrdersSampleStrategyParameters()
     private val strategy2Parameters = strategy1Parameters.copy(
         userId = "user-2"
