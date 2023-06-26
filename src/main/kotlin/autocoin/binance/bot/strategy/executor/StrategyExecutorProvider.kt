@@ -33,7 +33,7 @@ class BinanceStrategyExecutorProvider(
 
     private fun StrategyType.toStrategy() = when (this) {
         POSITION_BUY_ORDERS_FOR_FLASH_CRASH -> PositionBuyOrdersForFlashCrashStrategy()
-        BUY_WITH_MARKET_ORDER_BELOW_PRICE -> BuyWithMarketOrderBelowPriceStrategy()
+        BUY_WITH_MARKET_ORDER_BELOW_PRICE -> BuyWithMarketOrderBelowPriceStrategy(javaExecutorService)
     }
 
     override fun createStrategyExecutor(strategyParameters: StrategyParametersDto): StrategyExecutor {

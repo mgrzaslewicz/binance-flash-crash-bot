@@ -38,7 +38,6 @@ class BinanceStrategyExecutor(
 
     private var currentStrategyExecution: StrategyExecutionDto = strategyExecution.copy()
     private val preventFromStackingUpActionsLock: Lock = ReentrantLock()
-    private val preventFromParallelWithdrawalsLock: Lock = ReentrantLock()
 
     override val strategyExecution: StrategyExecutionDto
         get() = currentStrategyExecution
@@ -150,28 +149,22 @@ class BinanceStrategyExecutor(
     }
 
     override fun withdraw(currency: String, walletAddress: String): Boolean {
-        if (preventFromParallelWithdrawalsLock.tryLock()) {
-            javaExecutorService.submit {
-                try {
-                    val balance = walletServiceGateway.getCurrencyBalance(
-                        exchangeName = binance,
-                        apiKey = currentStrategyExecution.apiKeySupplier,
-                        currencyCode = currentStrategyExecution.currencyPair.base,
-                    )
-                    val amountAdjusted = balance.amountAvailable.setScale(baseCurrencyAmountScale, RoundingMode.DOWN)
-                    walletServiceGateway.withdraw(
-                        exchangeName = binance,
-                        apiKey = currentStrategyExecution.apiKeySupplier,
-                        currencyCode = currentStrategyExecution.currencyPair.base,
-                        amount = amountAdjusted,
-                        address = walletAddress,
-                    )
-                } catch (e: Exception) {
-                    logger.error(e) { "Withdraw failed" }
-                } finally {
-                    preventFromParallelWithdrawalsLock.unlock()
-                }
-            }
+        try {
+            val balance = walletServiceGateway.getCurrencyBalance(
+                exchangeName = binance,
+                apiKey = currentStrategyExecution.apiKeySupplier,
+                currencyCode = currentStrategyExecution.currencyPair.base,
+            )
+            val amountAdjusted = balance.amountAvailable.setScale(baseCurrencyAmountScale, RoundingMode.DOWN)
+            walletServiceGateway.withdraw(
+                exchangeName = binance,
+                apiKey = currentStrategyExecution.apiKeySupplier,
+                currencyCode = currentStrategyExecution.currencyPair.base,
+                amount = amountAdjusted,
+                address = walletAddress,
+            )
+        } catch (e: Exception) {
+            logger.error(e) { "Withdraw failed" }
         }
         return true
     }

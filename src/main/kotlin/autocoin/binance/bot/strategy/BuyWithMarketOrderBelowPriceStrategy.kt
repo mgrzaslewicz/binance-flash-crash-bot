@@ -3,22 +3,27 @@ package autocoin.binance.bot.strategy
 import autocoin.binance.bot.strategy.action.PlaceBuyMarketOrderAction
 import autocoin.binance.bot.strategy.action.StrategyAction
 import autocoin.binance.bot.strategy.action.WithdrawBaseCurrencyAction
+import autocoin.binance.bot.strategy.action.decorator.async
+import autocoin.binance.bot.strategy.action.decorator.tryLock
 import autocoin.binance.bot.strategy.execution.StrategyExecutionDto
 import autocoin.binance.bot.strategy.execution.repository.StrategyOrder
 import autocoin.binance.bot.strategy.parameters.WithStrategySpecificParameters
 import java.math.BigDecimal
 import java.math.MathContext
 import java.math.RoundingMode
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.locks.Lock
+import java.util.concurrent.locks.ReentrantLock
 
 
-class BuyWithMarketOrderBelowPriceStrategy : Strategy {
+class BuyWithMarketOrderBelowPriceStrategy(private val executorService: ExecutorService) : Strategy {
     private val mathContext = MathContext(8, RoundingMode.HALF_EVEN)
 
+    private val preventFromParallelWithdrawalsLock: Lock = ReentrantLock()
     private var minimumReachedPriceTriggeringBuy: BigDecimal? = null
     private val plusInfinity = Integer.MAX_VALUE.toBigDecimal()
     private var parsedParameters: Parameters? = null
     private var strategyParametersHashCode: Int? = null
-
     override fun getActions(
         price: BigDecimal,
         strategyExecution: StrategyExecutionDto,
@@ -66,6 +71,8 @@ class BuyWithMarketOrderBelowPriceStrategy : Strategy {
                                     walletAddress = strategySpecificParameters.withdrawalAddress,
                                     shouldBreakActionChainOnFail = false,
                                 )
+                                    .tryLock(preventFromParallelWithdrawalsLock)
+                                    .async(executorService)
                             } else {
                                 null
                             }

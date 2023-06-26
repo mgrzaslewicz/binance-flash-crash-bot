@@ -3,11 +3,12 @@ package autocoin.binance.bot.strategy
 import autocoin.binance.bot.TestConfig
 import autocoin.binance.bot.exchange.apikey.ApiKeyDto
 import autocoin.binance.bot.strategy.action.PlaceBuyMarketOrderAction
-import autocoin.binance.bot.strategy.action.WithdrawBaseCurrencyAction
+import autocoin.binance.bot.strategy.action.WithdrawActionExecutor
 import autocoin.binance.bot.strategy.execution.StrategyExecutionDto.Companion.toStrategyExecution
 import autocoin.binance.bot.strategy.execution.repository.StrategyOrder
 import autocoin.binance.bot.strategy.executor.StrategyType
 import autocoin.binance.bot.strategy.parameters.StrategyParametersDto
+import com.google.common.util.concurrent.MoreExecutors
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -43,7 +44,7 @@ class BuyWithMarketOrderBelowPriceStrategyTest {
 
     @BeforeEach
     fun setup() {
-        tested = BuyWithMarketOrderBelowPriceStrategy()
+        tested = BuyWithMarketOrderBelowPriceStrategy(executorService = MoreExecutors.newDirectExecutorService())
     }
 
     @Test
@@ -68,7 +69,6 @@ class BuyWithMarketOrderBelowPriceStrategyTest {
                     .toMap()
             ),
         )
-        tested = BuyWithMarketOrderBelowPriceStrategy()
         // when
         val actions = tested.getActions(
             price = price1.minus(smallDelta),
@@ -77,7 +77,14 @@ class BuyWithMarketOrderBelowPriceStrategyTest {
         // then
         assertThat(actions).hasSize(2)
         assertThat((actions[0] as PlaceBuyMarketOrderAction).counterCurrencyAmount).isEqualTo(50.toBigDecimal())
-        assertThat(actions[1]).isInstanceOf(WithdrawBaseCurrencyAction::class.java)
+        var isCurrencyWithdrawn = false
+        actions[1].apply(object : WithdrawActionExecutor {
+            override fun withdraw(currency: String, walletAddress: String): Boolean {
+                isCurrencyWithdrawn = true
+                return true
+            }
+        })
+        assertThat(isCurrencyWithdrawn).isTrue()
     }
 
     @Test
