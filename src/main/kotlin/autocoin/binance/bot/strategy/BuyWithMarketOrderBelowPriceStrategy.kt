@@ -51,6 +51,8 @@ class BuyWithMarketOrderBelowPriceStrategy(private val executorService: Executor
                                     walletAddress = strategySpecificParameters.withdrawalAddress,
                                     shouldBreakActionChainOnFail = false,
                                 )
+                                    .tryLock(preventFromParallelWithdrawalsLock)
+                                    .async(executorService)
                             } else {
                                 null
                             }
