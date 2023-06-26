@@ -149,24 +149,30 @@ class BinanceStrategyExecutor(
     }
 
     override fun withdraw(currency: String, walletAddress: String): Boolean {
-        try {
+        return try {
             val balance = walletServiceGateway.getCurrencyBalance(
                 exchangeName = binance,
                 apiKey = currentStrategyExecution.apiKeySupplier,
                 currencyCode = currentStrategyExecution.currencyPair.base,
             )
             val amountAdjusted = balance.amountAvailable.setScale(baseCurrencyAmountScale, RoundingMode.DOWN)
-            walletServiceGateway.withdraw(
-                exchangeName = binance,
-                apiKey = currentStrategyExecution.apiKeySupplier,
-                currencyCode = currentStrategyExecution.currencyPair.base,
-                amount = amountAdjusted,
-                address = walletAddress,
-            )
+            try {
+                walletServiceGateway.withdraw(
+                    exchangeName = binance,
+                    apiKey = currentStrategyExecution.apiKeySupplier,
+                    currencyCode = currentStrategyExecution.currencyPair.base,
+                    amount = amountAdjusted,
+                    address = walletAddress,
+                )
+                true
+            } catch (e: Exception) {
+                logger.error(e) { "Withdraw failed" }
+                false
+            }
         } catch (e: Exception) {
-            logger.error(e) { "Withdraw failed" }
+            logger.error(e) { "Getting currency balance as withdraw step failed" }
+            false
         }
-        return true
     }
 
     private fun onBuyOrderCanceled(buyOrder: StrategyOrder) {
