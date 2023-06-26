@@ -45,17 +45,7 @@ class BuyWithMarketOrderBelowPriceStrategy(private val executorService: Executor
                                 ),
                                 shouldBreakActionChainOnFail = true,
                             ),
-                            if (strategySpecificParameters.withdrawalAddress != null) {
-                                WithdrawBaseCurrencyAction(
-                                    currency = strategyExecution.currencyPair.base,
-                                    walletAddress = strategySpecificParameters.withdrawalAddress,
-                                    shouldBreakActionChainOnFail = false,
-                                )
-                                    .tryLock(preventFromParallelWithdrawalsLock)
-                                    .async(executorService)
-                            } else {
-                                null
-                            }
+                            getWithdrawAction(strategySpecificParameters, strategyExecution)
                         )
                     }
 
@@ -67,17 +57,7 @@ class BuyWithMarketOrderBelowPriceStrategy(private val executorService: Executor
                                 counterCurrencyAmount = strategySpecificParameters.counterCurrencyAmountPerOrder(),
                                 shouldBreakActionChainOnFail = true,
                             ),
-                            if (strategySpecificParameters.withdrawalAddress != null) {
-                                WithdrawBaseCurrencyAction(
-                                    currency = strategyExecution.currencyPair.base,
-                                    walletAddress = strategySpecificParameters.withdrawalAddress,
-                                    shouldBreakActionChainOnFail = false,
-                                )
-                                    .tryLock(preventFromParallelWithdrawalsLock)
-                                    .async(executorService)
-                            } else {
-                                null
-                            }
+                            getWithdrawAction(strategySpecificParameters, strategyExecution)
                         )
                     }
 
@@ -87,6 +67,21 @@ class BuyWithMarketOrderBelowPriceStrategy(private val executorService: Executor
 
             else -> emptyList()
         }
+    }
+
+    private fun getWithdrawAction(
+        strategySpecificParameters: Parameters,
+        strategyExecution: StrategyExecutionDto
+    ) = if (strategySpecificParameters.withdrawalAddress != null) {
+        WithdrawBaseCurrencyAction(
+            currency = strategyExecution.currencyPair.base,
+            walletAddress = strategySpecificParameters.withdrawalAddress,
+            shouldBreakActionChainOnFail = false,
+        )
+            .tryLock(preventFromParallelWithdrawalsLock)
+            .async(executorService)
+    } else {
+        null
     }
 
     private fun getStrategySpecificParameters(strategyExecution: StrategyExecutionDto): Parameters {
