@@ -10,6 +10,10 @@ import java.math.BigDecimal
 
 object TestConfig {
     val currencyPair = CurrencyPair.of("A", "B")
+    fun currencyPairWithPrice(price: BigDecimal) = com.autocoin.exchangegateway.api.price.CurrencyPairWithPrice(
+        currencyPair = currencyPair,
+        price = price,
+    )
     fun samplePositionBuyLimitOrdersSampleStrategyParameters(
         numberOfBuyLimitOrdersToKeep: Int = 4,
         counterCurrencyAmountLimitForBuying: BigDecimal = 100.0.toBigDecimal(),

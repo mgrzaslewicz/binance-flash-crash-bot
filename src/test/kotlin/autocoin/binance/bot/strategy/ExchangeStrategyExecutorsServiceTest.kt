@@ -39,7 +39,7 @@ class ExchangeStrategyExecutorsServiceTest {
                 orderServiceGateway = TestOrderService(),
                 walletServiceGateway = mock(),
                 strategyExecutions = strategyExecutions,
-                javaExecutorService = MoreExecutors.newDirectExecutorService(),
+                jvmExecutorService = MoreExecutors.newDirectExecutorService(),
             )
         )
         // when
@@ -59,7 +59,7 @@ class ExchangeStrategyExecutorsServiceTest {
                 .measuringDuration(),
             walletServiceGateway = mock(),
             strategyExecutions = strategyExecutions,
-            javaExecutorService = MoreExecutors.newDirectExecutorService(),
+            jvmExecutorService = MoreExecutors.newDirectExecutorService(),
         )
         val createdExecutors: MutableList<RememberingPriceStrategyExecutor> = mutableListOf()
         val strategyExecutorProvider = object : StrategyExecutorProvider by binanceStrategyExecutorProvider {

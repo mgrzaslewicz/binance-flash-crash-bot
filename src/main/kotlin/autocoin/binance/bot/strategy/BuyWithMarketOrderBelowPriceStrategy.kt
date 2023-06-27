@@ -16,7 +16,7 @@ import java.util.concurrent.locks.Lock
 import java.util.concurrent.locks.ReentrantLock
 
 
-class BuyWithMarketOrderBelowPriceStrategy(private val executorService: ExecutorService) : Strategy {
+class BuyWithMarketOrderBelowPriceStrategy(private val jvmExecutorService: ExecutorService) : Strategy {
     private val mathContext = MathContext(8, RoundingMode.HALF_EVEN)
 
     private val preventFromParallelWithdrawalsLock: Lock = ReentrantLock()
@@ -76,7 +76,7 @@ class BuyWithMarketOrderBelowPriceStrategy(private val executorService: Executor
             walletAddress = strategySpecificParameters.withdrawalAddress,
         )
             .tryLock(preventFromParallelWithdrawalsLock)
-            .async(executorService)
+            .async(jvmExecutorService)
     } else {
         null
     }

@@ -11,6 +11,7 @@ import autocoin.binance.bot.strategy.executor.StrategyType.POSITION_BUY_ORDERS_F
 import autocoin.binance.bot.strategy.parameters.StrategyParametersDto
 import com.autocoin.exchangegateway.spi.exchange.order.gateway.OrderServiceGateway
 import com.autocoin.exchangegateway.spi.exchange.wallet.gateway.WalletServiceGateway
+import mu.KLogging
 import java.util.concurrent.ExecutorService
 
 interface StrategyExecutorProvider {
@@ -28,23 +29,17 @@ class BinanceStrategyExecutorProvider(
     private val orderServiceGateway: OrderServiceGateway<ApiKeyId>,
     private val walletServiceGateway: WalletServiceGateway<ApiKeyId>,
     private val strategyExecutions: FileBackedMutableSet<StrategyExecutionDto>,
-    private val javaExecutorService: ExecutorService,
+    private val jvmExecutorService: ExecutorService,
 ) : StrategyExecutorProvider {
+    private companion object : KLogging()
 
     private fun StrategyType.toStrategy() = when (this) {
         POSITION_BUY_ORDERS_FOR_FLASH_CRASH -> PositionBuyOrdersForFlashCrashStrategy()
-        BUY_WITH_MARKET_ORDER_BELOW_PRICE -> BuyWithMarketOrderBelowPriceStrategy(javaExecutorService)
+        BUY_WITH_MARKET_ORDER_BELOW_PRICE -> BuyWithMarketOrderBelowPriceStrategy(jvmExecutorService)
     }
 
     override fun createStrategyExecutor(strategyParameters: StrategyParametersDto): StrategyExecutor {
-        return BinanceStrategyExecutor(
-            strategyExecution = strategyParameters.toStrategyExecution(),
-            orderServiceGateway = orderServiceGateway,
-            walletServiceGateway = walletServiceGateway,
-            strategyExecutions = strategyExecutions,
-            strategy = strategyParameters.strategyType.toStrategy(),
-            javaExecutorService = javaExecutorService,
-        ).apply { warmup() }
+        return createStrategyExecutor(strategyParameters.toStrategyExecution())
     }
 
     override fun createStrategyExecutor(strategyExecution: StrategyExecutionDto): StrategyExecutor {
@@ -54,7 +49,9 @@ class BinanceStrategyExecutorProvider(
             walletServiceGateway = walletServiceGateway,
             strategyExecutions = strategyExecutions,
             strategy = strategyExecution.strategyType.toStrategy(),
-            javaExecutorService = javaExecutorService,
-        ).apply { warmup() }
+        )
+            .apply { warmup() }
+            .skippingTooFastProducer()
+            .asyncOnPrice(jvmExecutorService)
     }
 }

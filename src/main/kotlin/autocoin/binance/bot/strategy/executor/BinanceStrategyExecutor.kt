@@ -18,9 +18,6 @@ import mu.KLogging
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.Clock
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.locks.Lock
-import java.util.concurrent.locks.ReentrantLock
 import kotlin.system.measureTimeMillis
 
 class BinanceStrategyExecutor(
@@ -29,7 +26,6 @@ class BinanceStrategyExecutor(
     private val walletServiceGateway: WalletServiceGateway<ApiKeyId>,
     private val strategyExecutions: FileBackedMutableSet<StrategyExecutionDto>,
     private val clock: Clock = Clock.systemDefaultZone(),
-    private val javaExecutorService: ExecutorService,
     private val strategy: Strategy,
     private val baseCurrencyAmountScale: Int = 5,
     private val counterCurrencyPriceScale: Int = 2,
@@ -38,43 +34,24 @@ class BinanceStrategyExecutor(
     private companion object : KLogging()
 
     private var currentStrategyExecution: StrategyExecutionDto = strategyExecution.copy()
-    private val preventFromStackingUpActionsLock: Lock = ReentrantLock()
 
     override val strategyExecution: StrategyExecutionDto
         get() = currentStrategyExecution
 
-    private fun previousActionsHaveFinished(): Boolean {
-        return preventFromStackingUpActionsLock.tryLock()
-    }
-
-    private fun markActionsAsFinished() {
-        preventFromStackingUpActionsLock.unlock()
-    }
-
     override fun onPriceUpdated(currencyPairWithPrice: CurrencyPairWithPrice) {
-        javaExecutorService.submit {
-            val logTag =
-                "user=${strategyExecution.userId}, currencyPair=${strategyExecution.currencyPair}, strategyType=${strategyExecution.strategyType}"
-            if (previousActionsHaveFinished()) {
-                try {
-                    val actions = strategy.getActions(currencyPairWithPrice.price, currentStrategyExecution)
-                    val millis = measureTimeMillis {
-                        actions.forEach { action ->
-                            if (!action.apply(this)) {
-                                logger.info { "[$logTag] Skipping next action" }
-                                return@forEach
-                            }
-                        }
-                    }
-                    if (actions.isNotEmpty()) {
-                        logger.info { "[$logTag] Actions executed in ${millis}ms. Number of actions=${actions.size}" }
-                    }
-                } finally {
-                    markActionsAsFinished()
+        val logTag =
+            "user=${strategyExecution.userId}, currencyPair=${strategyExecution.currencyPair}, strategyType=${strategyExecution.strategyType}"
+        val actions = strategy.getActions(currencyPairWithPrice.price, currentStrategyExecution)
+        val millis = measureTimeMillis {
+            actions.forEach { action ->
+                if (!action.apply(this)) {
+                    logger.info { "[$logTag] Skipping next action" }
+                    return@forEach
                 }
-            } else {
-                logger.info { "[$logTag] Previous actions have not finished yet. Skipping this price update: $currencyPairWithPrice" }
             }
+        }
+        if (actions.isNotEmpty()) {
+            logger.info { "[$logTag] Actions executed in ${millis}ms. Number of actions=${actions.size}" }
         }
     }
 

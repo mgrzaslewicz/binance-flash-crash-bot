@@ -45,7 +45,7 @@ class BuyWithMarketOrderBelowPriceStrategyTest {
 
     @BeforeEach
     fun setup() {
-        tested = BuyWithMarketOrderBelowPriceStrategy(executorService = MoreExecutors.newDirectExecutorService())
+        tested = BuyWithMarketOrderBelowPriceStrategy(jvmExecutorService = MoreExecutors.newDirectExecutorService())
     }
 
     @Test

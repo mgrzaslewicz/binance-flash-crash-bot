@@ -194,7 +194,7 @@ class AppContext(private val appConfig: AppConfig) {
         orderServiceGateway = orderServiceGateway,
         walletServiceGateway = walletServiceGateway,
         strategyExecutions = strategyExecutions,
-        javaExecutorService = Executors.newCachedThreadPool(),
+        jvmExecutorService = Executors.newCachedThreadPool(),
     )
 
     val strategyExecutionsService =
