@@ -6,11 +6,12 @@ import autocoin.binance.bot.strategy.execution.StrategyExecutionDto.Companion.to
 import autocoin.binance.bot.strategy.executor.StrategyType
 import autocoin.binance.bot.strategy.parameters.StrategyParametersDto
 import com.autocoin.exchangegateway.api.exchange.currency.CurrencyPair
+import com.autocoin.exchangegateway.api.exchange.price.CurrencyPairWithPrice
 import java.math.BigDecimal
 
 object TestConfig {
     val currencyPair = CurrencyPair.of("A", "B")
-    fun currencyPairWithPrice(price: BigDecimal) = com.autocoin.exchangegateway.api.price.CurrencyPairWithPrice(
+    fun currencyPairWithPrice(price: BigDecimal) = CurrencyPairWithPrice(
         currencyPair = currencyPair,
         price = price,
     )

@@ -1,10 +1,10 @@
 package autocoin.binance.bot.exchange.ratelimit
 
 import autocoin.binance.bot.exchange.apikey.ApiKeyId
-import com.autocoin.exchangegateway.spi.exchange.ratelimiter.RateLimiter
-import com.autocoin.exchangegateway.spi.exchange.ratelimiter.RateLimiterProvider
-import com.google.common.util.concurrent.RateLimiter as GoogleRateLimiter
+import com.autocoin.exchangegateway.spi.ratelimiter.RateLimiter
+import com.autocoin.exchangegateway.spi.ratelimiter.RateLimiterProvider
 import java.util.concurrent.ConcurrentHashMap
+import com.google.common.util.concurrent.RateLimiter as GoogleRateLimiter
 
 class PerApiKeyRateLimiterProvider(
     private val permitsPerSecondPerApiKey: Double = 5.0,

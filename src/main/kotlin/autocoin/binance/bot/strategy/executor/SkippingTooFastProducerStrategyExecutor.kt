@@ -1,8 +1,8 @@
 package autocoin.binance.bot.strategy.executor
 
-import autocoin.binance.bot.exchange.SkippingConsumer
-import autocoin.binance.bot.exchange.SkippingTooFastProducer
+import com.autocoin.exchangegateway.api.skippingconsumer.SkippingTooFastProducer
 import com.autocoin.exchangegateway.spi.exchange.price.CurrencyPairWithPrice
+import com.autocoin.exchangegateway.spi.skippingconsumer.SkippingConsumer
 import mu.KLogging
 
 class SkippingTooFastProducerStrategyExecutor(
@@ -13,7 +13,7 @@ class SkippingTooFastProducerStrategyExecutor(
 
     override fun onPriceUpdated(currencyPairWithPrice: CurrencyPairWithPrice) {
         skippingConsumer.run(
-            runnable = { decorated.onPriceUpdated(currencyPairWithPrice) },
+            job = { decorated.onPriceUpdated(currencyPairWithPrice) },
             onSkipped = {
                 val logTag =
                     "user=${strategyExecution.userId}, currencyPair=${strategyExecution.currencyPair}, strategyType=${strategyExecution.strategyType}"

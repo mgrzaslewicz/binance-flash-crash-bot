@@ -7,7 +7,7 @@ import com.autocoin.exchangegateway.spi.exchange.currency.CurrencyPair
 import com.autocoin.exchangegateway.spi.exchange.order.CancelOrderParams
 import com.autocoin.exchangegateway.spi.exchange.order.Order
 import com.autocoin.exchangegateway.spi.exchange.order.gateway.OrderServiceGateway
-import com.autocoin.exchangegateway.spi.exchange.ratelimiter.RateLimiterProvider
+import com.autocoin.exchangegateway.spi.ratelimiter.RateLimiterProvider
 import mu.KLogging
 import java.math.BigDecimal
 

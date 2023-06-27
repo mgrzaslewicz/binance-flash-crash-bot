@@ -8,7 +8,7 @@ import autocoin.binance.bot.strategy.executor.*
 import autocoin.binance.bot.strategy.parameters.StrategyParametersDto
 import com.autocoin.exchangegateway.api.exchange.currency.CurrencyPair
 import com.autocoin.exchangegateway.api.exchange.order.gateway.preLogging
-import com.autocoin.exchangegateway.api.price.CurrencyPairWithPrice
+import com.autocoin.exchangegateway.api.exchange.price.CurrencyPairWithPrice
 import com.google.common.util.concurrent.MoreExecutors
 import mu.KLogging
 import org.assertj.core.api.Assertions.assertThat

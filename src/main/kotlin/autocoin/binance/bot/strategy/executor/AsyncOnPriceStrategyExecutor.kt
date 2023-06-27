@@ -12,7 +12,6 @@ class AsyncOnPriceStrategyExecutor(
             decorated.onPriceUpdated(currencyPairWithPrice)
         }
     }
-
 }
 
 fun StrategyExecutor.asyncOnPrice(executorService: ExecutorService): StrategyExecutor {

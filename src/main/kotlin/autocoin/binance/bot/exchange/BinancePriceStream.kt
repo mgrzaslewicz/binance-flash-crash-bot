@@ -4,7 +4,7 @@ import autocoin.binance.bot.eventbus.EventBus
 import autocoin.binance.bot.eventbus.EventType
 import com.autocoin.exchangegateway.api.exchange.currency.defaultCurrencyPairToXchange
 import com.autocoin.exchangegateway.api.exchange.currency.defaultXchangeCurrencyPairTransformer
-import com.autocoin.exchangegateway.api.price.CurrencyPairWithPrice
+import com.autocoin.exchangegateway.api.exchange.price.CurrencyPairWithPrice
 import com.autocoin.exchangegateway.spi.exchange.currency.CurrencyPair
 import com.binance.api.client.BinanceApiCallback
 import com.binance.api.client.BinanceApiWebSocketClient
