@@ -3,6 +3,7 @@ package autocoin.binance.bot.strategy
 import autocoin.binance.bot.strategy.action.CancelOrderAction
 import autocoin.binance.bot.strategy.action.PlaceBuyLimitOrderAction
 import autocoin.binance.bot.strategy.action.StrategyAction
+import autocoin.binance.bot.strategy.action.TryPlaceBuyLimitOrderAction
 import autocoin.binance.bot.strategy.execution.StrategyExecutionDto
 import autocoin.binance.bot.strategy.execution.repository.StrategyOrder
 import autocoin.binance.bot.strategy.parameters.WithStrategySpecificParameters
@@ -27,10 +28,9 @@ class PositionBuyOrdersForFlashCrashStrategy : Strategy {
         lackingOrders: Int
     ): List<StrategyAction> {
         return (1..lackingOrders).map {
-            PlaceBuyLimitOrderAction(
+            TryPlaceBuyLimitOrderAction(
                 price = buyPrice,
                 amount = baseCurrencyAmount,
-                shouldBreakActionChainOnFail = false,
             )
         }
     }
@@ -89,11 +89,10 @@ class PositionBuyOrdersForFlashCrashStrategy : Strategy {
         strategyOrderWithMaxPrice: StrategyOrder
     ): List<StrategyAction> {
         return listOf(
-            CancelOrderAction(strategyOrder = strategyOrderWithMaxPrice, shouldBreakActionChainOnFail = true),
+            CancelOrderAction(strategyOrder = strategyOrderWithMaxPrice),
             PlaceBuyLimitOrderAction(
                 price = buyPrice,
                 amount = baseCurrencyAmount,
-                shouldBreakActionChainOnFail = true,
             )
         )
     }

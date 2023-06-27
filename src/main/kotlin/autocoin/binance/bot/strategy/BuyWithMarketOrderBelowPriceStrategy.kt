@@ -2,7 +2,7 @@ package autocoin.binance.bot.strategy
 
 import autocoin.binance.bot.strategy.action.PlaceBuyMarketOrderAction
 import autocoin.binance.bot.strategy.action.StrategyAction
-import autocoin.binance.bot.strategy.action.WithdrawBaseCurrencyAction
+import autocoin.binance.bot.strategy.action.TryWithdrawBaseCurrencyAction
 import autocoin.binance.bot.strategy.action.decorator.async
 import autocoin.binance.bot.strategy.action.decorator.tryLock
 import autocoin.binance.bot.strategy.execution.StrategyExecutionDto
@@ -43,7 +43,6 @@ class BuyWithMarketOrderBelowPriceStrategy(private val executorService: Executor
                                 counterCurrencyAmount = strategySpecificParameters.counterCurrencyAmountLeft(
                                     strategyExecution.orders
                                 ),
-                                shouldBreakActionChainOnFail = true,
                             ),
                             getWithdrawAction(strategySpecificParameters, strategyExecution)
                         )
@@ -55,7 +54,6 @@ class BuyWithMarketOrderBelowPriceStrategy(private val executorService: Executor
                             PlaceBuyMarketOrderAction(
                                 currentPrice = price,
                                 counterCurrencyAmount = strategySpecificParameters.counterCurrencyAmountPerOrder(),
-                                shouldBreakActionChainOnFail = true,
                             ),
                             getWithdrawAction(strategySpecificParameters, strategyExecution)
                         )
@@ -73,10 +71,9 @@ class BuyWithMarketOrderBelowPriceStrategy(private val executorService: Executor
         strategySpecificParameters: Parameters,
         strategyExecution: StrategyExecutionDto
     ) = if (strategySpecificParameters.withdrawalAddress != null) {
-        WithdrawBaseCurrencyAction(
+        TryWithdrawBaseCurrencyAction(
             currency = strategyExecution.currencyPair.base,
             walletAddress = strategySpecificParameters.withdrawalAddress,
-            shouldBreakActionChainOnFail = false,
         )
             .tryLock(preventFromParallelWithdrawalsLock)
             .async(executorService)

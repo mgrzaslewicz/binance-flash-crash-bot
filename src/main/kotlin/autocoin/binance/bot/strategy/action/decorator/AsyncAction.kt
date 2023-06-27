@@ -22,7 +22,6 @@ class AsyncAction(
         return true
     }
 
-    override val shouldBreakActionChainOnFail = decorated.shouldBreakActionChainOnFail
 }
 
 fun StrategyAction.async(executorService: ExecutorService): StrategyAction {

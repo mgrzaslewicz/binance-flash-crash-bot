@@ -12,6 +12,7 @@ import com.autocoin.exchangegateway.spi.exchange.order.Order
 import com.autocoin.exchangegateway.spi.exchange.order.OrderSide
 import com.autocoin.exchangegateway.spi.exchange.order.gateway.OrderServiceGateway
 import com.autocoin.exchangegateway.spi.exchange.price.CurrencyPairWithPrice
+import com.autocoin.exchangegateway.spi.exchange.wallet.WithdrawResult
 import com.autocoin.exchangegateway.spi.exchange.wallet.gateway.WalletServiceGateway
 import mu.KLogging
 import java.math.BigDecimal
@@ -59,7 +60,7 @@ class BinanceStrategyExecutor(
                     val actions = strategy.getActions(currencyPairWithPrice.price, currentStrategyExecution)
                     val millis = measureTimeMillis {
                         actions.forEach { action ->
-                            if (!action.apply(this) && action.shouldBreakActionChainOnFail) {
+                            if (!action.apply(this)) {
                                 logger.info { "[$logTag] Skipping next action" }
                                 return@forEach
                             }
@@ -107,72 +108,51 @@ class BinanceStrategyExecutor(
     override fun placeBuyLimitOrder(
         buyPrice: BigDecimal,
         baseCurrencyAmount: BigDecimal,
-    ): Order? {
+    ): Order {
         val buyPriceAdjusted = buyPrice.setScale(counterCurrencyPriceScale, RoundingMode.HALF_EVEN)
         val baseCurrencyAmountAdjusted = baseCurrencyAmount.setScale(baseCurrencyAmountScale, RoundingMode.DOWN)
-        return try {
-            val buyOrder = orderServiceGateway.placeLimitBuyOrder(
-                exchangeName = exchangeName,
-                apiKey = currentStrategyExecution.apiKeySupplier,
-                currencyPair = currentStrategyExecution.currencyPair,
-                buyPrice = buyPriceAdjusted,
-                amount = baseCurrencyAmountAdjusted,
-            )
-            onBuyOrderPlaced(buyOrder)
-            buyOrder
-        } catch (e: Exception) {
-            logger.error(e) { "Placing buy order failed" }
-            null
-        }
+        val buyOrder = orderServiceGateway.placeLimitBuyOrder(
+            exchangeName = exchangeName,
+            apiKey = currentStrategyExecution.apiKeySupplier,
+            currencyPair = currentStrategyExecution.currencyPair,
+            buyPrice = buyPriceAdjusted,
+            amount = baseCurrencyAmountAdjusted,
+        )
+        onBuyOrderPlaced(buyOrder)
+        return buyOrder
     }
 
     override fun placeBuyMarketOrder(
         currentPrice: BigDecimal,
         counterCurrencyAmount: BigDecimal,
-    ): Order? {
+    ): Order {
         val currentPriceAdjusted = currentPrice.setScale(counterCurrencyPriceScale, RoundingMode.HALF_EVEN)
         val counterCurrencyAmountAdjusted = counterCurrencyAmount.setScale(counterCurrencyPriceScale, RoundingMode.DOWN)
-        return try {
-            val buyOrder = orderServiceGateway.placeMarketBuyOrderWithCounterCurrencyAmount(
-                exchangeName = exchangeName,
-                apiKey = currentStrategyExecution.apiKeySupplier,
-                currencyPair = currentStrategyExecution.currencyPair,
-                currentPrice = currentPriceAdjusted,
-                counterCurrencyAmount = counterCurrencyAmountAdjusted,
-            )
-            onBuyOrderPlaced(buyOrder)
-            return buyOrder
-        } catch (e: Exception) {
-            logger.error(e) { "Placing buy market order failed" }
-            null
-        }
+        val buyOrder = orderServiceGateway.placeMarketBuyOrderWithCounterCurrencyAmount(
+            exchangeName = exchangeName,
+            apiKey = currentStrategyExecution.apiKeySupplier,
+            currencyPair = currentStrategyExecution.currencyPair,
+            currentPrice = currentPriceAdjusted,
+            counterCurrencyAmount = counterCurrencyAmountAdjusted,
+        )
+        onBuyOrderPlaced(buyOrder)
+        return buyOrder
     }
 
-    override fun withdraw(currency: String, walletAddress: String): Boolean {
-        return try {
-            val balance = walletServiceGateway.getCurrencyBalance(
-                exchangeName = binance,
-                apiKey = currentStrategyExecution.apiKeySupplier,
-                currencyCode = currentStrategyExecution.currencyPair.base,
-            )
-            val amountAdjusted = balance.amountAvailable.setScale(baseCurrencyAmountScale, RoundingMode.DOWN)
-            try {
-                walletServiceGateway.withdraw(
-                    exchangeName = binance,
-                    apiKey = currentStrategyExecution.apiKeySupplier,
-                    currencyCode = currentStrategyExecution.currencyPair.base,
-                    amount = amountAdjusted,
-                    address = walletAddress,
-                )
-                true
-            } catch (e: Exception) {
-                logger.error(e) { "Withdraw failed" }
-                false
-            }
-        } catch (e: Exception) {
-            logger.error(e) { "Getting currency balance as withdraw step failed" }
-            false
-        }
+    override fun withdraw(currency: String, walletAddress: String): WithdrawResult {
+        val balance = walletServiceGateway.getCurrencyBalance(
+            exchangeName = binance,
+            apiKey = currentStrategyExecution.apiKeySupplier,
+            currencyCode = currentStrategyExecution.currencyPair.base,
+        )
+        val amountAdjusted = balance.amountAvailable.setScale(baseCurrencyAmountScale, RoundingMode.DOWN)
+        return walletServiceGateway.withdraw(
+            exchangeName = binance,
+            apiKey = currentStrategyExecution.apiKeySupplier,
+            currencyCode = currentStrategyExecution.currencyPair.base,
+            amount = amountAdjusted,
+            address = walletAddress,
+        )
     }
 
     private fun onBuyOrderCanceled(buyOrder: StrategyOrder) {

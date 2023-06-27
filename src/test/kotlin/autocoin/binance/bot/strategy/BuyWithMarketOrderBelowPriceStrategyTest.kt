@@ -8,6 +8,7 @@ import autocoin.binance.bot.strategy.execution.StrategyExecutionDto.Companion.to
 import autocoin.binance.bot.strategy.execution.repository.StrategyOrder
 import autocoin.binance.bot.strategy.executor.StrategyType
 import autocoin.binance.bot.strategy.parameters.StrategyParametersDto
+import com.autocoin.exchangegateway.spi.exchange.wallet.WithdrawResult
 import com.google.common.util.concurrent.MoreExecutors
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -79,9 +80,11 @@ class BuyWithMarketOrderBelowPriceStrategyTest {
         assertThat((actions[0] as PlaceBuyMarketOrderAction).counterCurrencyAmount).isEqualTo(50.toBigDecimal())
         var isCurrencyWithdrawn = false
         actions[1].apply(object : WithdrawActionExecutor {
-            override fun withdraw(currency: String, walletAddress: String): Boolean {
+            override fun withdraw(currency: String, walletAddress: String): WithdrawResult {
                 isCurrencyWithdrawn = true
-                return true
+                return object : WithdrawResult {
+                    override val transactionId = "does not matter"
+                }
             }
         })
         assertThat(isCurrencyWithdrawn).isTrue()

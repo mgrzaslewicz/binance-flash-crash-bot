@@ -3,6 +3,7 @@ package autocoin.binance.bot.strategy
 import autocoin.binance.bot.TestConfig
 import autocoin.binance.bot.strategy.action.CancelOrderAction
 import autocoin.binance.bot.strategy.action.PlaceBuyLimitOrderAction
+import autocoin.binance.bot.strategy.action.TryPlaceBuyLimitOrderAction
 import autocoin.binance.bot.strategy.execution.repository.StrategyOrder
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -32,7 +33,7 @@ class PositionBuyOrdersForFlashCrashStrategyTest {
             )
         // then
         assertThat(actions).hasSize(numberOfBuyLimitOrdersToKeep)
-        assertThat((actions[0] as PlaceBuyLimitOrderAction).price).isEqualTo(BigDecimal("3262.4414"))
+        assertThat((actions[0] as TryPlaceBuyLimitOrderAction).price).isEqualTo(BigDecimal("3262.4414"))
     }
 
     @Test
@@ -51,7 +52,7 @@ class PositionBuyOrdersForFlashCrashStrategyTest {
             )
         // then
         assertThat(actions).hasSize(1)
-        with(actions[0] as PlaceBuyLimitOrderAction) {
+        with(actions[0] as TryPlaceBuyLimitOrderAction) {
             assertThat(this.price).isEqualTo(BigDecimal("3262.4414"))
             assertThat(this.amount).isEqualTo(0.0076629729.toBigDecimal())
         }

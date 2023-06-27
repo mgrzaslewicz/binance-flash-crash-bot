@@ -61,7 +61,6 @@ class BinanceStrategyExecutorTest {
                         PlaceBuyLimitOrderAction(
                             price = price,
                             amount = 456.987654321.toBigDecimal(),
-                            shouldBreakActionChainOnFail = false,
                         )
                     )
                 }
@@ -124,7 +123,6 @@ class BinanceStrategyExecutorTest {
                         PlaceBuyLimitOrderAction(
                             price = price,
                             amount = 456.987654321.toBigDecimal(),
-                            shouldBreakActionChainOnFail = false,
                         ),
                         object : StrategyAction {
                             override fun apply(strategyExecutor: StrategyActionExecutor): Boolean {
@@ -133,8 +131,6 @@ class BinanceStrategyExecutorTest {
                                 blockForeverLock.lock()
                                 return true
                             }
-
-                            override val shouldBreakActionChainOnFail = true
                         },
                     )
                 }

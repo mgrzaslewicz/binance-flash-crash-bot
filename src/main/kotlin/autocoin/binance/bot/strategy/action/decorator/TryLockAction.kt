@@ -21,7 +21,6 @@ class TryLockAction(
         }
     }
 
-    override val shouldBreakActionChainOnFail = decorated.shouldBreakActionChainOnFail
 }
 
 fun StrategyAction.tryLock(lock: Lock): StrategyAction {
