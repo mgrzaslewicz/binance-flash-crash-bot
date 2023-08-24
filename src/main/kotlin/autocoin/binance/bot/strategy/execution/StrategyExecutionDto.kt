@@ -7,7 +7,7 @@ import autocoin.binance.bot.strategy.parameters.StrategyParametersDto
 import autocoin.binance.bot.strategy.parameters.WithStrategySpecificParameters
 import com.autocoin.exchangegateway.api.exchange.apikey.ApiKey
 import com.autocoin.exchangegateway.api.exchange.apikey.ApiKeySupplier
-import com.autocoin.exchangegateway.api.exchange.xchange.ExchangeNames
+import com.autocoin.exchangegateway.api.exchange.xchange.SupportedXchangeExchange.binance
 import com.fasterxml.jackson.annotation.JsonIgnore
 import java.time.ZonedDateTime
 import java.util.*
@@ -23,7 +23,7 @@ data class StrategyExecutionDto(
     companion object {
         fun StrategyParametersDto.toStrategyExecution(): StrategyExecutionDto {
             return StrategyExecutionDto(
-                exchangeName = ExchangeNames.binance.value,
+                exchangeName = binance.exchangeName,
                 parameters = this,
                 createTimeMillis = ZonedDateTime.now().toInstant().toEpochMilli(),
             )

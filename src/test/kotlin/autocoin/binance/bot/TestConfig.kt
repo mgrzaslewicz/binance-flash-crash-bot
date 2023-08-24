@@ -15,6 +15,7 @@ object TestConfig {
         currencyPair = currencyPair,
         price = price,
     )
+
     fun samplePositionBuyLimitOrdersSampleStrategyParameters(
         numberOfBuyLimitOrdersToKeep: Int = 4,
         counterCurrencyAmountLimitForBuying: BigDecimal = 100.0.toBigDecimal(),

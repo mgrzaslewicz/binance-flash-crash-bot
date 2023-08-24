@@ -1,7 +1,7 @@
 package autocoin.binance.bot.exchange.wallet
 
 import autocoin.binance.bot.exchange.apikey.ApiKeyId
-import com.autocoin.exchangegateway.spi.exchange.ExchangeName
+import com.autocoin.exchangegateway.spi.exchange.Exchange
 import com.autocoin.exchangegateway.spi.exchange.apikey.ApiKeySupplier
 import com.autocoin.exchangegateway.spi.exchange.currency.CurrencyBalance
 import com.autocoin.exchangegateway.spi.exchange.wallet.WithdrawResult
@@ -17,23 +17,23 @@ class RateLimitingWalletServiceGateway(
     companion object : KLogging()
 
     override fun getCurrencyBalance(
-        exchangeName: ExchangeName,
+        exchange: Exchange,
         apiKey: ApiKeySupplier<ApiKeyId>,
         currencyCode: String
     ): CurrencyBalance {
         val howManySecondsWaited = rateLimiterProvider(apiKey.id).acquire()
         if (howManySecondsWaited > 0.0) {
-            logger.info { "[${exchangeName.value}, apiKey.id=${apiKey.id}, currencyCode=$currencyCode] Waited ${howManySecondsWaited * 1000} ms to acquire getCurrencyBalance permit" }
+            logger.info { "[${exchange.exchangeName}, apiKey.id=${apiKey.id}, currencyCode=$currencyCode] Waited ${howManySecondsWaited * 1000} ms to acquire getCurrencyBalance permit" }
         }
         return decorated.getCurrencyBalance(
-            exchangeName = exchangeName,
+            exchange = exchange,
             apiKey = apiKey,
             currencyCode = currencyCode
         )
     }
 
     override fun withdraw(
-        exchangeName: ExchangeName,
+        exchange: Exchange,
         apiKey: ApiKeySupplier<ApiKeyId>,
         currencyCode: String,
         amount: BigDecimal,
@@ -41,10 +41,10 @@ class RateLimitingWalletServiceGateway(
     ): WithdrawResult {
         val howManySecondsWaited = rateLimiterProvider(apiKey.id).acquire()
         if (howManySecondsWaited > 0.0) {
-            logger.info { "[${exchangeName.value}, apiKey.id=${apiKey.id}, currencyCode=$currencyCode, amount=${amount.toPlainString()}, address=$address] Waited ${howManySecondsWaited * 1000} ms to acquire withdraw permit" }
+            logger.info { "[${exchange.exchangeName}, apiKey.id=${apiKey.id}, currencyCode=$currencyCode, amount=${amount.toPlainString()}, address=$address] Waited ${howManySecondsWaited * 1000} ms to acquire withdraw permit" }
         }
         return decorated.withdraw(
-            exchangeName = exchangeName,
+            exchange = exchange,
             apiKey = apiKey,
             currencyCode = currencyCode,
             amount = amount,

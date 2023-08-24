@@ -34,11 +34,11 @@ import com.autocoin.exchangegateway.api.exchange.order.gateway.preLogging
 import com.autocoin.exchangegateway.api.exchange.order.service.authorized.XchangeAuthorizedOrderServiceFactory
 import com.autocoin.exchangegateway.api.exchange.wallet.service.authorized.XchangeAuthorizedWalletServiceFactory
 import com.autocoin.exchangegateway.api.exchange.xchange.*
-import com.autocoin.exchangegateway.spi.exchange.ExchangeName
+import com.autocoin.exchangegateway.spi.exchange.Exchange
 import com.autocoin.exchangegateway.spi.exchange.apikey.ApiKeySupplier
-import com.autocoin.exchangegateway.spi.exchange.order.gateway.OrderServiceGatewayUsingAuthorizedOrderService
+import com.autocoin.exchangegateway.spi.exchange.order.gateway.AuthorizingOrderServiceGateway
+import com.autocoin.exchangegateway.spi.exchange.wallet.gateway.AuthorizingWalletServiceGateway
 import com.autocoin.exchangegateway.spi.exchange.wallet.gateway.WalletServiceGateway
-import com.autocoin.exchangegateway.spi.exchange.wallet.gateway.WalletServiceGatewayUsingAuthorizedWalletService
 import com.binance.api.client.BinanceApiClientFactory
 import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.KeyDeserializer
@@ -111,7 +111,7 @@ class AppContext(private val appConfig: AppConfig) {
     val xchangeProvider = CachingXchangeProvider(
         apiKeyToCacheKey = object : ApiKeyToCacheKeyProvider<ApiKeyId, String> {
             override operator fun invoke(
-                exchangeName: ExchangeName,
+                exchange: Exchange,
                 apiKeySupplier: ApiKeySupplier<ApiKeyId>,
             ): String {
                 return apiKeySupplier.id.keyHash
@@ -130,7 +130,7 @@ class AppContext(private val appConfig: AppConfig) {
     val perApiKeyRateLimiterProvider = PerApiKeyRateLimiterProvider()
 
     val walletServiceGateway: WalletServiceGateway<ApiKeyId> = if (appConfig.shouldMakeRealOrders) {
-        WalletServiceGatewayUsingAuthorizedWalletService(
+        AuthorizingWalletServiceGateway(
             authorizedWalletServiceFactory = authorizedWalletServiceFactory,
         )
             .preLogging()
@@ -170,7 +170,7 @@ class AppContext(private val appConfig: AppConfig) {
 
     val orderServiceGateway = if (appConfig.shouldMakeRealOrders) {
         logger.info { "Will operate on real orders" }
-        OrderServiceGatewayUsingAuthorizedOrderService(
+        AuthorizingOrderServiceGateway(
             authorizedOrderServiceFactory = authorizedOrderServiceFactory,
         )
             .preLogging()

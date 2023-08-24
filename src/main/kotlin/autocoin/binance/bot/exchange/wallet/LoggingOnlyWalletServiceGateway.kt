@@ -2,7 +2,7 @@ package autocoin.binance.bot.exchange.wallet
 
 import autocoin.binance.bot.exchange.apikey.ApiKeyId
 import com.autocoin.exchangegateway.api.exchange.currency.CurrencyBalance
-import com.autocoin.exchangegateway.spi.exchange.ExchangeName
+import com.autocoin.exchangegateway.spi.exchange.Exchange
 import com.autocoin.exchangegateway.spi.exchange.apikey.ApiKeySupplier
 import com.autocoin.exchangegateway.spi.exchange.wallet.WithdrawResult
 import com.autocoin.exchangegateway.spi.exchange.wallet.gateway.WalletServiceGateway
@@ -15,11 +15,11 @@ class LoggingOnlyWalletServiceGateway : WalletServiceGateway<ApiKeyId> {
     companion object : KLogging()
 
     override fun getCurrencyBalance(
-        exchangeName: ExchangeName,
+        exchange: Exchange,
         apiKey: ApiKeySupplier<ApiKeyId>,
         currencyCode: String,
     ): CurrencyBalance {
-        logger.info { "[$exchangeName] Would get currencyBalance for currency=$currencyCode, key.id=${apiKey.id}" }
+        logger.info { "[${exchange.exchangeName}] Would get currencyBalance for currency=$currencyCode, key.id=${apiKey.id}" }
         return CurrencyBalance(
             currencyCode = currencyCode,
             amountAvailable = BigDecimal.ZERO,
@@ -29,20 +29,20 @@ class LoggingOnlyWalletServiceGateway : WalletServiceGateway<ApiKeyId> {
     }
 
     override fun getCurrencyBalances(
-        exchangeName: ExchangeName,
+        exchange: Exchange,
         apiKey: ApiKeySupplier<ApiKeyId>,
     ): List<SpiCurrencyBalance> {
         TODO("Not yet implemented")
     }
 
     override fun withdraw(
-        exchangeName: ExchangeName,
+        exchange: Exchange,
         apiKey: ApiKeySupplier<ApiKeyId>,
         currencyCode: String,
         amount: BigDecimal,
         address: String
     ): WithdrawResult {
-        logger.info { "[$exchangeName] Would withdraw for currency=$currencyCode, key.id=${apiKey.id}, amount=${amount.toPlainString()}, address=$address" }
+        logger.info { "[${exchange.exchangeName}] Would withdraw for currency=$currencyCode, key.id=${apiKey.id}, amount=${amount.toPlainString()}, address=$address" }
         return object : WithdrawResult {
             override val transactionId = UUID.randomUUID().toString()
         }

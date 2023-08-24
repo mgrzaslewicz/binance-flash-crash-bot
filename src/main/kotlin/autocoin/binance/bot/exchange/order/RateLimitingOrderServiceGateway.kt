@@ -1,7 +1,7 @@
 package autocoin.binance.bot.exchange.order
 
 import autocoin.binance.bot.exchange.apikey.ApiKeyId
-import com.autocoin.exchangegateway.spi.exchange.ExchangeName
+import com.autocoin.exchangegateway.spi.exchange.Exchange
 import com.autocoin.exchangegateway.spi.exchange.apikey.ApiKeySupplier
 import com.autocoin.exchangegateway.spi.exchange.currency.CurrencyPair
 import com.autocoin.exchangegateway.spi.exchange.order.CancelOrderParams
@@ -18,23 +18,23 @@ class RateLimitingOrderServiceGateway(
     companion object : KLogging()
 
     override fun cancelOrder(
-        exchangeName: ExchangeName,
+        exchange: Exchange,
         apiKey: ApiKeySupplier<ApiKeyId>,
         cancelOrderParams: CancelOrderParams,
     ): Boolean {
         val howManySecondsWaited = rateLimiterProvider(apiKey.id).acquire()
         if (howManySecondsWaited > 0.0) {
-            logger.info { "[${exchangeName.value}, apiKey.id=${apiKey.id}] Waited ${howManySecondsWaited * 1000} ms to acquire cancelOrder permit" }
+            logger.info { "[${exchange.exchangeName}, apiKey.id=${apiKey.id}] Waited ${howManySecondsWaited * 1000} ms to acquire cancelOrder permit" }
         }
         return decorated.cancelOrder(
-            exchangeName = exchangeName,
+            exchange = exchange,
             apiKey = apiKey,
             cancelOrderParams = cancelOrderParams
         )
     }
 
     override fun placeLimitBuyOrder(
-        exchangeName: ExchangeName,
+        exchange: Exchange,
         apiKey: ApiKeySupplier<ApiKeyId>,
         currencyPair: CurrencyPair,
         buyPrice: BigDecimal,
@@ -42,10 +42,10 @@ class RateLimitingOrderServiceGateway(
     ): Order {
         val howManySecondsWaited = rateLimiterProvider(apiKey.id).acquire()
         if (howManySecondsWaited > 0.0) {
-            logger.info { "[${exchangeName.value}, apiKey.id=${apiKey.id}] Waited ${howManySecondsWaited * 1000} ms to acquire placeLimitBuyOrder permit" }
+            logger.info { "[${exchange.exchangeName}, apiKey.id=${apiKey.id}] Waited ${howManySecondsWaited * 1000} ms to acquire placeLimitBuyOrder permit" }
         }
         return decorated.placeLimitBuyOrder(
-            exchangeName = exchangeName,
+            exchange = exchange,
             apiKey = apiKey,
             currencyPair = currencyPair,
             buyPrice = buyPrice,

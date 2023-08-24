@@ -42,7 +42,8 @@ class BinancePriceStream(
     private var websocketReconnectCount = AtomicInteger()
 
     private fun CurrencyPair.toBinanceSymbol() = BinanceAdapters.toSymbol(currencyPairToXchange.apply(this)).lowercase()
-    private fun String.toCurrencyPair() = BinanceAdapters.adaptSymbol(this).let { xchangeCurrencyPairTransformer.apply(it) }
+    private fun String.toCurrencyPair() =
+        BinanceAdapters.adaptSymbol(this).let { xchangeCurrencyPairTransformer.apply(it) }
 
     private val apiCallback = object : BinanceApiCallback<AggTradeEvent> {
 

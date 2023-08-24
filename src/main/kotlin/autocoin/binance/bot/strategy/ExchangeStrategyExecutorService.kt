@@ -19,7 +19,8 @@ class ExchangeStrategyExecutorService(
     override fun getRunningStrategies() = runningStrategies.flatMap { it.value }.map { it.strategyExecution }
 
     override fun addStrategyExecutor(strategyParameters: StrategyParametersDto) {
-        val strategiesRunningWithCurrencyPair = runningStrategies.getOrPut(strategyParameters.currencyPair) { ArrayList() }
+        val strategiesRunningWithCurrencyPair =
+            runningStrategies.getOrPut(strategyParameters.currencyPair) { ArrayList() }
         if (strategiesRunningWithCurrencyPair.any { strategyParameters.matchesStrategyExecution(it.strategyExecution) }) {
             throw RuntimeException("User ${strategyParameters.userId} already has strategy running on currency pair ${strategyParameters.currencyPair}")
         }
@@ -53,7 +54,8 @@ class ExchangeStrategyExecutorService(
 
         val strategyExecutionsToResume =
             strategiesToResume.map { execution ->
-                val matchingParameters = strategyParametersList.find { parameters -> parameters.matchesStrategyExecution(execution) }!!
+                val matchingParameters =
+                    strategyParametersList.find { parameters -> parameters.matchesStrategyExecution(execution) }!!
                 matchingParameters.toResumedStrategyExecution(strategyExecution = execution)
             }
         strategyExecutionsToResume.forEach {

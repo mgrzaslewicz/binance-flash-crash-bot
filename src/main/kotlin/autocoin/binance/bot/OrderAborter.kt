@@ -8,7 +8,7 @@ import com.autocoin.exchangegateway.api.exchange.apikey.ApiKey
 import com.autocoin.exchangegateway.api.exchange.apikey.ApiKeySupplier
 import com.autocoin.exchangegateway.api.exchange.currency.CurrencyPair
 import com.autocoin.exchangegateway.api.exchange.order.CancelOrderParams
-import com.autocoin.exchangegateway.api.exchange.xchange.ExchangeNames.Companion.binance
+import com.autocoin.exchangegateway.api.exchange.xchange.SupportedXchangeExchange.binance
 import mu.KotlinLogging
 import java.lang.System.getenv
 import kotlin.system.measureTimeMillis
@@ -45,7 +45,7 @@ fun main(args: Array<String>) {
             )
         with(appContext) {
             val openOrders = orderServiceGateway.getOpenOrders(
-                exchangeName = binance,
+                exchange = binance,
                 apiKey = apiKey,
                 currencyPair = currencyPair,
             )
@@ -53,10 +53,10 @@ fun main(args: Array<String>) {
             openOrders.forEach {
                 logger.info { "Cancelling order ${it.exchangeOrderId}" }
                 orderServiceGateway.cancelOrder(
-                    exchangeName = binance,
+                    exchange = binance,
                     apiKey = apiKey,
                     cancelOrderParams = CancelOrderParams(
-                        exchangeName = it.exchangeName,
+                        exchange = it.exchange,
                         orderId = it.exchangeOrderId,
                         orderSide = it.side,
                         currencyPair = it.currencyPair,

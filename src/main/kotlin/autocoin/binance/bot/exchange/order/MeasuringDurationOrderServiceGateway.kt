@@ -1,7 +1,7 @@
 package autocoin.binance.bot.exchange.order
 
 import autocoin.binance.bot.exchange.apikey.ApiKeyId
-import com.autocoin.exchangegateway.spi.exchange.ExchangeName
+import com.autocoin.exchangegateway.spi.exchange.Exchange
 import com.autocoin.exchangegateway.spi.exchange.apikey.ApiKeySupplier
 import com.autocoin.exchangegateway.spi.exchange.currency.CurrencyPair
 import com.autocoin.exchangegateway.spi.exchange.order.CancelOrderParams
@@ -19,19 +19,19 @@ fun OrderServiceGateway<ApiKeyId>.measuringDuration(logPrefix: String = "") = Me
     decorated = this,
     onCancelOrderMeasuredHandlers = listOf(object : OnCancelOrderMeasured<ApiKeyId> {
         override fun invoke(
-            exchangeName: ExchangeName,
+            exchange: Exchange,
             apiKey: ApiKeySupplier<ApiKeyId>,
             cancelOrderParams: CancelOrderParams,
             result: Boolean,
             duration: Duration,
         ) {
-            logger.info { "[$logPrefix${exchangeName.value}, apiKey.id=${apiKey.id}] Canceled order took ${duration.toMillis()} ms" }
+            logger.info { "[$logPrefix${exchange.exchangeName}, apiKey.id=${apiKey.id}] Canceled order took ${duration.toMillis()} ms" }
         }
     }),
     onPlaceLimitBuyOrderMeasured = listOf(
         object : OnPlaceLimitBuyOrderMeasured<ApiKeyId> {
             override operator fun invoke(
-                exchangeName: ExchangeName,
+                exchange: Exchange,
                 apiKey: ApiKeySupplier<ApiKeyId>,
                 currencyPair: CurrencyPair,
                 buyPrice: BigDecimal,
@@ -39,7 +39,7 @@ fun OrderServiceGateway<ApiKeyId>.measuringDuration(logPrefix: String = "") = Me
                 result: Order,
                 duration: Duration,
             ) {
-                logger.info { "[$logPrefix${exchangeName.value}, apiKey.id=${apiKey.id}] Placed limit buy order $result. Took ${duration.toMillis()} ms" }
+                logger.info { "[$logPrefix${exchange.exchangeName}, apiKey.id=${apiKey.id}] Placed limit buy order $result. Took ${duration.toMillis()} ms" }
             }
         }
     )

@@ -20,7 +20,8 @@ class DefaultEventBus(private val executorService: ExecutorService = Executors.n
     private val eventListeners = ConcurrentHashMap<EventType<*>, MutableList<(payload: Any) -> Unit>>()
 
     override fun <T> register(eventType: EventType<T>, eventHandler: (payload: T) -> Unit) {
-        val listeners: MutableList<(payload: Any) -> Unit> = eventListeners.computeIfAbsent(eventType as EventType<*>) { ArrayList() }
+        val listeners: MutableList<(payload: Any) -> Unit> =
+            eventListeners.computeIfAbsent(eventType as EventType<*>) { ArrayList() }
         @Suppress("UNCHECKED_CAST")
         listeners += eventHandler as (event: Any) -> Unit
     }

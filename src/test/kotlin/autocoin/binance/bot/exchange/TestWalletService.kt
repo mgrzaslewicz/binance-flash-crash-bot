@@ -1,7 +1,7 @@
 package autocoin.binance.bot.exchange
 
 import autocoin.binance.bot.exchange.apikey.ApiKeyId
-import com.autocoin.exchangegateway.spi.exchange.ExchangeName
+import com.autocoin.exchangegateway.spi.exchange.Exchange
 import com.autocoin.exchangegateway.spi.exchange.apikey.ApiKeySupplier
 import com.autocoin.exchangegateway.spi.exchange.currency.CurrencyBalance
 import com.autocoin.exchangegateway.spi.exchange.wallet.WithdrawResult
@@ -20,7 +20,7 @@ class TestWalletService(val currencyAmountAvailable: Map<String, BigDecimal>) : 
     val withdrawals = mutableListOf<Withdrawal>()
 
     override fun getCurrencyBalance(
-        exchangeName: ExchangeName,
+        exchange: Exchange,
         apiKey: ApiKeySupplier<ApiKeyId>,
         currencyCode: String,
     ) = object : CurrencyBalance {
@@ -31,14 +31,14 @@ class TestWalletService(val currencyAmountAvailable: Map<String, BigDecimal>) : 
     }
 
     override fun getCurrencyBalances(
-        exchangeName: ExchangeName,
+        exchange: Exchange,
         apiKey: ApiKeySupplier<ApiKeyId>
     ): List<CurrencyBalance> {
         TODO("Not yet implemented")
     }
 
     override fun withdraw(
-        exchangeName: ExchangeName,
+        exchange: Exchange,
         apiKey: ApiKeySupplier<ApiKeyId>,
         currencyCode: String,
         amount: BigDecimal,

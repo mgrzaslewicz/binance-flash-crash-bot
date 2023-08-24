@@ -2,7 +2,7 @@ package autocoin.binance.bot.exchange.order
 
 import autocoin.binance.bot.exchange.apikey.ApiKeyId
 import com.autocoin.exchangegateway.api.exchange.order.Order
-import com.autocoin.exchangegateway.spi.exchange.ExchangeName
+import com.autocoin.exchangegateway.spi.exchange.Exchange
 import com.autocoin.exchangegateway.spi.exchange.apikey.ApiKeySupplier
 import com.autocoin.exchangegateway.spi.exchange.order.OrderSide
 import com.autocoin.exchangegateway.spi.exchange.order.OrderStatus
@@ -20,7 +20,7 @@ class MockingLimitBuyOrderServiceGateway(
     private companion object : KLogging()
 
     override fun placeLimitBuyOrder(
-        exchangeName: ExchangeName,
+        exchange: Exchange,
         apiKey: ApiKeySupplier<ApiKeyId>,
         currencyPair: SpiCurrencyPair,
         buyPrice: BigDecimal,
@@ -28,7 +28,7 @@ class MockingLimitBuyOrderServiceGateway(
     ): Order {
         logger.info { "Creating mock placeLimitBuyOrder response" }
         return Order(
-            exchangeName = exchangeName,
+            exchange = exchange,
             exchangeOrderId = UUID.randomUUID().toString(),
             side = OrderSide.BID_BUY,
             orderedAmount = amount,

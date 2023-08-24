@@ -91,7 +91,7 @@ class AddingBinanceMarketOrderWithCounterCurrencyAmountAuthorizedOrderService<Ap
             logger.error(e) { "Failed to calculate order price for order $order. Nothing to worry about, default value=0 was used in created order" }
         }
         return Order(
-            exchangeName = exchangeName,
+            exchange = exchange,
             exchangeOrderId = order.orderId.toString(),
             side = OrderSide.BID_BUY,
             orderedAmount = order.origQty,
@@ -137,7 +137,7 @@ class AddingTestBinanceMarketOrderWithCounterCurrencyAmountAuthorizedOrderServic
             /*icebergQty = */null
         )
         return Order(
-            exchangeName = exchangeName,
+            exchange = exchange,
             exchangeOrderId = "test-" + UUID.randomUUID().toString(),
             side = OrderSide.BID_BUY,
             orderedAmount = counterCurrencyAmount.divide(currentPrice, mathContext),

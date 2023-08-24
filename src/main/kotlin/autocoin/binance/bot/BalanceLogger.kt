@@ -6,7 +6,7 @@ import autocoin.binance.bot.exchange.apikey.ApiKeyId
 import autocoin.binance.bot.exchange.apikey.md5
 import com.autocoin.exchangegateway.api.exchange.apikey.ApiKey
 import com.autocoin.exchangegateway.api.exchange.apikey.ApiKeySupplier
-import com.autocoin.exchangegateway.api.exchange.xchange.ExchangeNames.Companion.binance
+import com.autocoin.exchangegateway.api.exchange.xchange.SupportedXchangeExchange.binance
 import mu.KotlinLogging
 import java.lang.System.getenv
 import kotlin.system.measureTimeMillis
@@ -37,7 +37,7 @@ fun main(args: Array<String>) {
             )
         with(appContext) {
             val balance = walletServiceGateway.getCurrencyBalance(
-                exchangeName = binance,
+                exchange = binance,
                 apiKey = apiKey,
                 currencyCode = currency,
             )

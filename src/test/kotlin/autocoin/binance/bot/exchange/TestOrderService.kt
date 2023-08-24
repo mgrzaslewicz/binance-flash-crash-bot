@@ -2,8 +2,8 @@ package autocoin.binance.bot.exchange
 
 import autocoin.binance.bot.exchange.apikey.ApiKeyId
 import com.autocoin.exchangegateway.api.exchange.order.Order
-import com.autocoin.exchangegateway.api.exchange.xchange.ExchangeNames.Companion.binance
-import com.autocoin.exchangegateway.spi.exchange.ExchangeName
+import com.autocoin.exchangegateway.api.exchange.xchange.SupportedXchangeExchange.binance
+import com.autocoin.exchangegateway.spi.exchange.Exchange
 import com.autocoin.exchangegateway.spi.exchange.apikey.ApiKeySupplier
 import com.autocoin.exchangegateway.spi.exchange.currency.CurrencyPair
 import com.autocoin.exchangegateway.spi.exchange.order.CancelOrderParams
@@ -25,7 +25,7 @@ class TestOrderService(private val clock: Clock = Clock.systemDefaultZone()) : O
 
 
     override fun cancelOrder(
-        exchangeName: ExchangeName,
+        exchange: Exchange,
         apiKey: ApiKeySupplier<ApiKeyId>,
         cancelOrderParams: CancelOrderParams,
     ): Boolean {
@@ -37,7 +37,7 @@ class TestOrderService(private val clock: Clock = Clock.systemDefaultZone()) : O
 
 
     override fun placeLimitBuyOrder(
-        exchangeName: ExchangeName,
+        exchange: Exchange,
         apiKey: ApiKeySupplier<ApiKeyId>,
         currencyPair: SpiCurrencyPair,
         buyPrice: BigDecimal,
@@ -48,7 +48,7 @@ class TestOrderService(private val clock: Clock = Clock.systemDefaultZone()) : O
         } else {
             logger.info { "Placing buy limit order with amount=$amount ${currencyPair.base} and buyPrice=$buyPrice ${currencyPair.counter}" }
             return Order(
-                exchangeName = binance,
+                exchange = binance,
                 exchangeOrderId = UUID.randomUUID().toString(),
                 side = OrderSide.BID_BUY,
                 orderedAmount = amount,
@@ -65,14 +65,14 @@ class TestOrderService(private val clock: Clock = Clock.systemDefaultZone()) : O
     }
 
     override fun getOpenOrders(
-        exchangeName: ExchangeName,
+        exchange: Exchange,
         apiKey: ApiKeySupplier<ApiKeyId>,
     ): List<SpiOrder> {
         return emptyList()
     }
 
     override fun getOpenOrders(
-        exchangeName: ExchangeName,
+        exchange: Exchange,
         apiKey: ApiKeySupplier<ApiKeyId>,
         currencyPair: CurrencyPair,
     ): List<SpiOrder> {
@@ -80,7 +80,7 @@ class TestOrderService(private val clock: Clock = Clock.systemDefaultZone()) : O
     }
 
     override fun placeLimitSellOrder(
-        exchangeName: ExchangeName,
+        exchange: Exchange,
         apiKey: ApiKeySupplier<ApiKeyId>,
         currencyPair: CurrencyPair,
         sellPrice: BigDecimal,
@@ -90,7 +90,7 @@ class TestOrderService(private val clock: Clock = Clock.systemDefaultZone()) : O
     }
 
     override fun placeMarketBuyOrderWithBaseCurrencyAmount(
-        exchangeName: ExchangeName,
+        exchange: Exchange,
         apiKey: ApiKeySupplier<ApiKeyId>,
         currencyPair: CurrencyPair,
         baseCurrencyAmount: BigDecimal,
@@ -100,7 +100,7 @@ class TestOrderService(private val clock: Clock = Clock.systemDefaultZone()) : O
     }
 
     override fun placeMarketBuyOrderWithCounterCurrencyAmount(
-        exchangeName: ExchangeName,
+        exchange: Exchange,
         apiKey: ApiKeySupplier<ApiKeyId>,
         currencyPair: CurrencyPair,
         counterCurrencyAmount: BigDecimal,
@@ -110,7 +110,7 @@ class TestOrderService(private val clock: Clock = Clock.systemDefaultZone()) : O
     }
 
     override fun placeMarketSellOrderWithBaseCurrencyAmount(
-        exchangeName: ExchangeName,
+        exchange: Exchange,
         apiKey: ApiKeySupplier<ApiKeyId>,
         currencyPair: CurrencyPair,
         baseCurrencyAmount: BigDecimal,
@@ -120,7 +120,7 @@ class TestOrderService(private val clock: Clock = Clock.systemDefaultZone()) : O
     }
 
     override fun placeMarketSellOrderWithCounterCurrencyAmount(
-        exchangeName: ExchangeName,
+        exchange: Exchange,
         apiKey: ApiKeySupplier<ApiKeyId>,
         currencyPair: CurrencyPair,
         counterCurrencyAmount: BigDecimal,

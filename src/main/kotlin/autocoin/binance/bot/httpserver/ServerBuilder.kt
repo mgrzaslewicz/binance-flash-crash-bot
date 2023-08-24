@@ -36,7 +36,10 @@ class ServerBuilder(
             with(it.responseHeaders) {
                 put(tryFromString("Access-Control-Allow-Origin"), "*")
                 put(tryFromString("Access-Control-Allow-Credentials"), "true")
-                put(tryFromString("Access-Control-Allow-Headers"), "Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control")
+                put(
+                    tryFromString("Access-Control-Allow-Headers"),
+                    "Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control"
+                )
                 put(tryFromString("Access-Control-Allow-Methods"), "GET, HEAD, POST, PUT, DELETE, OPTIONS")
                 put(tryFromString("Access-Control-Max-Age"), "3600")
             }

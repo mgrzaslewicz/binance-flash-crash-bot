@@ -3,7 +3,8 @@ package autocoin.binance.bot.strategy.execution.repository
 import mu.KLogging
 import kotlin.io.path.absolutePathString
 
-class LoggingFileBackedMutableSet<T>(private val decorated: FileBackedMutableSet<T>, private val logPrefix: String) : FileBackedMutableSet<T> by decorated {
+class LoggingFileBackedMutableSet<T>(private val decorated: FileBackedMutableSet<T>, private val logPrefix: String) :
+    FileBackedMutableSet<T> by decorated {
     private companion object : KLogging()
 
     override fun save(): FileOperationResult {
@@ -37,4 +38,5 @@ class LoggingFileBackedMutableSet<T>(private val decorated: FileBackedMutableSet
     }
 }
 
-fun <T> FileBackedMutableSet<T>.logging(logPrefix: String) = LoggingFileBackedMutableSet(decorated = this, logPrefix = logPrefix)
+fun <T> FileBackedMutableSet<T>.logging(logPrefix: String) =
+    LoggingFileBackedMutableSet(decorated = this, logPrefix = logPrefix)

@@ -6,7 +6,7 @@ import autocoin.binance.bot.strategy.PositionBuyOrdersForFlashCrashStrategy
 import autocoin.binance.bot.strategy.execution.StrategyExecutionDto
 import autocoin.binance.bot.strategy.executor.StrategyType
 import autocoin.binance.bot.strategy.parameters.StrategyParametersDto
-import com.autocoin.exchangegateway.api.exchange.xchange.ExchangeNames.Companion.binance
+import com.autocoin.exchangegateway.api.exchange.xchange.SupportedXchangeExchange.binance
 import com.autocoin.exchangegateway.spi.exchange.order.OrderStatus
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -36,7 +36,7 @@ class StrategyExecutionMutableSetTest {
             )
         ),
         id = "sample-execution-id-1",
-        exchangeName = binance.value,
+        exchangeName = binance.exchangeName,
         createTimeMillis = 3,
 
         orders = listOf(

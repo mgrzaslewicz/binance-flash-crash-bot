@@ -1,7 +1,7 @@
 package autocoin.binance.bot.exchange.wallet
 
 import autocoin.binance.bot.exchange.apikey.ApiKeyId
-import com.autocoin.exchangegateway.spi.exchange.ExchangeName
+import com.autocoin.exchangegateway.spi.exchange.Exchange
 import com.autocoin.exchangegateway.spi.exchange.apikey.ApiKeySupplier
 import com.autocoin.exchangegateway.spi.exchange.wallet.gateway.WalletServiceGateway
 import com.autocoin.exchangegateway.spi.exchange.wallet.gateway.measurement.MeasuringDurationWalletServiceGateway
@@ -18,26 +18,26 @@ fun WalletServiceGateway<ApiKeyId>.measuringDuration(logPrefix: String = "") = M
     onGetCurrencyBalanceMeasuredHandlers = listOf(
         object : OnGetCurrencyBalanceMeasured<ApiKeyId> {
             override fun invoke(
-                exchangeName: ExchangeName,
+                exchange: Exchange,
                 apiKey: ApiKeySupplier<ApiKeyId>,
                 currencyCode: String,
                 duration: Duration,
             ) {
-                logger.info { "[$logPrefix${exchangeName.value}, apiKey.id=${apiKey.id}] Get currency balance took ${duration.toMillis()} ms" }
+                logger.info { "[$logPrefix${exchange.exchangeName}, apiKey.id=${apiKey.id}] Get currency balance took ${duration.toMillis()} ms" }
             }
         }
     ),
     onWithdrawMeasuredHandlers = listOf(
         object : OnWithdrawMeasured<ApiKeyId> {
             override fun invoke(
-                exchangeName: ExchangeName,
+                exchange: Exchange,
                 apiKey: ApiKeySupplier<ApiKeyId>,
                 currencyCode: String,
                 amount: BigDecimal,
                 address: String,
                 duration: Duration
             ) {
-                logger.info { "[$logPrefix${exchangeName.value}, apiKey.id=${apiKey.id}, currency=$currencyCode, amount=${amount.toPlainString()}, address=$address] Withdraw took ${duration.toMillis()} ms" }
+                logger.info { "[$logPrefix${exchange.exchangeName}, apiKey.id=${apiKey.id}, currency=$currencyCode, amount=${amount.toPlainString()}, address=$address] Withdraw took ${duration.toMillis()} ms" }
             }
 
         }

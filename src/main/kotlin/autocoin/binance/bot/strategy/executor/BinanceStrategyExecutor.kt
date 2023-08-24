@@ -6,8 +6,8 @@ import autocoin.binance.bot.strategy.execution.StrategyExecutionDto
 import autocoin.binance.bot.strategy.execution.repository.FileBackedMutableSet
 import autocoin.binance.bot.strategy.execution.repository.StrategyOrder
 import com.autocoin.exchangegateway.api.exchange.order.CancelOrderParams
-import com.autocoin.exchangegateway.api.exchange.xchange.ExchangeNames.Companion.binance
-import com.autocoin.exchangegateway.spi.exchange.ExchangeName
+import com.autocoin.exchangegateway.api.exchange.xchange.SupportedXchangeExchange.binance
+import com.autocoin.exchangegateway.spi.exchange.Exchange
 import com.autocoin.exchangegateway.spi.exchange.order.Order
 import com.autocoin.exchangegateway.spi.exchange.order.OrderSide
 import com.autocoin.exchangegateway.spi.exchange.order.gateway.OrderServiceGateway
@@ -29,7 +29,7 @@ class BinanceStrategyExecutor(
     private val strategy: Strategy,
     private val baseCurrencyAmountScale: Int = 5,
     private val counterCurrencyPriceScale: Int = 2,
-    private val exchangeName: ExchangeName = binance,
+    private val exchange: Exchange = binance,
 ) : StrategyExecutor {
     private companion object : KLogging()
 
@@ -61,15 +61,15 @@ class BinanceStrategyExecutor(
      */
     fun warmup() {
         logger.info { "Warming up strategy of user ${currentStrategyExecution.apiKeySupplier.id}" }
-        orderServiceGateway.getOpenOrders(exchangeName = exchangeName, apiKey = currentStrategyExecution.apiKeySupplier)
+        orderServiceGateway.getOpenOrders(exchange = exchange, apiKey = currentStrategyExecution.apiKeySupplier)
     }
 
     override fun cancelOrder(order: StrategyOrder): Boolean {
         val success = orderServiceGateway.cancelOrder(
-            exchangeName = exchangeName,
+            exchange = exchange,
             apiKey = currentStrategyExecution.apiKeySupplier,
             cancelOrderParams = CancelOrderParams(
-                exchangeName = exchangeName,
+                exchange = exchange,
                 orderId = order.exchangeOrderId,
                 orderSide = OrderSide.BID_BUY,
                 currencyPair = currentStrategyExecution.currencyPair,
@@ -89,7 +89,7 @@ class BinanceStrategyExecutor(
         val buyPriceAdjusted = buyPrice.setScale(counterCurrencyPriceScale, RoundingMode.HALF_EVEN)
         val baseCurrencyAmountAdjusted = baseCurrencyAmount.setScale(baseCurrencyAmountScale, RoundingMode.DOWN)
         val buyOrder = orderServiceGateway.placeLimitBuyOrder(
-            exchangeName = exchangeName,
+            exchange = exchange,
             apiKey = currentStrategyExecution.apiKeySupplier,
             currencyPair = currentStrategyExecution.currencyPair,
             buyPrice = buyPriceAdjusted,
@@ -106,7 +106,7 @@ class BinanceStrategyExecutor(
         val currentPriceAdjusted = currentPrice.setScale(counterCurrencyPriceScale, RoundingMode.HALF_EVEN)
         val counterCurrencyAmountAdjusted = counterCurrencyAmount.setScale(counterCurrencyPriceScale, RoundingMode.DOWN)
         val buyOrder = orderServiceGateway.placeMarketBuyOrderWithCounterCurrencyAmount(
-            exchangeName = exchangeName,
+            exchange = exchange,
             apiKey = currentStrategyExecution.apiKeySupplier,
             currencyPair = currentStrategyExecution.currencyPair,
             currentPrice = currentPriceAdjusted,
@@ -118,13 +118,13 @@ class BinanceStrategyExecutor(
 
     override fun withdraw(currency: String, walletAddress: String): WithdrawResult {
         val balance = walletServiceGateway.getCurrencyBalance(
-            exchangeName = binance,
+            exchange = binance,
             apiKey = currentStrategyExecution.apiKeySupplier,
             currencyCode = currentStrategyExecution.currencyPair.base,
         )
         val amountAdjusted = balance.amountAvailable.setScale(baseCurrencyAmountScale, RoundingMode.DOWN)
         return walletServiceGateway.withdraw(
-            exchangeName = binance,
+            exchange = binance,
             apiKey = currentStrategyExecution.apiKeySupplier,
             currencyCode = currentStrategyExecution.currencyPair.base,
             amount = amountAdjusted,

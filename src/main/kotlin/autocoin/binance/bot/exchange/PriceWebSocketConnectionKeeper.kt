@@ -24,7 +24,12 @@ class PriceWebSocketConnectionKeeper(
     }
 
     fun scheduleCheckingConnection() {
-        scheduledExecutor.scheduleWithFixedDelay({ reconnectWhenNoUpdatesForTooLong() }, maxDurationWithoutUpdate.seconds * 2, maxDurationWithoutUpdate.seconds, TimeUnit.SECONDS)
+        scheduledExecutor.scheduleWithFixedDelay(
+            { reconnectWhenNoUpdatesForTooLong() },
+            maxDurationWithoutUpdate.seconds * 2,
+            maxDurationWithoutUpdate.seconds,
+            TimeUnit.SECONDS
+        )
     }
 
     private fun reconnectWhenNoUpdatesForTooLong() {
