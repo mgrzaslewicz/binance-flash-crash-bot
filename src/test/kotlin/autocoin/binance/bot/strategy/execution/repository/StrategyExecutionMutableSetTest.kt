@@ -9,6 +9,7 @@ import autocoin.binance.bot.strategy.parameters.StrategyParametersDto
 import com.autocoin.exchangegateway.api.exchange.xchange.SupportedXchangeExchange.binance
 import com.autocoin.exchangegateway.spi.exchange.order.OrderStatus
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.Ignore
 import org.junit.jupiter.api.Test
 import java.io.File
 import java.nio.file.Files
@@ -125,5 +126,28 @@ class StrategyExecutionMutableSetTest {
         tested.load()
         // then
         assertThat(tested).containsOnly(anotherStrategyExecution)
+    }
+
+    @Test
+    @Ignore("Not implemented yet")
+    fun shouldSort() {
+        // given
+        val tempDir = Files.createTempDirectory(UUID.randomUUID().toString())
+
+        val strategyExecutionThatShouldBeFirst = expectedStrategyExecution.copy(
+            id = UUID.randomUUID().toString(),
+            parameters = expectedStrategyExecution.parameters.copy(userId = "a-user")
+        )
+        val tested = StrategyExecutionFileBackedMutableSetBuilder(
+            fileRepositoryDirectory = tempDir.toFile(),
+            objectMapper = objectMapper,
+        ).build()
+        // when
+        tested.apply {
+            add(expectedStrategyExecution)
+            add(strategyExecutionThatShouldBeFirst)
+        }
+        // then
+        assertThat(tested).containsExactly(strategyExecutionThatShouldBeFirst, expectedStrategyExecution)
     }
 }

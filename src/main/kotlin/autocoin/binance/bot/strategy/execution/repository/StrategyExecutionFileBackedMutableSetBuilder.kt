@@ -25,7 +25,7 @@ class StrategyExecutionFileBackedMutableSetBuilder(
                 valueDeserializer = { objectMapper.readValue(it, StrategyExecutionsType) },
             )
                 .clock(clock)
-                .build()
+                .build(),
         )
     }
 }
