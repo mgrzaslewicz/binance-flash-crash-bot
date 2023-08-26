@@ -1,9 +1,11 @@
 package autocoin.binance.bot.strategy.execution.repository
 
 import com.autocoin.exchangegateway.api.keyvalue.FileKeyValueRepository
+import java.util.*
 
 class FileBackedMutableHashSet<T>(
-    private val set: HashSet<T> = LinkedHashSet(),
+    private val comparator: Comparator<T> = Comparator { o1, o2 -> o1.hashCode().compareTo(o2.hashCode()) },
+    private val set: MutableSet<T> = TreeSet<T>(comparator),
     private val keyValueRepository: FileKeyValueRepository<String, Set<T>>,
     private val valueKey: String,
     private val numberOfBackupsToKeep: Int = Int.MAX_VALUE,

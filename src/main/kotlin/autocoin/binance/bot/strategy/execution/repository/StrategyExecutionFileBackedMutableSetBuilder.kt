@@ -19,13 +19,15 @@ class StrategyExecutionFileBackedMutableSetBuilder(
     fun build(): FileBackedMutableHashSet<StrategyExecutionDto> {
         return FileBackedMutableHashSet(
             valueKey = "strategy-executions",
-            keyValueRepository = FileKeyValueRepository.Builder<String, Set<StrategyExecutionDto>>(
-                directory = fileRepositoryDirectory,
-                valueSerializer = { objectMapper.writeValueAsString(it) },
-                valueDeserializer = { objectMapper.readValue(it, StrategyExecutionsType) },
-            )
+            keyValueRepository = FileKeyValueRepository
+                .Builder<String, Set<StrategyExecutionDto>>(
+                    directory = fileRepositoryDirectory,
+                    valueSerializer = { objectMapper.writeValueAsString(it) },
+                    valueDeserializer = { objectMapper.readValue(it, StrategyExecutionsType) },
+                )
                 .clock(clock)
                 .build(),
+            comparator = compareBy({ it.userId }, { it.currencyPair }, { it.strategyType }),
         )
     }
 }
