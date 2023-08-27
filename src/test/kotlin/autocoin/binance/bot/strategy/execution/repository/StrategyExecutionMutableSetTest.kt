@@ -9,7 +9,6 @@ import autocoin.binance.bot.strategy.parameters.StrategyParametersDto
 import com.autocoin.exchangegateway.api.exchange.xchange.SupportedXchangeExchange.binance
 import com.autocoin.exchangegateway.spi.exchange.order.OrderStatus
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Ignore
 import org.junit.jupiter.api.Test
 import java.io.File
 import java.nio.file.Files
@@ -102,7 +101,6 @@ class StrategyExecutionMutableSetTest {
     }
 
     @Test
-    @Ignore("Regression after adding ordering")
     fun shouldDeleteStrategy() {
         val tempDir = Files.createTempDirectory(UUID.randomUUID().toString())
 

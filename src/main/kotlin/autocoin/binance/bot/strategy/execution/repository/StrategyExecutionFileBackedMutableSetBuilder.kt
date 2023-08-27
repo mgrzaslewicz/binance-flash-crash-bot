@@ -27,7 +27,7 @@ class StrategyExecutionFileBackedMutableSetBuilder(
                 )
                 .clock(clock)
                 .build(),
-            comparator = compareBy({ it.userId }, { it.currencyPair }, { it.strategyType }),
+            comparator = compareBy({ it.userId }, { it.currencyPair }, { it.strategyType }, { it.hashCode() }),
         )
     }
 }
