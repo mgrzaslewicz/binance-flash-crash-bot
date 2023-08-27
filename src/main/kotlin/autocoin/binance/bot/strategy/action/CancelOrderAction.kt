@@ -11,7 +11,7 @@ class CancelOrderAction(val strategyOrder: StrategyOrder) : StrategyAction {
             return try {
                 strategyExecutor.cancelOrder(order = strategyOrder)
             } catch (e: Exception) {
-                logger.error(e) { "Error while cancelling order" }
+                logger.error(e) { "[id=${strategyOrder.id}, exchangeId=${strategyOrder.exchangeOrderId}] Error while cancelling order " }
                 false
             }
         } else {
