@@ -42,16 +42,19 @@ class BinanceStrategyExecutor(
         val logTag =
             "user=${strategyExecution.userId}, currencyPair=${strategyExecution.currencyPair}, strategyType=${strategyExecution.strategyType}"
         val actions = strategy.getActions(currencyPairWithPrice.price, currentStrategyExecution)
+        var actionsExecutedSuccessfully = 0
         val millis = measureTimeMillis {
             actions.forEach { action ->
-                if (!action.apply(this)) {
-                    logger.info { "[$logTag] Skipping next action" }
-                    return@forEach
+                if (action.apply(this)) {
+                    actionsExecutedSuccessfully++
+                } else {
+                    logger.warn { "[$logTag] Skipping next action" }
+                    return@measureTimeMillis
                 }
             }
         }
         if (actions.isNotEmpty()) {
-            logger.info { "[$logTag] Actions executed in ${millis}ms. Number of actions=${actions.size}" }
+            logger.info { "[$logTag] Executed successfully $actionsExecutedSuccessfully of ${actions.size} actions in $millis ms." }
         }
     }
 

@@ -13,7 +13,6 @@ import autocoin.binance.bot.strategy.execution.repository.TestStrategyExecutionM
 import com.autocoin.exchangegateway.api.exchange.order.Order
 import mu.KLogging
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Ignore
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
@@ -93,7 +92,6 @@ class BinanceStrategyExecutorTest {
     }
 
     @Test
-    @Ignore("TDD: red")
     fun shouldSkipNextActionWhenPreviousFails() {
         // given
         var secondActionRun = false
