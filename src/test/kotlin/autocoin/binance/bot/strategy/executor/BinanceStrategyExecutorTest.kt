@@ -7,11 +7,13 @@ import autocoin.binance.bot.exchange.TestWalletService
 import autocoin.binance.bot.strategy.Strategy
 import autocoin.binance.bot.strategy.action.PlaceBuyLimitOrderAction
 import autocoin.binance.bot.strategy.action.StrategyAction
+import autocoin.binance.bot.strategy.action.StrategyActionExecutor
 import autocoin.binance.bot.strategy.execution.StrategyExecutionDto
 import autocoin.binance.bot.strategy.execution.repository.TestStrategyExecutionMutableSet
 import com.autocoin.exchangegateway.api.exchange.order.Order
 import mu.KLogging
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.Ignore
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
@@ -88,6 +90,43 @@ class BinanceStrategyExecutorTest {
         // then
         assertThat(walletService.withdrawals).hasSize(1)
         assertThat(walletService.withdrawals[0].amount).isEqualTo(1100.78961.toBigDecimal())
+    }
+
+    @Test
+    @Ignore("TDD: red")
+    fun shouldSkipNextActionWhenPreviousFails() {
+        // given
+        var secondActionRun = false
+        tested = BinanceStrategyExecutor(
+            strategyExecution = TestConfig.samplePositionBuyLimitOrdersStrategyExecution(),
+            orderServiceGateway = orderService,
+            walletServiceGateway = walletService,
+            strategyExecutions = TestStrategyExecutionMutableSet.get(),
+            baseCurrencyAmountScale = 5,
+            counterCurrencyPriceScale = 2,
+            strategy = object : Strategy {
+                override fun getActions(
+                    price: BigDecimal,
+                    strategyExecution: StrategyExecutionDto,
+                ): List<StrategyAction> {
+                    return listOf(
+                        object : StrategyAction {
+                            override fun apply(strategyExecutor: StrategyActionExecutor) = false
+                        },
+                        object : StrategyAction {
+                            override fun apply(strategyExecutor: StrategyActionExecutor): Boolean {
+                                secondActionRun = true
+                                return true
+                            }
+                        }
+                    )
+                }
+            }
+        )
+        // when
+        tested.onPriceUpdated(currencyPairWithPrice(16000.123456789.toBigDecimal()))
+        // then
+        assertThat(secondActionRun).isFalse()
     }
 
 }
