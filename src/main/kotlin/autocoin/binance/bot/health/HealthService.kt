@@ -72,7 +72,7 @@ class HealthService(
                     ordersAmountSum = strategy.orders.sumOf { order -> order.amount }.toPlainString(),
                 )
             }
-            .sortedBy { it.user }
+            .sortedWith(compareBy({ it.user }, { it.type }, { it.currencyPair }))
             .toList()
 
         val priceStreamStartTimestamp = binancePriceStream.getWebsocketConnectionStartedTimestamp()
